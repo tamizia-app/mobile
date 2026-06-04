@@ -1,6 +1,6 @@
-# tamizia_app
+# TamizAI
 
-A new Flutter project.
+Mobile application for TamizAI.
 
 ## Getting Started
 

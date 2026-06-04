@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const TamiziaApp());
+  runApp(const TamizAIApp());
 }
 
-class TamiziaApp extends StatelessWidget {
-  const TamiziaApp({super.key});
+class TamizAIApp extends StatelessWidget {
+  const TamizAIApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TamizIA',
+      title: 'TamizAI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -129,7 +129,7 @@ class SplashScreen extends StatelessWidget {
               ),
               const SizedBox(height: 34),
               const Text(
-                'LectorRisk',
+                'TamizAI',
                 style: TextStyle(
                   color: AppColors.neutralDark,
                   fontSize: 34,
@@ -231,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 18),
                             const Text(
-                              'TamizIA',
+                              'TamizAI',
                               style: TextStyle(
                                 color: AppColors.neutralDark,
                                 fontSize: 26,
@@ -431,7 +431,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Column(
                           children: [
                             const Text(
-                              'Únete a TamizIA para gestionar la evaluación\ny progreso de tus estudiantes.',
+                              'Únete a TamizAI para gestionar la evaluación\ny progreso de tus estudiantes.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: AppColors.neutralGray,
@@ -1034,7 +1034,7 @@ class PrivacyNotice extends StatelessWidget {
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Tus datos y los de tus estudiantes son tratados de manera confidencial y se utilizan exclusivamente para fines de gestión pedagógica dentro de LectorRisk.',
+              'Tus datos y los de tus estudiantes son tratados de manera confidencial y se utilizan exclusivamente para fines de gestión pedagógica dentro de TamizAI.',
               style: TextStyle(
                 color: AppColors.neutralGray,
                 fontSize: 11,

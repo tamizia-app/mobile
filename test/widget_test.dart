@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tamizia_app/main.dart';
+import 'package:tamizai_app/main.dart';
 
 void main() {
   testWidgets('navega por las pantallas iniciales de autenticacion', (
     WidgetTester tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(390, 860));
-    await tester.pumpWidget(const TamiziaApp());
+    await tester.pumpWidget(const TamizAIApp());
 
-    expect(find.text('LectorRisk'), findsOneWidget);
+    expect(find.text('TamizAI'), findsOneWidget);
     await tester.tap(find.text('Comenzar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('TamizIA'), findsOneWidget);
+    expect(find.text('TamizAI'), findsOneWidget);
     expect(find.text('Iniciar sesión'), findsNWidgets(2));
 
     await tester.tap(find.text('Crear cuenta docente'));
@@ -32,7 +32,7 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(390, 860));
-    await tester.pumpWidget(const TamiziaApp());
+    await tester.pumpWidget(const TamizAIApp());
     await tester.tap(find.text('Comenzar'));
     await tester.pumpAndSettle();
 
