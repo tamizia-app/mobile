@@ -1,11 +1,11 @@
 {
-    "name": "tamizia_app",
-    "short_name": "tamizia_app",
+    "name": "TamizAI",
+    "short_name": "TamizAI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "TamizAI mobile application.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
