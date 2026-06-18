@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tamizia_app/app.dart';
+import 'package:tamizai_app/app.dart';
 
 void main() {
   testWidgets('navega por las pantallas iniciales de autenticacion', (
@@ -9,7 +9,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(390, 860));
     await tester.pumpWidget(const TamiziaApp());
 
-    expect(find.text('LectorRisk'), findsOneWidget);
+    expect(find.text('TamizIA'), findsOneWidget);
     await tester.tap(find.text('Comenzar'));
     await tester.pumpAndSettle();
 
