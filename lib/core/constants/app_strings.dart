@@ -2,7 +2,7 @@ class AppStrings {
   const AppStrings._();
 
   static const appName = 'TamizIA';
-  static const splashName = 'LectorRisk';
+  static const splashName = 'TamizIA';
   static const splashDescription =
       'Apoyo al tamizaje temprano de\ndificultades de lectoescritura';
   static const start = 'Comenzar';
