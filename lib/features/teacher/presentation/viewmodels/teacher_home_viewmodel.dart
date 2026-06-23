@@ -31,8 +31,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
     QuickAction(
       title: 'Catálogo',
       icon: Icons.assignment_outlined,
-      route: '',
-      implemented: false,
+      route: AppRoutes.exerciseCatalog,
     ),
     QuickAction(
       title: 'Resultados',

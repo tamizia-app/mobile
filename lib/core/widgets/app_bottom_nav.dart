@@ -43,7 +43,10 @@ class AppBottomNav extends StatelessWidget {
               icon: Icons.extension_outlined,
               label: 'Ejercicios',
               active: currentItem == BottomNavItem.exercises,
-              onTap: () => _showNotImplemented(context),
+              onTap: () => Navigator.pushReplacementNamed(
+                context,
+                AppRoutes.exerciseCatalog,
+              ),
             ),
             _BottomNavButton(
               icon: Icons.content_copy_outlined,
