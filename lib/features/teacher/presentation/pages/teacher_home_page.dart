@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/session/auth_session_manager.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/info_banner.dart';
 import '../../../../core/widgets/metric_card.dart';
 import '../../../../core/widgets/quick_action_card.dart';
 import '../../../../core/widgets/warning_metric_card.dart';
-import '../../data/services/teacher_service.dart';
+import '../../data/services/dashboard_summary_service.dart';
 import '../viewmodels/teacher_home_viewmodel.dart';
 
 class TeacherHomePage extends StatefulWidget {
-  const TeacherHomePage({required this.teacherService, super.key});
+  const TeacherHomePage({
+    required this.dashboardSummaryService,
+    required this.sessionManager,
+    super.key,
+  });
 
-  final TeacherService teacherService;
+  final DashboardSummaryService dashboardSummaryService;
+  final AuthSessionManager sessionManager;
 
   @override
   State<TeacherHomePage> createState() => _TeacherHomePageState();
@@ -25,8 +31,10 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   @override
   void initState() {
     super.initState();
-    _viewModel = TeacherHomeViewModel(teacherService: widget.teacherService)
-      ..load();
+    _viewModel = TeacherHomeViewModel(
+      dashboardSummaryService: widget.dashboardSummaryService,
+      sessionManager: widget.sessionManager,
+    )..load();
   }
 
   @override
@@ -49,7 +57,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
           body: Column(
             children: [
               TeacherGreetingHeader(
-                name: _viewModel.profile?.firstName ?? 'Docente',
+                name: _viewModel.profile?.name ?? 'Docente',
               ),
               Expanded(
                 child: SingleChildScrollView(

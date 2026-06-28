@@ -1,29 +1,19 @@
 class TeacherProfile {
   const TeacherProfile({
-    required this.firstName,
-    required this.lastName,
+    required this.teacherId,
+    required this.name,
+    required this.lastname,
     required this.email,
-    required this.institution,
+    required this.instituteName,
+    required this.phone,
   });
 
-  final String firstName;
-  final String lastName;
+  final String teacherId;
+  final String name;
+  final String lastname;
   final String email;
-  final String institution;
+  final String? instituteName;
+  final String? phone;
 
-  String get fullName => '$firstName $lastName';
-
-  TeacherProfile copyWith({
-    String? firstName,
-    String? lastName,
-    String? email,
-    String? institution,
-  }) {
-    return TeacherProfile(
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      email: email ?? this.email,
-      institution: institution ?? this.institution,
-    );
-  }
+  String get fullName => '$name $lastname'.trim();
 }

@@ -56,6 +56,25 @@ class AuthValidators {
     return null;
   }
 
+  static String normalizePhone(String value) {
+    return value.replaceAll(RegExp(r'[\s\-()]'), '');
+  }
+
+  static String? validatePhone(String? value) {
+    final phone = normalizePhone(value?.trim() ?? '');
+    if (phone.isEmpty) {
+      return 'El teléfono es obligatorio.';
+    }
+    if (!RegExp(r'^\+?\d+$').hasMatch(phone)) {
+      return 'Ingresa un teléfono válido.';
+    }
+    final digits = phone.replaceFirst('+', '');
+    if (digits.length < 7 || digits.length > 15) {
+      return 'El teléfono debe tener entre 7 y 15 dígitos.';
+    }
+    return null;
+  }
+
   static String? validateRequiredField(String? value, String message) {
     if (value == null || value.trim().isEmpty) {
       return message;
