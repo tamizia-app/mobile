@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_routes.dart';
-import '../../data/services/teacher_service.dart';
+import '../../../../core/session/auth_session_manager.dart';
+import '../../data/services/dashboard_summary_service.dart';
 import '../../domain/models/dashboard_summary.dart';
 import '../../domain/models/quick_action.dart';
 import '../../domain/models/teacher_profile.dart';
 
 class TeacherHomeViewModel extends ChangeNotifier {
-  TeacherHomeViewModel({required TeacherService teacherService})
-    : _teacherService = teacherService;
+  TeacherHomeViewModel({
+    required DashboardSummaryService dashboardSummaryService,
+    required AuthSessionManager sessionManager,
+  }) : _dashboardSummaryService = dashboardSummaryService,
+       _sessionManager = sessionManager {
+    _sessionManager.addListener(_onSessionChanged);
+  }
 
-  final TeacherService _teacherService;
+  final DashboardSummaryService _dashboardSummaryService;
+  final AuthSessionManager _sessionManager;
 
-  TeacherProfile? profile;
+  TeacherProfile? get profile => _sessionManager.currentTeacher;
   DashboardSummary? summary;
   bool isLoading = false;
   String? errorMessage;
@@ -29,10 +36,9 @@ class TeacherHomeViewModel extends ChangeNotifier {
       route: AppRoutes.createStudent,
     ),
     QuickAction(
-      title: 'Catálogo',
+      title: 'Catalogo',
       icon: Icons.assignment_outlined,
-      route: '',
-      implemented: false,
+      route: AppRoutes.exerciseCatalog,
     ),
     QuickAction(
       title: 'Resultados',
@@ -46,13 +52,20 @@ class TeacherHomeViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
     try {
-      profile = await _teacherService.getTeacherProfile();
-      summary = await _teacherService.getDashboardSummary();
+      summary = await _dashboardSummaryService.getDashboardSummary();
       errorMessage = null;
     } catch (_) {
       errorMessage = 'No se pudo cargar el dashboard.';
     }
     isLoading = false;
     notifyListeners();
+  }
+
+  void _onSessionChanged() => notifyListeners();
+
+  @override
+  void dispose() {
+    _sessionManager.removeListener(_onSessionChanged);
+    super.dispose();
   }
 }

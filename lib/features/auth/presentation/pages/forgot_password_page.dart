@@ -8,13 +8,13 @@ import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/back_header.dart';
 import '../../../../core/widgets/error_message.dart';
 import '../../../../core/widgets/primary_button.dart';
-import '../../data/services/auth_service.dart';
+import '../../domain/repositories/auth_repository.dart';
 import '../viewmodels/forgot_password_viewmodel.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({required this.authService, super.key});
+  const ForgotPasswordPage({required this.authRepository, super.key});
 
-  final AuthService authService;
+  final AuthRepository authRepository;
 
   @override
   State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
@@ -28,7 +28,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   void initState() {
     super.initState();
-    _viewModel = ForgotPasswordViewModel(authService: widget.authService);
+    _viewModel = ForgotPasswordViewModel(authRepository: widget.authRepository);
   }
 
   @override

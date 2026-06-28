@@ -5,6 +5,7 @@ class AppRoutes {
   static const login = '/login';
   static const register = '/register';
   static const forgotPassword = '/forgot-password';
+  static const resetPassword = '/reset-password';
   static const teacherHome = '/teacher/home';
   static const teacherProfile = '/teacher/profile';
   static const classrooms = '/classrooms';
@@ -14,4 +15,12 @@ class AppRoutes {
   static const createStudent = '/students/create';
   static const studentDetail = '/students/detail';
   static const editStudent = '/students/edit';
+  static const exerciseCatalog = '/exercises/catalog';
+  static const exerciseDetail = '/exercises/detail';
+  static const assessmentConfigure = '/assessment/configure';
+  static const assessmentInstructions = '/assessment/instructions';
+  static const assessmentReading = '/assessment/reading';
+  static const assessmentWriting = '/assessment/writing';
+  static const assessmentBuildWord = '/assessment/build-word';
+  static const assessmentChooseWord = '/assessment/choose-word';
 }
