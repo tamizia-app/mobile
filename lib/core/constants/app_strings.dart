@@ -15,7 +15,7 @@ class AppStrings {
   static const createTeacherAccount = 'Crear cuenta docente';
   static const loginPrivacy =
       'Tus datos y los de tus estudiantes serán protegidos';
-  static const loginSuccess = 'Inicio de sesión simulado correctamente.';
+  static const loginSuccess = 'Inicio de sesión correctamente.';
 
   static const registerTitle = 'Crear cuenta docente';
   static const registerDescription =
@@ -23,7 +23,7 @@ class AppStrings {
   static const registerButton = 'Registrarme';
   static const alreadyHaveAccount = '¿Ya tienes una cuenta? ';
   static const loginHere = 'Inicia sesión aquí';
-  static const registerSuccess = 'Registro simulado correctamente.';
+  static const registerSuccess = 'Cuenta creada correctamente.';
 
   static const forgotPasswordTitle = 'Recuperar contraseña';
   static const checkEmail = 'Revisa tu correo';
@@ -48,8 +48,10 @@ class AppStrings {
   static const passwordMinHint = 'Mínimo 8 caracteres';
   static const confirmPasswordLabel = 'Confirmar Contraseña *';
   static const confirmPasswordHint = 'Repite tu contraseña';
-  static const institutionLabel = 'Institución Educativa (Opcional)';
+  static const institutionLabel = 'Institución Educativa *';
   static const institutionHint = 'Nombre de la escuela o colegio';
+  static const phoneLabel = 'Teléfono *';
+  static const phoneHint = 'Ejemplo: 987654321';
   static const recoveryEmailLabel = 'Correo electrónico institucional';
   static const recoveryEmailHint = 'docente@escuela.edu';
 
