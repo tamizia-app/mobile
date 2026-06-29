@@ -53,14 +53,14 @@ class StudentCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Última evaluación: ${student.lastEvaluation}',
+                    'Edad: ${student.age}',
                     style: const TextStyle(
                       color: Color(0xFF3F4A55),
                       fontSize: 13,
                     ),
                   ),
                   Text(
-                    'Edad: ${student.age}',
+                    'Genero: ${student.gender == 'BOY' ? 'Niño' : 'Niña'}',
                     style: const TextStyle(
                       color: Color(0xFF3F4A55),
                       fontSize: 13,
@@ -71,14 +71,12 @@ class StudentCard extends StatelessWidget {
             ),
             CircleAvatar(
               radius: 17,
-              backgroundColor: student.needsReview
-                  ? const Color(0xFFFFD7D7)
-                  : AppColors.successGreen,
+              backgroundColor: student.isActive
+                  ? AppColors.successGreen
+                  : const Color(0xFFFFD7D7),
               child: Icon(
-                student.needsReview ? Icons.more_horiz : Icons.check_circle,
-                color: student.needsReview
-                    ? AppColors.warningRed
-                    : Colors.white,
+                student.isActive ? Icons.check_circle : Icons.block,
+                color: student.isActive ? Colors.white : AppColors.warningRed,
                 size: 16,
               ),
             ),

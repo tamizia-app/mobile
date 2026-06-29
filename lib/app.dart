@@ -23,8 +23,9 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
 import 'features/auth/presentation/pages/reset_password_page.dart';
 import 'features/auth/presentation/pages/splash_page.dart';
-import 'features/classrooms/data/services/classroom_service.dart';
-import 'features/classrooms/data/services/mock_classroom_service.dart';
+import 'features/classrooms/data/datasources/classroom_remote_data_source_impl.dart';
+import 'features/classrooms/data/repositories/classroom_repository_impl.dart';
+import 'features/classrooms/domain/repositories/classroom_repository.dart';
 import 'features/classrooms/presentation/pages/classroom_detail_page.dart';
 import 'features/classrooms/presentation/pages/classrooms_page.dart';
 import 'features/classrooms/presentation/pages/create_classroom_page.dart';
@@ -33,8 +34,9 @@ import 'features/exercises/data/services/exercise_service.dart';
 import 'features/exercises/data/services/mock_exercise_service.dart';
 import 'features/exercises/presentation/pages/exercise_catalog_page.dart';
 import 'features/exercises/presentation/pages/exercise_detail_page.dart';
-import 'features/students/data/services/mock_student_service.dart';
-import 'features/students/data/services/student_service.dart';
+import 'features/students/data/datasources/student_remote_data_source_impl.dart';
+import 'features/students/data/repositories/student_repository_impl.dart';
+import 'features/students/domain/repositories/student_repository.dart';
 import 'features/students/presentation/pages/create_student_page.dart';
 import 'features/students/presentation/pages/edit_student_page.dart';
 import 'features/students/presentation/pages/student_detail_page.dart';
@@ -59,13 +61,13 @@ class _TamiziaAppState extends State<TamiziaApp> {
   late final ApiClient _apiClient;
   late final AuthRepository _authRepository;
   late final TeacherRepository _teacherRepository;
+  late final ClassroomRepository _classroomRepository;
+  late final StudentRepository _studentRepository;
   late final AuthSessionStorage _sessionStorage;
   late final AuthSessionManager _sessionManager;
 
   final DashboardSummaryService _dashboardSummaryService =
       MockDashboardSummaryService();
-  final ClassroomService _classroomService = MockClassroomService();
-  final StudentService _studentService = MockStudentService();
   final ExerciseService _exerciseService = MockExerciseService();
   late final AssessmentService _assessmentService = MockAssessmentService(
     exerciseService: _exerciseService,
@@ -80,6 +82,12 @@ class _TamiziaAppState extends State<TamiziaApp> {
     );
     _teacherRepository = TeacherRepositoryImpl(
       remoteDataSource: TeacherRemoteDataSourceImpl(apiClient: _apiClient),
+    );
+    _classroomRepository = ClassroomRepositoryImpl(
+      remoteDataSource: ClassroomRemoteDataSourceImpl(apiClient: _apiClient),
+    );
+    _studentRepository = StudentRepositoryImpl(
+      remoteDataSource: StudentRemoteDataSourceImpl(apiClient: _apiClient),
     );
     _sessionStorage = SecureAuthSessionStorage();
     _sessionManager =
@@ -157,30 +165,30 @@ class _TamiziaAppState extends State<TamiziaApp> {
       case AppRoutes.teacherProfile:
         return TeacherProfilePage(sessionManager: _sessionManager);
       case AppRoutes.classrooms:
-        return ClassroomsPage(classroomService: _classroomService);
+        return ClassroomsPage(classroomRepository: _classroomRepository);
       case AppRoutes.createClassroom:
-        return CreateClassroomPage(classroomService: _classroomService);
+        return CreateClassroomPage(classroomRepository: _classroomRepository);
       case AppRoutes.classroomDetail:
         return ClassroomDetailPage(
-          classroomService: _classroomService,
-          studentService: _studentService,
+          classroomRepository: _classroomRepository,
+          studentRepository: _studentRepository,
         );
       case AppRoutes.editClassroom:
-        return EditClassroomPage(classroomService: _classroomService);
+        return EditClassroomPage(classroomRepository: _classroomRepository);
       case AppRoutes.createStudent:
-        return CreateStudentPage(studentService: _studentService);
+        return CreateStudentPage(studentRepository: _studentRepository);
       case AppRoutes.studentDetail:
-        return StudentDetailPage(studentService: _studentService);
+        return StudentDetailPage(studentRepository: _studentRepository);
       case AppRoutes.editStudent:
-        return EditStudentPage(studentService: _studentService);
+        return EditStudentPage(studentRepository: _studentRepository);
       case AppRoutes.exerciseCatalog:
         return ExerciseCatalogPage(exerciseService: _exerciseService);
       case AppRoutes.exerciseDetail:
         return ExerciseDetailPage(exerciseService: _exerciseService);
       case AppRoutes.assessmentConfigure:
         return AssessmentConfigPage(
-          classroomService: _classroomService,
-          studentService: _studentService,
+          classroomRepository: _classroomRepository,
+          studentRepository: _studentRepository,
           exerciseService: _exerciseService,
           assessmentService: _assessmentService,
         );

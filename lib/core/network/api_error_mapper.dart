@@ -37,6 +37,11 @@ abstract final class ApiErrorMapper {
     final statusCode = response?.statusCode;
     final data = response?.data;
     final backendMessage = _extractMessage(data);
+    final path = response?.requestOptions.path ?? '';
+    final isClassroomRequest =
+        path.contains('/classrooms') && !path.contains('/students');
+    final isStudentRequest =
+        path.contains('/students') && !path.contains('/consent');
 
     if (statusCode == 400) {
       return ValidationException(
@@ -45,7 +50,6 @@ abstract final class ApiErrorMapper {
       );
     }
     if (statusCode == 401) {
-      final path = response?.requestOptions.path ?? '';
       if (path.endsWith('/auth/signin')) {
         return const UnauthorizedException('Correo o contrasena incorrectos.');
       }
@@ -64,11 +68,25 @@ abstract final class ApiErrorMapper {
       );
     }
     if (statusCode == 404) {
+      if (isClassroomRequest) {
+        return const NotFoundException('El aula no fue encontrada.');
+      }
+      if (isStudentRequest) {
+        return const NotFoundException('El estudiante no fue encontrado.');
+      }
       return NotFoundException(
         backendMessage ?? 'No se encontro el recurso solicitado.',
       );
     }
     if (statusCode == 409) {
+      if (isClassroomRequest) {
+        return const ConflictException('Ya existe un aula con esos datos.');
+      }
+      if (isStudentRequest) {
+        return const ConflictException(
+          'Ya existe un estudiante con ese codigo.',
+        );
+      }
       return const ConflictException('El correo ya se encuentra registrado.');
     }
     if (statusCode == 422) {

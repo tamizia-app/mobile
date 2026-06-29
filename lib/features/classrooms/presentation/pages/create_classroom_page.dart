@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
-import '../../data/services/classroom_service.dart';
+import '../../domain/repositories/classroom_repository.dart';
 import '../viewmodels/classroom_form_viewmodel.dart';
 
 class CreateClassroomPage extends StatefulWidget {
-  const CreateClassroomPage({required this.classroomService, super.key});
+  const CreateClassroomPage({required this.classroomRepository, super.key});
 
-  final ClassroomService classroomService;
+  final ClassroomRepository classroomRepository;
 
   @override
   State<CreateClassroomPage> createState() => _CreateClassroomPageState();
@@ -26,7 +25,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
   void initState() {
     super.initState();
     _viewModel = ClassroomFormViewModel(
-      classroomService: widget.classroomService,
+      classroomRepository: widget.classroomRepository,
     );
   }
 
@@ -38,13 +37,14 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
   }
 
   Future<void> _save() async {
-    final formValid = _formKey.currentState!.validate();
-    final saved = await _viewModel.create();
-    if (!mounted || !formValid || !saved) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Aula creada correctamente')));
-    Navigator.pushReplacementNamed(context, AppRoutes.classrooms);
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    final created = await _viewModel.create();
+    if (!mounted || created == null) {
+      return;
+    }
+    Navigator.pop(context, created);
   }
 
   @override
@@ -55,8 +55,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
       formKey: _formKey,
       viewModel: _viewModel,
       nameController: _nameController,
-      onCancel: () =>
-          Navigator.pushReplacementNamed(context, AppRoutes.classrooms),
+      onCancel: () => Navigator.pop(context),
       onSave: _save,
     );
   }
@@ -84,39 +83,52 @@ class ClassroomFormFields extends StatelessWidget {
               controller: nameController,
               label: 'Nombre del aula *',
               hintText: 'Ej. Aula de Ciencias',
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Este campo es obligatorio.'
-                  : null,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Este campo es obligatorio.';
+                }
+                return viewModel.fieldErrors['name'];
+              },
               onChanged: viewModel.setName,
             ),
             const SizedBox(height: 22),
             _DropdownField(
               label: 'Grado',
               hint: 'Seleccionar grado',
-              value: viewModel.grade.isEmpty ? null : viewModel.grade,
-              items: const ['3ro', '4to', '5to'],
-              onChanged: (value) => viewModel.setGrade(value ?? ''),
+              value: viewModel.gradeLevel.isEmpty ? null : viewModel.gradeLevel,
+              items: ClassroomFormViewModel.gradeLevels,
+              itemLabel: _capitalize,
+              validator: (_) =>
+                  viewModel.fieldErrors['grade_level'] ??
+                  (viewModel.gradeLevel.isEmpty
+                      ? 'Selecciona un grado.'
+                      : null),
+              onChanged: (value) => viewModel.setGradeLevel(value ?? ''),
             ),
             const SizedBox(height: 22),
             _DropdownField(
-              label: 'Sección',
-              hint: 'Seleccionar sección',
+              label: 'Seccion',
+              hint: 'Seleccionar seccion',
               value: viewModel.section.isEmpty ? null : viewModel.section,
-              items: const ['A', 'B', 'C'],
+              items: ClassroomFormViewModel.sections,
+              validator: (_) =>
+                  viewModel.fieldErrors['section'] ??
+                  (viewModel.section.isEmpty
+                      ? 'Selecciona una seccion.'
+                      : null),
               onChanged: (value) => viewModel.setSection(value ?? ''),
             ),
             const SizedBox(height: 22),
-            _DropdownField(
-              label: 'Año escolar',
-              hint: 'Seleccionar año',
-              value: viewModel.schoolYear.isEmpty ? null : viewModel.schoolYear,
-              items: const ['2026', '2025', '2024'],
-              onChanged: (value) => viewModel.setSchoolYear(value ?? ''),
+            _YearField(
+              value: viewModel.schoolYear?.year,
+              years: viewModel.availableSchoolYears,
+              errorText: viewModel.fieldErrors['school_year'],
+              onChanged: viewModel.setSchoolYear,
             ),
-            if (viewModel.errorMessage != null) ...[
+            if (viewModel.generalError != null) ...[
               const SizedBox(height: 12),
               Text(
-                viewModel.errorMessage!,
+                viewModel.generalError!,
                 style: const TextStyle(
                   color: AppColors.errorRed,
                   fontSize: 12,
@@ -129,6 +141,10 @@ class ClassroomFormFields extends StatelessWidget {
       },
     );
   }
+
+  static String _capitalize(String value) {
+    return '${value[0].toUpperCase()}${value.substring(1)}';
+  }
 }
 
 class ClassroomFormScaffold extends StatelessWidget {
@@ -140,6 +156,7 @@ class ClassroomFormScaffold extends StatelessWidget {
     required this.nameController,
     required this.onCancel,
     required this.onSave,
+    this.onRetry,
     super.key,
   });
 
@@ -150,63 +167,80 @@ class ClassroomFormScaffold extends StatelessWidget {
   final TextEditingController nameController;
   final VoidCallback onCancel;
   final VoidCallback onSave;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(26, 16, 26, 26),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFD9E2EA))),
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: onCancel,
-                  style: OutlinedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(48),
-                    foregroundColor: const Color(0xFF102532),
-                    side: const BorderSide(color: Color(0xFF697789)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(7),
+    return AnimatedBuilder(
+      animation: viewModel,
+      builder: (context, _) {
+        final saveAction = viewModel.isEditing
+            ? (viewModel.canSave ? onSave : null)
+            : (viewModel.isLoading ? null : onSave);
+        return Scaffold(
+          backgroundColor: Colors.white,
+          bottomNavigationBar: viewModel.isInitialized
+              ? Container(
+                  padding: const EdgeInsets.fromLTRB(26, 16, 26, 26),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(top: BorderSide(color: Color(0xFFD9E2EA))),
+                  ),
+                  child: SafeArea(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: viewModel.isLoading ? null : onCancel,
+                            style: OutlinedButton.styleFrom(
+                              fixedSize: const Size.fromHeight(48),
+                              foregroundColor: const Color(0xFF102532),
+                              side: const BorderSide(color: Color(0xFF697789)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                            ),
+                            child: const Text('Cancelar'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: PrimaryButton(
+                            text: buttonText,
+                            isLoading: viewModel.isLoading,
+                            onPressed: saveAction,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: const Text('Cancelar'),
-                ),
-              ),
-              const SizedBox(width: 16),
+                )
+              : null,
+          body: Column(
+            children: [
+              AppHeader(title: title, showBack: true),
               Expanded(
-                child: PrimaryButton(
-                  text: buttonText,
-                  isLoading: viewModel.isLoading,
-                  onPressed: onSave,
-                ),
+                child: viewModel.isInitialized
+                    ? SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(26, 26, 26, 40),
+                        child: Form(
+                          key: formKey,
+                          child: ClassroomFormFields(
+                            viewModel: viewModel,
+                            nameController: nameController,
+                          ),
+                        ),
+                      )
+                    : _ClassroomFormLoading(
+                        isLoading: viewModel.isLoading,
+                        message: viewModel.generalError,
+                        onRetry: onRetry,
+                      ),
               ),
             ],
           ),
-        ),
-      ),
-      body: Column(
-        children: [
-          AppHeader(title: title, showBack: true),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(26, 26, 26, 40),
-              child: Form(
-                key: formKey,
-                child: ClassroomFormFields(
-                  viewModel: viewModel,
-                  nameController: nameController,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -218,6 +252,8 @@ class _DropdownField extends StatelessWidget {
     required this.value,
     required this.items,
     required this.onChanged,
+    required this.validator,
+    this.itemLabel,
   });
 
   final String label;
@@ -225,6 +261,8 @@ class _DropdownField extends StatelessWidget {
   final String? value;
   final List<String> items;
   final ValueChanged<String?> onChanged;
+  final FormFieldValidator<String> validator;
+  final String Function(String)? itemLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -245,8 +283,15 @@ class _DropdownField extends StatelessWidget {
           initialValue: value,
           hint: Text(hint),
           items: items
-              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+              .map(
+                (item) => DropdownMenuItem(
+                  value: item,
+                  child: Text(itemLabel?.call(item) ?? item),
+                ),
+              )
               .toList(),
+          validator: validator,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           onChanged: onChanged,
           decoration: InputDecoration(
             filled: true,
@@ -266,6 +311,70 @@ class _DropdownField extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _YearField extends StatelessWidget {
+  const _YearField({
+    required this.value,
+    required this.years,
+    required this.errorText,
+    required this.onChanged,
+  });
+
+  final int? value;
+  final List<int> years;
+  final String? errorText;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DropdownField(
+      label: 'Año escolar',
+      hint: 'Seleccionar año',
+      value: value?.toString(),
+      items: years.map((year) => year.toString()).toList(growable: false),
+      validator: (_) =>
+          errorText ??
+          (value == null || !years.contains(value)
+              ? 'Selecciona un año escolar válido.'
+              : null),
+      onChanged: (selected) {
+        final year = int.tryParse(selected ?? '');
+        if (year != null) {
+          onChanged(year);
+        }
+      },
+    );
+  }
+}
+
+class _ClassroomFormLoading extends StatelessWidget {
+  const _ClassroomFormLoading({
+    required this.isLoading,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final bool isLoading;
+  final String? message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(message ?? 'No se pudo cargar el aula.'),
+          if (onRetry != null)
+            TextButton(onPressed: onRetry, child: const Text('Reintentar')),
+        ],
+      ),
     );
   }
 }
