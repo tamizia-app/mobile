@@ -11,7 +11,7 @@ class StudentActionButton extends StatelessWidget {
   });
 
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final IconData? icon;
   final bool primary;
   final bool orange;

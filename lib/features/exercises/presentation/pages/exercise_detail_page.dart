@@ -53,12 +53,10 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
             padding: const EdgeInsets.fromLTRB(28, 14, 28, 24),
             child: SafeArea(
               child: PrimaryButton(
-                text: '✓  Usar en evaluación',
-                onPressed: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.assessmentConfigure,
-                  arguments: exercise?.id ?? _exerciseId,
-                ),
+                text: 'Ver plantillas',
+                icon: Icons.assignment_outlined,
+                onPressed: () =>
+                    Navigator.pushNamed(context, AppRoutes.templateCatalog),
               ),
             ),
           ),

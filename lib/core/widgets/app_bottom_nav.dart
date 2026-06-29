@@ -52,7 +52,10 @@ class AppBottomNav extends StatelessWidget {
               icon: Icons.content_copy_outlined,
               label: 'Pruebas',
               active: currentItem == BottomNavItem.tests,
-              onTap: () => _showNotImplemented(context),
+              onTap: () => Navigator.pushReplacementNamed(
+                context,
+                AppRoutes.templateCatalog,
+              ),
             ),
             _BottomNavButton(
               icon: Icons.settings_outlined,
@@ -67,12 +70,6 @@ class AppBottomNav extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _showNotImplemented(BuildContext context) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('No implementado todavía')));
   }
 }
 

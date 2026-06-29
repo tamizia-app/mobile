@@ -17,10 +17,17 @@ class AppRoutes {
   static const editStudent = '/students/edit';
   static const exerciseCatalog = '/exercises/catalog';
   static const exerciseDetail = '/exercises/detail';
+  static const templateCatalog = '/assessment/templates';
+  static const templateDetail = '/assessment/templates/detail';
   static const assessmentConfigure = '/assessment/configure';
+  static const assessmentAttemptPreview = '/assessment/attempt-preview';
+  static const assessmentAttemptSession = '/assessment/attempt-session';
   static const assessmentInstructions = '/assessment/instructions';
   static const assessmentReading = '/assessment/reading';
   static const assessmentWriting = '/assessment/writing';
   static const assessmentBuildWord = '/assessment/build-word';
   static const assessmentChooseWord = '/assessment/choose-word';
+  static const assessmentResult = '/assessment/result';
+  static const assessmentTextComparison = '/assessment/text-comparison';
+  static const assessmentError = '/assessment/error';
 }

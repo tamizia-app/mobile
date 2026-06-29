@@ -1,115 +1,94 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../exercises/data/services/exercise_service.dart';
-import '../../../exercises/domain/models/exercise.dart';
-import '../../data/services/assessment_service.dart';
-import '../../domain/models/assessment_question.dart';
-import '../../domain/models/assessment_session.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../domain/models/assessment_attempt.dart';
+import '../../domain/models/assessment_response.dart';
+import '../../domain/models/attempt_exercise_args.dart';
+import '../../domain/repositories/assessment_repository.dart';
 
 class ChooseWordViewModel extends ChangeNotifier {
-  ChooseWordViewModel({
-    required ExerciseService exerciseService,
-    required AssessmentService assessmentService,
-  }) : _exerciseService = exerciseService,
-       _assessmentService = assessmentService;
+  ChooseWordViewModel({required AssessmentRepository assessmentRepository})
+    : _assessmentRepository = assessmentRepository;
 
-  final ExerciseService _exerciseService;
-  final AssessmentService _assessmentService;
+  final AssessmentRepository _assessmentRepository;
 
-  Exercise? exercise;
-  AssessmentSession? session;
-  final List<ChooseWordQuestion> questions = const [
-    ChooseWordQuestion(
-      prompt: '¿Qué es esto?',
-      imageLabel: 'manzana',
-      options: ['Manzana', 'Mansana', 'Mazana'],
-      correctAnswer: 'Manzana',
-    ),
-    ChooseWordQuestion(
-      prompt: '¿Qué es esto?',
-      imageLabel: 'casa',
-      options: ['Casa', 'Caza', 'Cassa'],
-      correctAnswer: 'Casa',
-    ),
-    ChooseWordQuestion(
-      prompt: '¿Qué es esto?',
-      imageLabel: 'pato',
-      options: ['Pato', 'Bato', 'Patoo'],
-      correctAnswer: 'Pato',
-    ),
-  ];
-  int currentQuestionIndex = 0;
-  String? selectedWord;
-  String? feedback;
+  AttemptExerciseArgs? args;
+  ExerciseAttempt? get exerciseAttempt => args?.exerciseAttempt;
+  MCResponse? response;
+  String? selectedOptionId;
+  bool isLoading = false;
+  bool isSubmitting = false;
+  String? errorMessage;
   String? validationMessage;
-  bool isPaused = false;
 
-  ChooseWordQuestion get currentQuestion => questions[currentQuestionIndex];
-
-  bool get isLastQuestion => currentQuestionIndex == questions.length - 1;
-
-  String get progressText =>
-      'Pregunta ${currentQuestionIndex + 1} de ${questions.length}';
-
-  Future<void> load(AssessmentSession assessmentSession) async {
-    session = assessmentSession;
-    exercise = await _exerciseService.getExerciseById(
-      assessmentSession.exerciseId,
-    );
-    notifyListeners();
+  String get progressText {
+    final current = (args?.exerciseIndex ?? 0) + 1;
+    final total = args?.totalExercises ?? 0;
+    return 'Ejercicio $current de $total';
   }
 
-  void selectWord(String word) {
-    if (isPaused) return;
-    selectedWord = word;
-    feedback = word.toLowerCase() == currentQuestion.correctAnswer.toLowerCase()
-        ? '¡Correcto!'
-        : 'Buen intento, prueba otra vez';
+  String get prompt =>
+      exerciseAttempt?.prompt ??
+      exerciseAttempt?.instructions ??
+      exerciseAttempt?.title ??
+      'Elige la opcion correcta';
+
+  List<MCOption> get options => exerciseAttempt?.mcOptions ?? const [];
+
+  Future<void> load(AttemptExerciseArgs value) async {
+    args = value;
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      response = await _assessmentRepository.getMCResponse(
+        value.exerciseAttempt.id,
+      );
+      selectedOptionId = response?.selectedOptionId;
+    } catch (error) {
+      errorMessage = _messageFor(error);
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void selectOption(String optionId) {
+    selectedOptionId = optionId;
     validationMessage = null;
     notifyListeners();
-    // TODO: send selected answer to backend later.
   }
 
-  bool nextQuestion() {
-    if (selectedWord == null) {
+  Future<bool> submit() async {
+    final exerciseAttemptId = exerciseAttempt?.id;
+    final optionId = selectedOptionId;
+    if (exerciseAttemptId == null || optionId == null) {
       validationMessage = 'Selecciona una respuesta para continuar.';
       notifyListeners();
       return false;
     }
-    if (!isLastQuestion) {
-      currentQuestionIndex++;
-      selectedWord = null;
-      feedback = null;
-      validationMessage = null;
-      notifyListeners();
-      return true;
-    }
-    return true;
-  }
-
-  Future<void> togglePause() async {
-    final currentSession = session;
-    if (currentSession == null) return;
-    isPaused = !isPaused;
-    if (isPaused) {
-      await _assessmentService.pauseSession(currentSession.id);
-    } else {
-      await _assessmentService.resumeSession(currentSession.id);
-    }
+    isSubmitting = true;
+    errorMessage = null;
     notifyListeners();
-    // TODO: persist pause/resume timestamps for game metrics in backend.
-  }
-
-  Future<void> finish() async {
-    final currentSession = session;
-    if (currentSession == null) return;
-    await _assessmentService.finishSession(currentSession.id);
-  }
-
-  Future<void> cancel() async {
-    final currentSession = session;
-    if (currentSession != null) {
-      await _assessmentService.cancelSession(currentSession.id);
+    try {
+      response = await _assessmentRepository.submitMCResponse(
+        exerciseAttemptId: exerciseAttemptId,
+        selectedOptionId: optionId,
+      );
+      return true;
+    } catch (error) {
+      errorMessage = _messageFor(error);
+      return false;
+    } finally {
+      isSubmitting = false;
+      notifyListeners();
     }
+  }
+
+  String _messageFor(Object error) {
+    if (error is ApiException) {
+      return error.message;
+    }
+    return 'No se pudo guardar la respuesta.';
   }
 }

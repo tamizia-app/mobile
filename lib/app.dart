@@ -7,13 +7,23 @@ import 'core/session/authentication_status.dart';
 import 'core/storage/auth_session_storage.dart';
 import 'core/storage/secure_auth_session_storage.dart';
 import 'core/theme/app_theme.dart';
+import 'features/assessment/data/datasources/assessment_remote_data_source_impl.dart';
+import 'features/assessment/data/repositories/assessment_repository_impl.dart';
 import 'features/assessment/data/services/assessment_service.dart';
 import 'features/assessment/data/services/mock_assessment_service.dart';
+import 'features/assessment/domain/repositories/assessment_repository.dart';
+import 'features/assessment/presentation/pages/assessment_result_page.dart';
 import 'features/assessment/presentation/pages/assessment_config_page.dart';
+import 'features/assessment/presentation/pages/assessment_attempt_preview_page.dart';
+import 'features/assessment/presentation/pages/assessment_error_page.dart';
+import 'features/assessment/presentation/pages/attempt_session_page.dart';
 import 'features/assessment/presentation/pages/build_word_page.dart';
 import 'features/assessment/presentation/pages/choose_word_page.dart';
 import 'features/assessment/presentation/pages/reading_assessment_page.dart';
 import 'features/assessment/presentation/pages/student_instructions_page.dart';
+import 'features/assessment/presentation/pages/template_catalog_page.dart';
+import 'features/assessment/presentation/pages/template_detail_page.dart';
+import 'features/assessment/presentation/pages/text_comparison_page.dart';
 import 'features/assessment/presentation/pages/writing_assessment_page.dart';
 import 'features/auth/data/datasources/auth_remote_data_source_impl.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
@@ -63,6 +73,7 @@ class _TamiziaAppState extends State<TamiziaApp> {
   late final TeacherRepository _teacherRepository;
   late final ClassroomRepository _classroomRepository;
   late final StudentRepository _studentRepository;
+  late final AssessmentRepository _assessmentRepository;
   late final AuthSessionStorage _sessionStorage;
   late final AuthSessionManager _sessionManager;
 
@@ -88,6 +99,9 @@ class _TamiziaAppState extends State<TamiziaApp> {
     );
     _studentRepository = StudentRepositoryImpl(
       remoteDataSource: StudentRemoteDataSourceImpl(apiClient: _apiClient),
+    );
+    _assessmentRepository = AssessmentRepositoryImpl(
+      remoteDataSource: AssessmentRemoteDataSourceImpl(apiClient: _apiClient),
     );
     _sessionStorage = SecureAuthSessionStorage();
     _sessionManager =
@@ -185,13 +199,20 @@ class _TamiziaAppState extends State<TamiziaApp> {
         return ExerciseCatalogPage(exerciseService: _exerciseService);
       case AppRoutes.exerciseDetail:
         return ExerciseDetailPage(exerciseService: _exerciseService);
+      case AppRoutes.templateCatalog:
+        return TemplateCatalogPage(assessmentRepository: _assessmentRepository);
+      case AppRoutes.templateDetail:
+        return TemplateDetailPage(assessmentRepository: _assessmentRepository);
       case AppRoutes.assessmentConfigure:
         return AssessmentConfigPage(
           classroomRepository: _classroomRepository,
           studentRepository: _studentRepository,
-          exerciseService: _exerciseService,
-          assessmentService: _assessmentService,
+          assessmentRepository: _assessmentRepository,
         );
+      case AppRoutes.assessmentAttemptPreview:
+        return const AssessmentAttemptPreviewPage();
+      case AppRoutes.assessmentAttemptSession:
+        return AttemptSessionPage(assessmentRepository: _assessmentRepository);
       case AppRoutes.assessmentInstructions:
         return StudentInstructionsPage(
           exerciseService: _exerciseService,
@@ -199,24 +220,22 @@ class _TamiziaAppState extends State<TamiziaApp> {
         );
       case AppRoutes.assessmentReading:
         return ReadingAssessmentPage(
-          exerciseService: _exerciseService,
-          assessmentService: _assessmentService,
+          assessmentRepository: _assessmentRepository,
         );
       case AppRoutes.assessmentWriting:
         return WritingAssessmentPage(
-          exerciseService: _exerciseService,
-          assessmentService: _assessmentService,
+          assessmentRepository: _assessmentRepository,
         );
       case AppRoutes.assessmentBuildWord:
-        return BuildWordPage(
-          exerciseService: _exerciseService,
-          assessmentService: _assessmentService,
-        );
+        return BuildWordPage(assessmentRepository: _assessmentRepository);
       case AppRoutes.assessmentChooseWord:
-        return ChooseWordPage(
-          exerciseService: _exerciseService,
-          assessmentService: _assessmentService,
-        );
+        return ChooseWordPage(assessmentRepository: _assessmentRepository);
+      case AppRoutes.assessmentResult:
+        return const AssessmentResultPage();
+      case AppRoutes.assessmentTextComparison:
+        return const TextComparisonPage();
+      case AppRoutes.assessmentError:
+        return const AssessmentErrorPage();
       default:
         return LoginPage(sessionManager: _sessionManager);
     }

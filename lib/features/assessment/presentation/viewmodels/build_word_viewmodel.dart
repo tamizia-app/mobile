@@ -1,163 +1,139 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../exercises/data/services/exercise_service.dart';
-import '../../../exercises/domain/models/exercise.dart';
-import '../../data/services/assessment_service.dart';
-import '../../domain/models/assessment_question.dart';
-import '../../domain/models/assessment_session.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../domain/models/assessment_attempt.dart';
+import '../../domain/models/assessment_response.dart';
+import '../../domain/models/attempt_exercise_args.dart';
+import '../../domain/repositories/assessment_repository.dart';
 
 class BuildWordViewModel extends ChangeNotifier {
-  BuildWordViewModel({
-    required ExerciseService exerciseService,
-    required AssessmentService assessmentService,
-  }) : _exerciseService = exerciseService,
-       _assessmentService = assessmentService;
+  BuildWordViewModel({required AssessmentRepository assessmentRepository})
+    : _assessmentRepository = assessmentRepository;
 
-  final ExerciseService _exerciseService;
-  final AssessmentService _assessmentService;
+  final AssessmentRepository _assessmentRepository;
 
-  Exercise? exercise;
-  AssessmentSession? session;
-  final List<BuildWordQuestion> questions = const [
-    BuildWordQuestion(
-      prompt: '¿Qué es esto?',
-      targetWord: 'casa',
-      syllables: ['ca', 'sa', 'ma'],
-      answer: ['ca', 'sa'],
-    ),
-    BuildWordQuestion(
-      prompt: '¿Qué es esto?',
-      targetWord: 'mesa',
-      syllables: ['me', 'sa', 'se'],
-      answer: ['me', 'sa'],
-    ),
-    BuildWordQuestion(
-      prompt: '¿Qué es esto?',
-      targetWord: 'pato',
-      syllables: ['pa', 'to', 'ta'],
-      answer: ['pa', 'to'],
-    ),
-  ];
-  int currentQuestionIndex = 0;
-  final List<String?> placedSyllables = [null, null];
-  String? feedback;
-  bool isPaused = false;
+  AttemptExerciseArgs? args;
+  ExerciseAttempt? get exerciseAttempt => args?.exerciseAttempt;
+  OSResponse? response;
+  List<String?> placedSyllables = const [];
+  bool isLoading = false;
+  bool isSubmitting = false;
+  String? errorMessage;
   String? validationMessage;
 
-  BuildWordQuestion get currentQuestion => questions[currentQuestionIndex];
+  String get progressText {
+    final current = (args?.exerciseIndex ?? 0) + 1;
+    final total = args?.totalExercises ?? 0;
+    return 'Ejercicio $current de $total';
+  }
 
-  bool get isLastQuestion => currentQuestionIndex == questions.length - 1;
+  String get prompt =>
+      exerciseAttempt?.prompt ??
+      exerciseAttempt?.instructions ??
+      'Ordena las silabas';
 
-  String get progressText =>
-      'Pregunta ${currentQuestionIndex + 1} de ${questions.length}';
+  List<String> get syllables => exerciseAttempt?.syllables ?? const [];
 
-  List<String> get availableSyllables => currentQuestion.syllables
+  List<String> get selectedSyllables =>
+      placedSyllables.whereType<String>().toList(growable: false);
+
+  List<String> get availableSyllables => syllables
       .where((syllable) => !placedSyllables.contains(syllable))
       .toList();
 
-  Future<void> load(AssessmentSession assessmentSession) async {
-    session = assessmentSession;
-    exercise = await _exerciseService.getExerciseById(
-      assessmentSession.exerciseId,
+  String get formedWord => selectedSyllables.join();
+
+  Future<void> load(AttemptExerciseArgs value) async {
+    args = value;
+    isLoading = true;
+    errorMessage = null;
+    placedSyllables = List<String?>.filled(
+      value.exerciseAttempt.syllables.length,
+      null,
     );
     notifyListeners();
+    try {
+      response = await _assessmentRepository.getOSResponse(
+        value.exerciseAttempt.id,
+      );
+      if (response != null && response!.selectedSyllables.isNotEmpty) {
+        placedSyllables = List<String?>.from(response!.selectedSyllables);
+      }
+    } catch (error) {
+      errorMessage = _messageFor(error);
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   void selectSyllable(String syllable) {
-    if (isPaused) return;
     final index = placedSyllables.indexWhere((item) => item == null);
-    if (index == -1 || placedSyllables.contains(syllable)) return;
+    if (index == -1 || placedSyllables.contains(syllable)) {
+      return;
+    }
     placedSyllables[index] = syllable;
-    feedback = null;
     validationMessage = null;
     notifyListeners();
   }
 
   void placeSyllableAt(String syllable, int index) {
-    if (isPaused || placedSyllables.contains(syllable)) return;
+    if (placedSyllables.contains(syllable) ||
+        index < 0 ||
+        index >= placedSyllables.length) {
+      return;
+    }
     placedSyllables[index] = syllable;
-    feedback = null;
     validationMessage = null;
     notifyListeners();
   }
 
   void removePlacedSyllable(int index) {
-    if (isPaused) return;
+    if (index < 0 || index >= placedSyllables.length) {
+      return;
+    }
     placedSyllables[index] = null;
-    feedback = null;
     validationMessage = null;
     notifyListeners();
   }
 
   void clear() {
-    for (var index = 0; index < placedSyllables.length; index++) {
-      placedSyllables[index] = null;
-    }
-    feedback = null;
+    placedSyllables = List<String?>.filled(syllables.length, null);
     validationMessage = null;
     notifyListeners();
   }
 
-  void check() {
-    if (!_hasAnswer()) {
-      validationMessage = 'Coloca las sílabas para continuar.';
-      notifyListeners();
-      return;
-    }
-    final formed = placedSyllables.whereType<String>().toList();
-    feedback = _isCorrect(formed) ? '¡Correcto!' : 'Inténtalo de nuevo';
-    validationMessage = null;
-    notifyListeners();
-    // TODO: send build-word answer to backend later.
-  }
-
-  bool nextQuestion() {
-    if (!_hasAnswer()) {
-      validationMessage = 'Coloca las sílabas para continuar.';
+  Future<bool> submit() async {
+    final exerciseAttemptId = exerciseAttempt?.id;
+    if (exerciseAttemptId == null ||
+        selectedSyllables.length != syllables.length) {
+      validationMessage = 'Ordena todas las silabas para continuar.';
       notifyListeners();
       return false;
     }
-    if (!isLastQuestion) {
-      currentQuestionIndex++;
-      clear();
-      return true;
-    }
-    return true;
-  }
-
-  Future<void> togglePause() async {
-    final currentSession = session;
-    if (currentSession == null) return;
-    isPaused = !isPaused;
-    if (isPaused) {
-      await _assessmentService.pauseSession(currentSession.id);
-    } else {
-      await _assessmentService.resumeSession(currentSession.id);
-    }
+    isSubmitting = true;
+    errorMessage = null;
     notifyListeners();
-    // TODO: persist pause/resume timestamps for game metrics in backend.
-  }
-
-  Future<void> finish() async {
-    final currentSession = session;
-    if (currentSession == null) return;
-    await _assessmentService.finishSession(currentSession.id);
-  }
-
-  Future<void> cancel() async {
-    final currentSession = session;
-    if (currentSession != null) {
-      await _assessmentService.cancelSession(currentSession.id);
+    try {
+      response = await _assessmentRepository.submitOSResponse(
+        exerciseAttemptId: exerciseAttemptId,
+        selectedSyllables: selectedSyllables,
+        formedWord: formedWord,
+      );
+      return true;
+    } catch (error) {
+      errorMessage = _messageFor(error);
+      return false;
+    } finally {
+      isSubmitting = false;
+      notifyListeners();
     }
   }
 
-  bool _hasAnswer() => placedSyllables.every((item) => item != null);
-
-  bool _isCorrect(List<String> answer) {
-    if (answer.length != currentQuestion.answer.length) return false;
-    for (var index = 0; index < answer.length; index++) {
-      if (answer[index] != currentQuestion.answer[index]) return false;
+  String _messageFor(Object error) {
+    if (error is ApiException) {
+      return error.message;
     }
-    return true;
+    return 'No se pudo guardar la respuesta.';
   }
 }

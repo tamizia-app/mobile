@@ -1,72 +1,122 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/network/api_exception.dart';
 import '../../../../core/validators/auth_validators.dart';
 import '../../../classrooms/domain/models/classroom.dart';
 import '../../../classrooms/domain/repositories/classroom_repository.dart';
-import '../../../exercises/data/services/exercise_service.dart';
-import '../../../exercises/domain/models/exercise.dart';
 import '../../../students/domain/models/student.dart';
+import '../../../students/domain/models/student_consent.dart';
 import '../../../students/domain/repositories/student_repository.dart';
-import '../../data/services/assessment_service.dart';
-import '../../domain/models/assessment_session.dart';
+import '../../domain/models/assessment.dart';
+import '../../domain/models/assessment_attempt.dart';
+import '../../domain/models/assessment_attempt_preview.dart';
+import '../../domain/models/assessment_template.dart';
+import '../../domain/repositories/assessment_repository.dart';
 
 class AssessmentConfigViewModel extends ChangeNotifier {
   AssessmentConfigViewModel({
     required ClassroomRepository classroomRepository,
     required StudentRepository studentRepository,
-    required ExerciseService exerciseService,
-    required AssessmentService assessmentService,
+    required AssessmentRepository assessmentRepository,
   }) : _classroomRepository = classroomRepository,
        _studentRepository = studentRepository,
-       _exerciseService = exerciseService,
-       _assessmentService = assessmentService;
+       _assessmentRepository = assessmentRepository;
 
   final ClassroomRepository _classroomRepository;
   final StudentRepository _studentRepository;
-  final ExerciseService _exerciseService;
-  final AssessmentService _assessmentService;
+  final AssessmentRepository _assessmentRepository;
 
   List<Classroom> classrooms = const [];
   List<Student> students = const [];
-  List<Exercise> exercises = const [];
+  List<AssessmentTemplate> templates = const [];
   String classroomId = '';
   String studentId = '';
-  String exerciseId = '';
+  String templateId = '';
   bool isLoading = false;
+  bool isSubmitting = false;
+  bool isLoadingConsent = false;
+  bool missingConsent = false;
   String? errorMessage;
-  AssessmentSession? session;
+  StudentConsent? consent;
+  AssessmentAttempt? pendingAttempt;
 
-  Future<void> load({String? preselectedExerciseId}) async {
+  Classroom? get selectedClassroom =>
+      _findById(classrooms, classroomId, (item) => item.id);
+
+  Student? get selectedStudent =>
+      _findById(students, studentId, (item) => item.id);
+
+  AssessmentTemplate? get selectedTemplate =>
+      _findById(templates, templateId, (item) => item.id);
+
+  bool get hasValidConsent =>
+      consent?.status == true && consent?.revokedAt == null;
+
+  Future<void> load({String? preselectedTemplateId}) async {
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
-    classrooms = await _classroomRepository.getClassrooms();
-    exercises = await _exerciseService.getExercises();
-    if (preselectedExerciseId != null && preselectedExerciseId.isNotEmpty) {
-      exerciseId = preselectedExerciseId;
+    try {
+      final responses = await Future.wait([
+        _classroomRepository.getClassrooms(),
+        _assessmentRepository.getTemplates(),
+      ]);
+      classrooms = responses[0] as List<Classroom>;
+      templates = responses[1] as List<AssessmentTemplate>;
+      if (preselectedTemplateId != null && preselectedTemplateId.isNotEmpty) {
+        templateId = preselectedTemplateId;
+      }
+      if (classrooms.isNotEmpty) {
+        classroomId = classrooms.first.id;
+        students = await _studentRepository.getStudentsByClassroom(classroomId);
+      }
+    } catch (error) {
+      errorMessage = _messageFor(error);
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-    if (classrooms.isNotEmpty) {
-      students = await _studentRepository.getStudentsByClassroom(
-        classrooms.first.id,
-      );
-    }
-    isLoading = false;
-    notifyListeners();
   }
 
   Future<void> setClassroom(String value) async {
     classroomId = value;
     studentId = '';
-    students = await _studentRepository.getStudentsByClassroom(value);
+    consent = null;
+    missingConsent = false;
+    pendingAttempt = null;
+    notifyListeners();
+    try {
+      students = await _studentRepository.getStudentsByClassroom(value);
+      errorMessage = null;
+    } catch (error) {
+      students = const [];
+      errorMessage = _messageFor(error);
+    }
     notifyListeners();
   }
 
-  void setStudent(String value) {
+  Future<void> setStudent(String value) async {
     studentId = value;
+    consent = null;
+    missingConsent = false;
+    pendingAttempt = null;
+    isLoadingConsent = true;
     notifyListeners();
+    try {
+      consent = await _studentRepository.getConsent(value);
+      missingConsent = !hasValidConsent;
+      errorMessage = null;
+    } catch (error) {
+      errorMessage = _messageFor(error);
+    } finally {
+      isLoadingConsent = false;
+      notifyListeners();
+    }
   }
 
-  void setExercise(String value) {
-    exerciseId = value;
+  void setTemplate(String value) {
+    templateId = value;
+    pendingAttempt = null;
     notifyListeners();
   }
 
@@ -81,24 +131,119 @@ class AssessmentConfigViewModel extends ChangeNotifier {
           'Selecciona un estudiante.',
         ) ??
         AuthValidators.validateRequiredField(
-          exerciseId,
-          'Selecciona un ejercicio.',
+          templateId,
+          'Selecciona una plantilla.',
         );
+    if (errorMessage == null && !hasValidConsent) {
+      missingConsent = true;
+      errorMessage = 'No se puede iniciar sin consentimiento valido.';
+    }
     notifyListeners();
     return errorMessage == null;
   }
 
-  Future<AssessmentSession?> createSession() async {
-    if (!validate()) return null;
-    isLoading = true;
+  Future<AssessmentAttemptPreview?> createAssessmentAndAttempt() async {
+    if (!validate()) {
+      return null;
+    }
+    final classroom = selectedClassroom;
+    final student = selectedStudent;
+    final template = selectedTemplate;
+    if (classroom == null || student == null || template == null) {
+      errorMessage = 'No se pudo preparar la evaluacion.';
+      notifyListeners();
+      return null;
+    }
+
+    isSubmitting = true;
+    missingConsent = false;
+    pendingAttempt = null;
+    errorMessage = null;
     notifyListeners();
-    session = await _assessmentService.createSession(
-      classroomId: classroomId,
-      studentId: studentId,
-      exerciseId: exerciseId,
-    );
-    isLoading = false;
-    notifyListeners();
-    return session;
+    try {
+      final assessment = await _assessmentRepository.createAssessment(
+        classroomId: classroomId,
+        templateId: templateId,
+      );
+      final existingAttempt = await _findExistingIncompleteAttempt(
+        assessment,
+        studentId,
+      );
+      if (existingAttempt != null) {
+        pendingAttempt = existingAttempt;
+        return AssessmentAttemptPreview(
+          classroom: classroom,
+          student: student,
+          template: template,
+          assessment: assessment,
+          attempt: existingAttempt,
+          hasValidConsent: true,
+          resumedExistingAttempt: true,
+        );
+      }
+      final attempt = await _assessmentRepository.startAttempt(
+        assessmentId: assessment.id,
+        studentId: studentId,
+      );
+      return AssessmentAttemptPreview(
+        classroom: classroom,
+        student: student,
+        template: template,
+        assessment: assessment,
+        attempt: attempt,
+        hasValidConsent: true,
+      );
+    } catch (error) {
+      final message = _messageFor(error);
+      if (_looksLikeConsentError(message)) {
+        missingConsent = true;
+        errorMessage = 'No se puede iniciar sin consentimiento valido.';
+      } else {
+        errorMessage = message;
+      }
+      return null;
+    } finally {
+      isSubmitting = false;
+      notifyListeners();
+    }
+  }
+
+  Future<AssessmentAttempt?> _findExistingIncompleteAttempt(
+    Assessment assessment,
+    String studentId,
+  ) async {
+    final attempts = await _assessmentRepository.getAttempts(assessment.id);
+    for (final attempt in attempts) {
+      if (attempt.studentId == studentId && attempt.isIncomplete) {
+        return attempt;
+      }
+    }
+    return null;
+  }
+
+  T? _findById<T>(List<T> items, String id, String Function(T item) getId) {
+    if (id.isEmpty) {
+      return null;
+    }
+    for (final item in items) {
+      if (getId(item) == id) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  String _messageFor(Object error) {
+    if (error is ApiException) {
+      return error.message;
+    }
+    return 'No se pudo completar la solicitud.';
+  }
+
+  bool _looksLikeConsentError(String message) {
+    final normalized = message.toLowerCase();
+    return normalized.contains('consent') ||
+        normalized.contains('consentimiento') ||
+        normalized.contains('autorizacion');
   }
 }

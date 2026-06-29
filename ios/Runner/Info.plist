@@ -66,5 +66,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>TamizAI necesita acceder al microfono para grabar respuestas de lectura en voz alta.</string>
 </dict>
 </plist>
