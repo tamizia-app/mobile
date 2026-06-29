@@ -6,23 +6,23 @@ import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/assessment_summary_card.dart';
 import '../../../../core/widgets/info_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
-import '../../../classrooms/data/services/classroom_service.dart';
+import '../../../classrooms/domain/repositories/classroom_repository.dart';
 import '../../../exercises/data/services/exercise_service.dart';
-import '../../../students/data/services/student_service.dart';
+import '../../../students/domain/repositories/student_repository.dart';
 import '../../data/services/assessment_service.dart';
 import '../viewmodels/assessment_config_viewmodel.dart';
 
 class AssessmentConfigPage extends StatefulWidget {
   const AssessmentConfigPage({
-    required this.classroomService,
-    required this.studentService,
+    required this.classroomRepository,
+    required this.studentRepository,
     required this.exerciseService,
     required this.assessmentService,
     super.key,
   });
 
-  final ClassroomService classroomService;
-  final StudentService studentService;
+  final ClassroomRepository classroomRepository;
+  final StudentRepository studentRepository;
   final ExerciseService exerciseService;
   final AssessmentService assessmentService;
 
@@ -38,8 +38,8 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
   void initState() {
     super.initState();
     _viewModel = AssessmentConfigViewModel(
-      classroomService: widget.classroomService,
-      studentService: widget.studentService,
+      classroomRepository: widget.classroomRepository,
+      studentRepository: widget.studentRepository,
       exerciseService: widget.exerciseService,
       assessmentService: widget.assessmentService,
     );

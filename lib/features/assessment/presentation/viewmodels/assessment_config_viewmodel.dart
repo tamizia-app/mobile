@@ -1,28 +1,28 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/validators/auth_validators.dart';
-import '../../../classrooms/data/services/classroom_service.dart';
 import '../../../classrooms/domain/models/classroom.dart';
+import '../../../classrooms/domain/repositories/classroom_repository.dart';
 import '../../../exercises/data/services/exercise_service.dart';
 import '../../../exercises/domain/models/exercise.dart';
-import '../../../students/data/services/student_service.dart';
 import '../../../students/domain/models/student.dart';
+import '../../../students/domain/repositories/student_repository.dart';
 import '../../data/services/assessment_service.dart';
 import '../../domain/models/assessment_session.dart';
 
 class AssessmentConfigViewModel extends ChangeNotifier {
   AssessmentConfigViewModel({
-    required ClassroomService classroomService,
-    required StudentService studentService,
+    required ClassroomRepository classroomRepository,
+    required StudentRepository studentRepository,
     required ExerciseService exerciseService,
     required AssessmentService assessmentService,
-  }) : _classroomService = classroomService,
-       _studentService = studentService,
+  }) : _classroomRepository = classroomRepository,
+       _studentRepository = studentRepository,
        _exerciseService = exerciseService,
        _assessmentService = assessmentService;
 
-  final ClassroomService _classroomService;
-  final StudentService _studentService;
+  final ClassroomRepository _classroomRepository;
+  final StudentRepository _studentRepository;
   final ExerciseService _exerciseService;
   final AssessmentService _assessmentService;
 
@@ -39,13 +39,13 @@ class AssessmentConfigViewModel extends ChangeNotifier {
   Future<void> load({String? preselectedExerciseId}) async {
     isLoading = true;
     notifyListeners();
-    classrooms = await _classroomService.getClassrooms();
+    classrooms = await _classroomRepository.getClassrooms();
     exercises = await _exerciseService.getExercises();
     if (preselectedExerciseId != null && preselectedExerciseId.isNotEmpty) {
       exerciseId = preselectedExerciseId;
     }
     if (classrooms.isNotEmpty) {
-      students = await _studentService.getStudentsByClassroom(
+      students = await _studentRepository.getStudentsByClassroom(
         classrooms.first.id,
       );
     }
@@ -56,7 +56,7 @@ class AssessmentConfigViewModel extends ChangeNotifier {
   Future<void> setClassroom(String value) async {
     classroomId = value;
     studentId = '';
-    students = await _studentService.getStudentsByClassroom(value);
+    students = await _studentRepository.getStudentsByClassroom(value);
     notifyListeners();
   }
 

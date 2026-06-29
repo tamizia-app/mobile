@@ -1,31 +1,61 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../students/data/services/student_service.dart';
-import '../../../students/domain/models/student.dart';
-import '../../data/services/classroom_service.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../domain/models/classroom.dart';
+import '../../domain/repositories/classroom_repository.dart';
 
 class ClassroomDetailViewModel extends ChangeNotifier {
-  ClassroomDetailViewModel({
-    required ClassroomService classroomService,
-    required StudentService studentService,
-  }) : _classroomService = classroomService,
-       _studentService = studentService;
+  ClassroomDetailViewModel({required ClassroomRepository classroomRepository})
+    : _classroomRepository = classroomRepository;
 
-  final ClassroomService _classroomService;
-  final StudentService _studentService;
+  final ClassroomRepository _classroomRepository;
 
   Classroom? classroom;
-  List<Student> students = const [];
   bool isLoading = false;
+  bool isDeleting = false;
   String? errorMessage;
 
-  Future<void> load(String classroomId) async {
+  Future<void> loadClassroom(String classroomId) async {
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
-    classroom = await _classroomService.getClassroomById(classroomId);
-    students = await _studentService.getStudentsByClassroom(classroomId);
-    isLoading = false;
+    try {
+      classroom = await _classroomRepository.getClassroomById(classroomId);
+    } on ApiException catch (error) {
+      errorMessage = error.message;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void applyUpdate(Classroom updatedClassroom) {
+    classroom = updatedClassroom;
+    errorMessage = null;
     notifyListeners();
+  }
+
+  Future<bool> deleteClassroom() async {
+    final current = classroom;
+    if (current == null || isDeleting) {
+      return false;
+    }
+    isDeleting = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      await _classroomRepository.deleteClassroom(current.classroomId);
+      return true;
+    } on ConflictException {
+      errorMessage =
+          'No se puede eliminar el aula porque tiene informacion asociada.';
+      return false;
+    } on ApiException catch (error) {
+      errorMessage = error.message;
+      return false;
+    } finally {
+      isDeleting = false;
+      notifyListeners();
+    }
   }
 }
