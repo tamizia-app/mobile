@@ -17,6 +17,10 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
 
   final AssessmentRepository _assessmentRepository;
   final AudioRecorder _recorder = AudioRecorder();
+  static const int _speakingSampleRate = 16000;
+  static const int _speakingChannels = 1;
+  static const String _speakingExtension = 'wav';
+  static const String _speakingContentType = 'audio/wav';
 
   AttemptExerciseArgs? args;
   SpeakingResponse? response;
@@ -87,15 +91,17 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
     }
     final directory = await getTemporaryDirectory();
     final file = File(
-      '${directory.path}${Platform.pathSeparator}speaking_${DateTime.now().millisecondsSinceEpoch}.m4a',
+      '${directory.path}${Platform.pathSeparator}speaking_${DateTime.now().millisecondsSinceEpoch}.$_speakingExtension',
     );
     audioPath = file.path;
     elapsedSeconds = 0;
+    _logRecordingConfig(file.path);
     await _recorder.start(
       const RecordConfig(
-        encoder: AudioEncoder.aacLc,
-        sampleRate: 44100,
-        numChannels: 1,
+        encoder: AudioEncoder.wav,
+        sampleRate: _speakingSampleRate,
+        numChannels: _speakingChannels,
+        androidConfig: AndroidRecordConfig(useLegacy: false),
       ),
       path: file.path,
     );
@@ -114,6 +120,7 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
     isRecording = false;
     isPaused = false;
     _stopTimer();
+    await _logRecordedFile(audioPath);
     notifyListeners();
   }
 
@@ -147,10 +154,17 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+    if (!await _isWaveFile(path)) {
+      errorMessage =
+          'El archivo grabado no es WAV valido. Intenta grabar otra vez.';
+      notifyListeners();
+      return false;
+    }
     isUploading = true;
     errorMessage = null;
     notifyListeners();
     try {
+      await _logUploadFile(path);
       response = await _assessmentRepository.uploadSpeakingResponse(
         exerciseAttemptId: exerciseAttemptId,
         filePath: path,
@@ -176,6 +190,62 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
   void _stopTimer() {
     _timer?.cancel();
     _timer = null;
+  }
+
+  void _logRecordingConfig(String path) {
+    if (!kDebugMode) {
+      return;
+    }
+    debugPrint(
+      'Speaking recorder config: path=$path, extension=$_speakingExtension, '
+      'encoder=wav, sampleRate=$_speakingSampleRate, channels=$_speakingChannels, '
+      'pcm=16-bit, contentType=$_speakingContentType',
+    );
+  }
+
+  Future<void> _logRecordedFile(String? path) async {
+    if (!kDebugMode || path == null) {
+      return;
+    }
+    final file = File(path);
+    final exists = file.existsSync();
+    final size = exists ? await file.length() : 0;
+    final extension = path.contains('.') ? path.split('.').last : '';
+    final isWave = exists && await _isWaveFile(path);
+    debugPrint(
+      'Speaking recorded file: path=$path, extension=$extension, '
+      'sizeBytes=$size, isWave=$isWave, sampleRate=$_speakingSampleRate, '
+      'channels=$_speakingChannels, contentType=$_speakingContentType',
+    );
+  }
+
+  Future<void> _logUploadFile(String path) async {
+    if (!kDebugMode) {
+      return;
+    }
+    final file = File(path);
+    final size = await file.length();
+    final extension = path.contains('.') ? path.split('.').last : '';
+    debugPrint(
+      'Speaking upload file: path=$path, extension=$extension, '
+      'sizeBytes=$size, multipartField=file, contentType=$_speakingContentType',
+    );
+  }
+
+  Future<bool> _isWaveFile(String path) async {
+    final file = File(path);
+    if (!file.existsSync()) {
+      return false;
+    }
+    final bytes = await file
+        .openRead(0, 12)
+        .fold<List<int>>(<int>[], (previous, chunk) => previous..addAll(chunk));
+    if (bytes.length < 12) {
+      return false;
+    }
+    final riff = String.fromCharCodes(bytes.sublist(0, 4));
+    final wave = String.fromCharCodes(bytes.sublist(8, 12));
+    return riff == 'RIFF' && wave == 'WAVE';
   }
 
   String _messageFor(Object error) {

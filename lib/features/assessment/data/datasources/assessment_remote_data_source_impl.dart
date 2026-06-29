@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/api_client.dart';
@@ -213,8 +216,20 @@ class AssessmentRemoteDataSourceImpl implements AssessmentRemoteDataSource {
     required String filePath,
   }) async {
     try {
+      final contentType = DioMediaType('audio', 'wav');
+      final fileName = _fileNameFromPath(filePath);
+      await _logMultipartFile(
+        label: 'speaking-response',
+        filePath: filePath,
+        fieldName: 'file',
+        contentType: contentType.toString(),
+      );
       final data = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath),
+        'file': await MultipartFile.fromFile(
+          filePath,
+          filename: fileName,
+          contentType: contentType,
+        ),
       });
       final response = await _apiClient.dio.post<Map<String, dynamic>>(
         '/api/v1/assessments/exercise-attempts/$exerciseAttemptId/speaking-response',
@@ -342,5 +357,27 @@ class AssessmentRemoteDataSourceImpl implements AssessmentRemoteDataSource {
       }
     }
     return null;
+  }
+
+  String _fileNameFromPath(String path) {
+    return path.split(Platform.pathSeparator).last;
+  }
+
+  Future<void> _logMultipartFile({
+    required String label,
+    required String filePath,
+    required String fieldName,
+    required String contentType,
+  }) async {
+    if (!kDebugMode) {
+      return;
+    }
+    final file = File(filePath);
+    final size = file.existsSync() ? await file.length() : 0;
+    final extension = filePath.contains('.') ? filePath.split('.').last : '';
+    debugPrint(
+      '$label multipart: field=$fieldName, path=$filePath, '
+      'extension=$extension, sizeBytes=$size, contentType=$contentType',
+    );
   }
 }
