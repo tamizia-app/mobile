@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/session/auth_session_manager.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/validators/auth_validators.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_card.dart';
 import '../../../../core/widgets/back_header.dart';
+import '../../../../core/widgets/error_message.dart';
 import '../../../../core/widgets/password_field.dart';
 import '../../../../core/widgets/privacy_notice.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/terms_checkbox.dart';
 import '../../../../core/widgets/text_link.dart';
-import '../../data/services/auth_service.dart';
 import '../viewmodels/register_viewmodel.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({required this.authService, super.key});
+  const RegisterPage({required this.sessionManager, super.key});
 
-  final AuthService authService;
+  final AuthSessionManager sessionManager;
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -30,6 +32,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _namesController = TextEditingController();
   final _lastNamesController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _institutionController = TextEditingController();
@@ -37,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    _viewModel = RegisterViewModel(authService: widget.authService);
+    _viewModel = RegisterViewModel(sessionManager: widget.sessionManager);
   }
 
   @override
@@ -45,6 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _namesController.dispose();
     _lastNamesController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _institutionController.dispose();
@@ -53,16 +57,31 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _submit() async {
+    if (_viewModel.isLoading) {
+      return;
+    }
     final formIsValid = _formKey.currentState!.validate();
+    if (!formIsValid) {
+      await _viewModel.register();
+      return;
+    }
     final success = await _viewModel.register();
-    if (!mounted || !formIsValid || !success) {
+    if (!mounted) {
+      return;
+    }
+    if (!success) {
+      _formKey.currentState!.validate();
       return;
     }
 
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(_viewModel.successMessage)));
-    Navigator.pushReplacementNamed(context, AppRoutes.login);
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      AppRoutes.teacherHome,
+      (route) => false,
+    );
   }
 
   @override
@@ -130,16 +149,37 @@ class _RegisterPageState extends State<RegisterPage> {
                                   label: AppStrings.institutionalEmailLabel,
                                   hintText: AppStrings.institutionalEmailHint,
                                   keyboardType: TextInputType.emailAddress,
-                                  validator: AuthValidators.validateEmail,
+                                  validator: (value) =>
+                                      AuthValidators.validateEmail(value) ??
+                                      _viewModel.fieldErrors['email'],
                                   onChanged: _viewModel.setEmail,
+                                ),
+                                const SizedBox(height: 14),
+                                AppTextField(
+                                  controller: _phoneController,
+                                  label: AppStrings.phoneLabel,
+                                  hintText: AppStrings.phoneHint,
+                                  keyboardType: TextInputType.phone,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[0-9+\s\-()]'),
+                                    ),
+                                  ],
+                                  validator: (value) =>
+                                      AuthValidators.validatePhone(value) ??
+                                      _viewModel.fieldErrors['phone'],
+                                  onChanged: _viewModel.setPhone,
                                 ),
                                 const SizedBox(height: 14),
                                 PasswordField(
                                   controller: _passwordController,
                                   label: AppStrings.passwordRequiredLabel,
                                   hintText: AppStrings.passwordMinHint,
-                                  validator:
-                                      AuthValidators.validateMinimumPassword,
+                                  validator: (value) =>
+                                      AuthValidators.validateMinimumPassword(
+                                        value,
+                                      ) ??
+                                      _viewModel.fieldErrors['password'],
                                   onChanged: _viewModel.setPassword,
                                 ),
                                 const SizedBox(height: 14),
@@ -159,12 +199,22 @@ class _RegisterPageState extends State<RegisterPage> {
                                   controller: _institutionController,
                                   label: AppStrings.institutionLabel,
                                   hintText: AppStrings.institutionHint,
+                                  validator: (value) =>
+                                      AuthValidators.validateRequiredField(
+                                        value,
+                                        'La institución educativa es obligatoria.',
+                                      ) ??
+                                      _viewModel.fieldErrors['institute_name'],
                                   onChanged: _viewModel.setInstitution,
                                 ),
+                                if (_viewModel.generalError != null) ...[
+                                  const SizedBox(height: 12),
+                                  ErrorMessage(text: _viewModel.generalError!),
+                                ],
                                 const SizedBox(height: 16),
                                 TermsCheckbox(
                                   value: _viewModel.acceptedTerms,
-                                  errorText: _viewModel.errorMessage,
+                                  errorText: _viewModel.termsError,
                                   onChanged: (value) => _viewModel
                                       .setAcceptedTerms(value ?? false),
                                 ),

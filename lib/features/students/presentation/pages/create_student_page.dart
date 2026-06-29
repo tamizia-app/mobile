@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
 
-import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/info_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
-import '../../data/services/student_service.dart';
+import '../../domain/repositories/student_repository.dart';
 import '../viewmodels/student_form_viewmodel.dart';
 
 class CreateStudentPage extends StatefulWidget {
-  const CreateStudentPage({required this.studentService, super.key});
+  const CreateStudentPage({required this.studentRepository, super.key});
 
-  final StudentService studentService;
+  final StudentRepository studentRepository;
 
   @override
   State<CreateStudentPage> createState() => _CreateStudentPageState();
@@ -23,21 +24,36 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
   final _formKey = GlobalKey<FormState>();
   final _codeController = TextEditingController();
   final _ageController = TextEditingController();
-  String? _returnClassroomId;
+  String? _classroomId;
+  String? _classroomName;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _viewModel = StudentFormViewModel(studentService: widget.studentService);
+    _viewModel = StudentFormViewModel(
+      studentRepository: widget.studentRepository,
+    );
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final argument = ModalRoute.of(context)?.settings.arguments;
-    if (argument is String) {
-      _returnClassroomId = argument;
+    if (_initialized) {
+      return;
     }
+    final argument = ModalRoute.of(context)?.settings.arguments;
+    if (argument is Map<String, dynamic>) {
+      _classroomId = argument['classroomId'] as String?;
+      _classroomName = argument['classroomName'] as String?;
+    } else if (argument is String) {
+      _classroomId = argument;
+    }
+    final classroomId = _classroomId;
+    if (classroomId != null && classroomId.isNotEmpty) {
+      _viewModel.initializeForCreate(classroomId);
+    }
+    _initialized = true;
   }
 
   @override
@@ -49,33 +65,45 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
   }
 
   Future<void> _save() async {
-    final formValid = _formKey.currentState!.validate();
-    final saved = await _viewModel.create();
-    if (!mounted || !formValid || !saved) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Estudiante registrado correctamente')),
-    );
-    if (_returnClassroomId != null) {
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.classroomDetail,
-        arguments: _returnClassroomId,
-      );
-    } else {
-      Navigator.pop(context);
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
     }
+    final result = await _viewModel.createStudentWithOptionalConsent();
+    if (!mounted || result == null) {
+      return;
+    }
+    Navigator.pop(context, result);
+  }
+
+  Future<void> _pickConsentFile() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf', 'jpg', 'jpeg', 'png'],
+      withData: true,
+    );
+    final file = result?.files.single;
+    if (file == null) {
+      return;
+    }
+    _viewModel.selectConsentFile(
+      name: file.name,
+      bytes: file.bytes?.toList(growable: false) ?? const [],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return StudentFormScaffold(
       title: 'Agregar estudiante',
-      subtitle: 'Registro Estudiantil',
+      subtitle: _classroomName == null
+          ? 'Aula: ${_classroomId ?? ''}'
+          : 'Aula: $_classroomName',
       buttonText: 'Guardar',
       formKey: _formKey,
       viewModel: _viewModel,
       codeController: _codeController,
       ageController: _ageController,
+      onPickConsent: _pickConsentFile,
       onCancel: () => Navigator.pop(context),
       onSave: _save,
     );
@@ -93,6 +121,8 @@ class StudentFormScaffold extends StatelessWidget {
     required this.onCancel,
     required this.onSave,
     this.subtitle,
+    this.onPickConsent,
+    this.onRetry,
     super.key,
   });
 
@@ -105,222 +135,309 @@ class StudentFormScaffold extends StatelessWidget {
   final TextEditingController ageController;
   final VoidCallback onCancel;
   final VoidCallback onSave;
+  final VoidCallback? onPickConsent;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.teacherBackground,
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(10, 16, 10, 24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFD9E2EA))),
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: onCancel,
-                  style: OutlinedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(48),
-                    foregroundColor: const Color(0xFF102532),
-                    side: const BorderSide(color: Color(0xFF697789)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(7),
+    return AnimatedBuilder(
+      animation: viewModel,
+      builder: (context, _) {
+        final isBusy =
+            viewModel.isLoading ||
+            viewModel.isSubmitting ||
+            viewModel.isUploadingConsent;
+        final saveAction = viewModel.isEditing
+            ? (viewModel.canSave ? onSave : null)
+            : (isBusy ? null : onSave);
+        return Scaffold(
+          backgroundColor: AppColors.teacherBackground,
+          bottomNavigationBar: viewModel.isInitialized
+              ? Container(
+                  padding: const EdgeInsets.fromLTRB(10, 16, 10, 24),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(top: BorderSide(color: Color(0xFFD9E2EA))),
+                  ),
+                  child: SafeArea(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: isBusy ? null : onCancel,
+                            style: OutlinedButton.styleFrom(
+                              fixedSize: const Size.fromHeight(48),
+                              foregroundColor: const Color(0xFF102532),
+                              side: const BorderSide(color: Color(0xFF697789)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                            ),
+                            child: const Text('Cancelar'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: PrimaryButton(
+                            text: buttonText,
+                            isLoading: isBusy,
+                            onPressed: saveAction,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: const Text('Cancelar'),
-                ),
-              ),
-              const SizedBox(width: 16),
+                )
+              : null,
+          body: Column(
+            children: [
+              AppHeader(title: title, showBack: true),
               Expanded(
-                child: PrimaryButton(
-                  text: buttonText,
-                  isLoading: viewModel.isLoading,
-                  onPressed: onSave,
-                ),
+                child: viewModel.isInitialized
+                    ? SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(24, 28, 24, 110),
+                        child: Form(
+                          key: formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (subtitle != null) ...[
+                                Text(
+                                  subtitle!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Color(0xFF102532),
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 34),
+                              ],
+                              AppTextField(
+                                controller: codeController,
+                                label: 'Codigo del estudiante',
+                                hintText: 'Ej: EST-001',
+                                validator: (value) {
+                                  final code = value?.trim() ?? '';
+                                  if (code.isEmpty) {
+                                    return 'El codigo es obligatorio.';
+                                  }
+                                  if (code.length > 50) {
+                                    return 'El codigo admite hasta 50 caracteres.';
+                                  }
+                                  return viewModel.fieldErrors['code'];
+                                },
+                                onChanged: viewModel.setCode,
+                              ),
+                              const SizedBox(height: 20),
+                              AppTextField(
+                                controller: ageController,
+                                label: 'Edad',
+                                hintText: 'Entre 4 y 18',
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                validator: (value) {
+                                  final age = int.tryParse(value?.trim() ?? '');
+                                  if (age == null || age < 4 || age > 18) {
+                                    return 'La edad debe estar entre 4 y 18.';
+                                  }
+                                  return viewModel.fieldErrors['age'];
+                                },
+                                onChanged: viewModel.setAge,
+                              ),
+                              const SizedBox(height: 20),
+                              _GenderField(viewModel: viewModel),
+                              const SizedBox(height: 24),
+                              if (onPickConsent != null) ...[
+                                _OptionalConsentSection(
+                                  file: viewModel.selectedConsentFile,
+                                  onSelect: onPickConsent!,
+                                  onRemove: viewModel.removeConsentFile,
+                                ),
+                                const SizedBox(height: 24),
+                              ],
+                              const InfoBanner(
+                                text:
+                                    'Usa un codigo para proteger la identidad '
+                                    'del estudiante.',
+                                backgroundColor: Color(0xFFD6EEF9),
+                                borderColor: Color(0xFFB4D7E5),
+                              ),
+                              if (viewModel.generalError != null) ...[
+                                const SizedBox(height: 12),
+                                Text(
+                                  viewModel.generalError!,
+                                  style: const TextStyle(
+                                    color: AppColors.errorRed,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      )
+                    : _StudentFormLoading(
+                        isLoading: viewModel.isLoading,
+                        message: viewModel.generalError,
+                        onRetry: onRetry,
+                      ),
               ),
             ],
           ),
-        ),
-      ),
-      body: Column(
-        children: [
-          AppHeader(title: title, showBack: true),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 110),
-              child: Form(
-                key: formKey,
-                child: AnimatedBuilder(
-                  animation: viewModel,
-                  builder: (context, _) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (subtitle != null) ...[
-                          Text(
-                            subtitle!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Color(0xFF102532),
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 34),
-                        ],
-                        AppTextField(
-                          controller: codeController,
-                          label: 'Código o seudónimo',
-                          hintText: 'Ej: EST-001',
-                          validator: (value) =>
-                              value == null || value.trim().isEmpty
-                              ? 'El código o seudónimo es obligatorio.'
-                              : null,
-                          onChanged: viewModel.setCode,
-                        ),
-                        const SizedBox(height: 20),
-                        AppTextField(
-                          controller: ageController,
-                          label: 'Edad',
-                          hintText: 'Ej: 12',
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            final age = int.tryParse(value?.trim() ?? '');
-                            if (age == null || age <= 0 || age > 120) {
-                              return 'Ingresa una edad válida.';
-                            }
-                            return null;
-                          },
-                          onChanged: viewModel.setAge,
-                        ),
-                        const SizedBox(height: 20),
-                        _StudentDropdownField(
-                          label: 'Grado',
-                          hint: 'Seleccionar',
-                          value: viewModel.grade.isEmpty
-                              ? null
-                              : viewModel.grade,
-                          items: const ['3ro', '4to', '5to'],
-                          onChanged: (value) => viewModel.setGrade(value ?? ''),
-                        ),
-                        const SizedBox(height: 20),
-                        _StudentDropdownField(
-                          label: 'Aula',
-                          hint: 'Seleccionar',
-                          value: viewModel.classroomName.isEmpty
-                              ? null
-                              : viewModel.classroomName,
-                          items: const ['3B', 'Aula A', '4to A', '5to C'],
-                          onChanged: (value) =>
-                              viewModel.setClassroom(value ?? ''),
-                        ),
-                        const SizedBox(height: 28),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: viewModel.hasParentAuthorization,
-                              onChanged: (value) =>
-                                  viewModel.setAuthorization(value ?? false),
-                            ),
-                            const Expanded(
-                              child: Text(
-                                'Autorización del padre registrada',
-                                style: TextStyle(
-                                  color: Color(0xFF102532),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const InfoBanner(
-                          text:
-                              'Se recomienda usar códigos para proteger la identidad del estudiante durante las evaluaciones.',
-                          backgroundColor: Color(0xFFD6EEF9),
-                          borderColor: Color(0xFFB4D7E5),
-                        ),
-                        if (viewModel.errorMessage != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            viewModel.errorMessage!,
-                            style: const TextStyle(
-                              color: AppColors.errorRed,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-class _StudentDropdownField extends StatelessWidget {
-  const _StudentDropdownField({
-    required this.label,
-    required this.hint,
-    required this.value,
-    required this.items,
-    required this.onChanged,
+class _OptionalConsentSection extends StatelessWidget {
+  const _OptionalConsentSection({
+    required this.file,
+    required this.onSelect,
+    required this.onRemove,
   });
 
-  final String label;
-  final String hint;
-  final String? value;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
+  final SelectedConsentFile? file;
+  final VoidCallback onSelect;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
+    final selected = file;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF102532),
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+        const Text(
+          'Consentimiento',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
         ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          key: ValueKey('$label-${value ?? 'empty'}'),
-          initialValue: value,
-          hint: Text(hint),
-          items: items
-              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-              .toList(),
-          onChanged: onChanged,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 17,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: const BorderSide(color: Color(0xFFC2CDDA)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: const BorderSide(color: AppColors.primaryBlue),
-            ),
+        const SizedBox(height: 6),
+        const Text(
+          'Puedes adjuntar ahora el documento de consentimiento o hacerlo '
+          'mas adelante desde el detalle del estudiante.',
+          style: TextStyle(color: AppColors.neutralGray, height: 1.4),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: AppColors.cardBorder),
+            borderRadius: BorderRadius.circular(8),
           ),
+          child: selected == null
+              ? Row(
+                  children: [
+                    const Expanded(child: Text('Sin consentimiento adjunto')),
+                    TextButton.icon(
+                      onPressed: onSelect,
+                      icon: const Icon(Icons.attach_file),
+                      label: const Text('Seleccionar archivo'),
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    const Icon(Icons.description_outlined),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            selected.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            _formatSize(selected.size),
+                            style: const TextStyle(
+                              color: AppColors.neutralGray,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Reemplazar archivo',
+                      onPressed: onSelect,
+                      icon: const Icon(Icons.swap_horiz),
+                    ),
+                    IconButton(
+                      tooltip: 'Quitar archivo',
+                      onPressed: onRemove,
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
         ),
       ],
+    );
+  }
+
+  static String _formatSize(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    }
+    return '${(bytes / 1024).toStringAsFixed(1)} KB';
+  }
+}
+
+class _GenderField extends StatelessWidget {
+  const _GenderField({required this.viewModel});
+
+  final StudentFormViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      key: ValueKey('gender-${viewModel.gender}'),
+      initialValue: viewModel.gender.isEmpty ? null : viewModel.gender,
+      hint: const Text('Seleccionar genero'),
+      items: const [
+        DropdownMenuItem(value: 'BOY', child: Text('Niño')),
+        DropdownMenuItem(value: 'GIRL', child: Text('Niña')),
+      ],
+      validator: (_) =>
+          viewModel.fieldErrors['gender'] ??
+          (viewModel.gender.isEmpty ? 'Selecciona un genero.' : null),
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      onChanged: (value) => viewModel.setGender(value ?? ''),
+      decoration: const InputDecoration(labelText: 'Genero'),
+    );
+  }
+}
+
+class _StudentFormLoading extends StatelessWidget {
+  const _StudentFormLoading({
+    required this.isLoading,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final bool isLoading;
+  final String? message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(message ?? 'No se pudo cargar el estudiante.'),
+          if (onRetry != null)
+            TextButton(onPressed: onRetry, child: const Text('Reintentar')),
+        ],
+      ),
     );
   }
 }

@@ -1,18 +1,18 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../core/session/auth_session_manager.dart';
 import '../../../../core/validators/auth_validators.dart';
-import '../../data/services/auth_service.dart';
-import '../../domain/models/login_request.dart';
 
 class LoginViewModel extends ChangeNotifier {
-  LoginViewModel({required AuthService authService})
-    : _authService = authService;
+  LoginViewModel({required AuthSessionManager sessionManager})
+    : _sessionManager = sessionManager;
 
-  final AuthService _authService;
+  final AuthSessionManager _sessionManager;
 
   String email = '';
-  String password = 'password123';
+  String password = '';
   bool isLoading = false;
   String? errorMessage;
 
@@ -35,6 +35,9 @@ class LoginViewModel extends ChangeNotifier {
   }
 
   Future<bool> login() async {
+    if (isLoading) {
+      return false;
+    }
     if (!validateLogin()) {
       notifyListeners();
       return false;
@@ -43,16 +46,18 @@ class LoginViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    final success = await _authService.login(
-      LoginRequest(email: email.trim(), password: password),
-    );
-
-    isLoading = false;
-    errorMessage = success
-        ? null
-        : 'La contraseña ingresada no es correcta. Por favor, inténtalo de nuevo.';
-    notifyListeners();
-    return success;
+    try {
+      await _sessionManager.signIn(email.trim(), password);
+      isLoading = false;
+      errorMessage = null;
+      notifyListeners();
+      return true;
+    } on ApiException catch (error) {
+      isLoading = false;
+      errorMessage = error.message;
+      notifyListeners();
+      return false;
+    }
   }
 
   String get successMessage => AppStrings.loginSuccess;

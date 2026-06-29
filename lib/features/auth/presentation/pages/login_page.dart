@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/session/auth_session_manager.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/validators/auth_validators.dart';
@@ -12,13 +13,12 @@ import '../../../../core/widgets/error_message.dart';
 import '../../../../core/widgets/password_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link.dart';
-import '../../data/services/auth_service.dart';
 import '../viewmodels/login_viewmodel.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({required this.authService, super.key});
+  const LoginPage({required this.sessionManager, super.key});
 
-  final AuthService authService;
+  final AuthSessionManager sessionManager;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -27,15 +27,13 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late final LoginViewModel _viewModel;
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController(
-    text: AppStrings.passwordHint,
-  );
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    _viewModel = LoginViewModel(authService: widget.authService);
+    _viewModel = LoginViewModel(sessionManager: widget.sessionManager);
   }
 
   @override
@@ -47,6 +45,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _submit() async {
+    if (_viewModel.isLoading) {
+      return;
+    }
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -59,7 +60,11 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(_viewModel.successMessage)));
-    Navigator.pushReplacementNamed(context, AppRoutes.teacherHome);
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      AppRoutes.teacherHome,
+      (route) => false,
+    );
   }
 
   @override

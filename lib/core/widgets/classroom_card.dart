@@ -48,29 +48,20 @@ class ClassroomCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Grado: ${classroom.grade}  •  Sección: ${classroom.section}',
+                    'Grado: ${_capitalize(classroom.gradeLevel)}  '
+                    '•  Sección: ${classroom.section}',
                     style: const TextStyle(
                       color: AppColors.neutralGray,
                       fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.people_alt_outlined,
-                        color: Color(0xFF4A5A5A),
-                        size: 17,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${classroom.studentCount} Estudiantes',
-                        style: const TextStyle(
-                          color: Color(0xFF4A5A5A),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 10),
+                  Text(
+                    'Año escolar: ${classroom.schoolYear.year}',
+                    style: const TextStyle(
+                      color: Color(0xFF4A5A5A),
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -88,5 +79,12 @@ class ClassroomCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _capitalize(String value) {
+    if (value.isEmpty) {
+      return value;
+    }
+    return '${value[0].toUpperCase()}${value.substring(1)}';
   }
 }

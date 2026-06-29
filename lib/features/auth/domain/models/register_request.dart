@@ -6,6 +6,7 @@ class RegisterRequest {
     required this.password,
     required this.confirmPassword,
     required this.institution,
+    required this.phone,
   });
 
   final String names;
@@ -14,4 +15,5 @@ class RegisterRequest {
   final String password;
   final String confirmPassword;
   final String institution;
+  final String phone;
 }
