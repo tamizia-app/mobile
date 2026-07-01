@@ -46,6 +46,16 @@ class AssessmentResultPage extends StatelessWidget {
                   ],
                   const SizedBox(height: 26),
                   PrimaryButton(
+                    text: 'Ver detalle del intento',
+                    icon: Icons.visibility_outlined,
+                    onPressed: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.attemptReview,
+                      arguments: result.attemptId,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  PrimaryButton(
                     text: 'Volver a evaluaciones',
                     icon: Icons.assignment_outlined,
                     onPressed: () => Navigator.pushNamedAndRemoveUntil(
@@ -133,6 +143,10 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasMC = result.mcCorrectCount != null;
+    final hasOS = result.osCorrectCount != null;
+    final hasSpeaking = _hasType('READING_SPEAKING') || _hasType('LISTENING_SPEAKING');
+    final hasWriting = _hasType('READING_WRITING') || _hasType('LISTENING_WRITING');
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -144,18 +158,26 @@ class _SummaryCard extends StatelessWidget {
         children: [
           _Row(label: 'Ejercicios', value: '${result.evaluatedExercises}/${result.totalExercises}'),
           _Row(label: 'Pendientes', value: '${result.pendingExercises}'),
-          _Row(label: 'MC correctas', value: '${result.mcCorrectCount ?? 0}'),
-          _Row(label: 'OS correctas', value: '${result.osCorrectCount ?? 0}'),
-          _Row(
-            label: 'Speaking',
-            value: '${result.speakingCompletedCount ?? 0} completados | promedio ${_num(result.speakingAverageScore)}',
-          ),
-          _Row(
-            label: 'Writing',
-            value: '${result.writingCompletedCount ?? 0} completados | promedio ${_num(result.writingAverageScore)}',
-          ),
+          if (hasMC) _Row(label: 'MC correctas', value: '${result.mcCorrectCount ?? 0}'),
+          if (hasOS) _Row(label: 'OS correctas', value: '${result.osCorrectCount ?? 0}'),
+          if (hasSpeaking)
+            _Row(
+              label: 'Speaking',
+              value: '${result.speakingCompletedCount ?? 0} completados | promedio ${_num(result.speakingAverageScore)}',
+            ),
+          if (hasWriting)
+            _Row(
+              label: 'Writing',
+              value: '${result.writingCompletedCount ?? 0} completados | promedio ${_num(result.writingAverageScore)}',
+            ),
         ],
       ),
+    );
+  }
+
+  bool _hasType(String type) {
+    return result.exerciseSummaries.any(
+      (e) => e.type.trim().toUpperCase() == type,
     );
   }
 

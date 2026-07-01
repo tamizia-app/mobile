@@ -3,6 +3,10 @@ import '../../domain/models/assessment_attempt.dart';
 import '../../domain/models/assessment_response.dart';
 import '../../domain/models/assessment_result.dart';
 import '../../domain/models/assessment_template.dart';
+import '../../domain/models/attempt_review.dart';
+import '../../domain/models/repeat_attempt_response.dart';
+import '../../domain/models/student_assessment_history.dart';
+import '../../domain/models/student_attempt_list.dart';
 import '../../domain/repositories/assessment_repository.dart';
 import '../datasources/assessment_remote_data_source.dart';
 
@@ -171,5 +175,63 @@ class AssessmentRepositoryImpl implements AssessmentRepository {
   @override
   Future<Uri> getResponseDownloadUrl(String exerciseAttemptId) {
     return _remoteDataSource.getResponseDownloadUrl(exerciseAttemptId);
+  }
+
+  @override
+  Future<StudentAssessmentHistory> getStudentHistory(
+    String studentId, {
+    int? limit,
+    int? offset,
+    String? status,
+    String? assessmentId,
+    String? dateFrom,
+    String? dateTo,
+  }) async {
+    final response = await _remoteDataSource.getStudentHistory(
+      studentId,
+      limit: limit,
+      offset: offset,
+      status: status,
+      assessmentId: assessmentId,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+    );
+    return response.toDomain();
+  }
+
+  @override
+  Future<StudentAttemptList> getAttemptsByStudent(
+    String studentId, {
+    int? limit,
+    int? offset,
+    String? status,
+    String? assessmentId,
+  }) async {
+    final response = await _remoteDataSource.getAttemptsByStudent(
+      studentId,
+      limit: limit,
+      offset: offset,
+      status: status,
+      assessmentId: assessmentId,
+    );
+    return response.toDomain();
+  }
+
+  @override
+  Future<AttemptReview> getAttemptReview(String attemptId) async {
+    final response = await _remoteDataSource.getAttemptReview(attemptId);
+    return response.toDomain();
+  }
+
+  @override
+  Future<RepeatAttemptResponse> repeatAttempt(
+    String attemptId, {
+    String? reason,
+  }) async {
+    final response = await _remoteDataSource.repeatAttempt(
+      attemptId,
+      reason: reason,
+    );
+    return response.toDomain();
   }
 }

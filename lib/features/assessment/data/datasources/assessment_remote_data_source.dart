@@ -3,6 +3,10 @@ import '../models/assessment_dto.dart';
 import '../models/assessment_response_dto.dart';
 import '../models/assessment_result_dto.dart';
 import '../models/assessment_template_dto.dart';
+import '../models/student_assessment_history_dto.dart';
+import '../models/student_attempt_list_dto.dart';
+import '../models/attempt_review_dto.dart';
+import '../models/repeat_attempt_response_dto.dart';
 
 abstract interface class AssessmentRemoteDataSource {
   Future<List<AssessmentTemplateDto>> getTemplates();
@@ -58,4 +62,29 @@ abstract interface class AssessmentRemoteDataSource {
   Future<AssessmentResultDto> getResult(String attemptId);
 
   Future<Uri> getResponseDownloadUrl(String exerciseAttemptId);
+
+  Future<StudentAssessmentHistoryDto> getStudentHistory(
+    String studentId, {
+    int? limit,
+    int? offset,
+    String? status,
+    String? assessmentId,
+    String? dateFrom,
+    String? dateTo,
+  });
+
+  Future<StudentAttemptListDto> getAttemptsByStudent(
+    String studentId, {
+    int? limit,
+    int? offset,
+    String? status,
+    String? assessmentId,
+  });
+
+  Future<AttemptReviewDto> getAttemptReview(String attemptId);
+
+  Future<RepeatAttemptResponseDto> repeatAttempt(
+    String attemptId, {
+    String? reason,
+  });
 }

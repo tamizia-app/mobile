@@ -77,11 +77,7 @@ class ExerciseAttempt {
     if (cleanTitle != null && cleanTitle.isNotEmpty) {
       return cleanTitle;
     }
-    final cleanExerciseId = exerciseId?.trim();
-    if (cleanExerciseId != null && cleanExerciseId.isNotEmpty) {
-      return 'Ejercicio $cleanExerciseId';
-    }
-    return 'Exercise attempt $exerciseAttemptId';
+    return 'Ejercicio';
   }
 }
 

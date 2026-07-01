@@ -76,6 +76,32 @@ String translateInterventionLevel(String? level) {
   }
 }
 
+String translateReviewReason(String? reason) {
+  if (reason == null) return 'No disponible';
+  switch (reason.trim().toUpperCase()) {
+    case 'LOW_OCR_CONFIDENCE':
+      return 'Baja confianza del OCR';
+    case 'LOW_TEXT_SIMILARITY':
+      return 'Baja similitud con el texto esperado';
+    case 'HIGH_CHARACTER_ERROR_RATE':
+      return 'Alta tasa de error por caracteres';
+    case 'HIGH_WORD_ERROR_RATE':
+      return 'Alta tasa de error por palabras';
+    case 'EMPTY_RECOGNIZED_TEXT':
+      return 'No se reconocio texto';
+    case 'LOW_PRONUNCIATION_SCORE':
+      return 'Baja puntuacion de pronunciacion';
+    case 'LOW_ACCURACY_SCORE':
+      return 'Baja precision';
+    case 'LOW_FLUENCY_SCORE':
+      return 'Baja fluidez';
+    case 'LOW_COMPLETENESS_SCORE':
+      return 'Lectura incompleta';
+    default:
+      return _fallback(reason);
+  }
+}
+
 String translateGender(String? gender) {
   if (gender == null) return 'No disponible';
   switch (gender.trim().toUpperCase()) {

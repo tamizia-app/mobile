@@ -39,5 +39,5 @@ class TemplateExerciseSummary {
 
   String get displayName => title?.trim().isNotEmpty == true
       ? title!.trim()
-      : 'Ejercicio $exerciseId';
+      : 'Ejercicio';
 }

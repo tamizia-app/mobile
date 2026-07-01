@@ -3,6 +3,10 @@ import '../models/assessment_attempt.dart';
 import '../models/assessment_response.dart';
 import '../models/assessment_result.dart';
 import '../models/assessment_template.dart';
+import '../models/student_assessment_history.dart';
+import '../models/student_attempt_list.dart';
+import '../models/attempt_review.dart';
+import '../models/repeat_attempt_response.dart';
 
 abstract interface class AssessmentRepository {
   Future<List<AssessmentTemplate>> getTemplates();
@@ -58,4 +62,29 @@ abstract interface class AssessmentRepository {
   Future<AssessmentResult> getResult(String attemptId);
 
   Future<Uri> getResponseDownloadUrl(String exerciseAttemptId);
+
+  Future<StudentAssessmentHistory> getStudentHistory(
+    String studentId, {
+    int? limit,
+    int? offset,
+    String? status,
+    String? assessmentId,
+    String? dateFrom,
+    String? dateTo,
+  });
+
+  Future<StudentAttemptList> getAttemptsByStudent(
+    String studentId, {
+    int? limit,
+    int? offset,
+    String? status,
+    String? assessmentId,
+  });
+
+  Future<AttemptReview> getAttemptReview(String attemptId);
+
+  Future<RepeatAttemptResponse> repeatAttempt(
+    String attemptId, {
+    String? reason,
+  });
 }

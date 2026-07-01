@@ -300,7 +300,7 @@ class _StudentDetails extends StatelessWidget {
             label: 'Estado',
             value: student.isActive ? 'Activo' : 'Inactivo',
           ),
-          _DetailRow(label: 'Classroom ID', value: student.classroomId),
+          _DetailRow(label: 'Aula', value: 'Aula no disponible'),
         ],
       ),
     );

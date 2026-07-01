@@ -11,6 +11,10 @@ import '../models/assessment_dto.dart';
 import '../models/assessment_response_dto.dart';
 import '../models/assessment_result_dto.dart';
 import '../models/assessment_template_dto.dart';
+import '../models/attempt_review_dto.dart';
+import '../models/repeat_attempt_response_dto.dart';
+import '../models/student_assessment_history_dto.dart';
+import '../models/student_attempt_list_dto.dart';
 import 'assessment_remote_data_source.dart';
 
 class AssessmentRemoteDataSourceImpl implements AssessmentRemoteDataSource {
@@ -319,6 +323,104 @@ class AssessmentRemoteDataSourceImpl implements AssessmentRemoteDataSource {
         throw const FormatException('Invalid download url response.');
       }
       return Uri.parse(value);
+    } catch (error) {
+      throw ApiErrorMapper.map(error);
+    }
+  }
+
+  @override
+  Future<StudentAssessmentHistoryDto> getStudentHistory(
+    String studentId, {
+    int? limit,
+    int? offset,
+    String? status,
+    String? assessmentId,
+    String? dateFrom,
+    String? dateTo,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (limit != null) queryParams['limit'] = limit;
+      if (offset != null) queryParams['offset'] = offset;
+      if (status != null) queryParams['status'] = status;
+      if (assessmentId != null) queryParams['assessment_id'] = assessmentId;
+      if (dateFrom != null) queryParams['date_from'] = dateFrom;
+      if (dateTo != null) queryParams['date_to'] = dateTo;
+      final response = await _apiClient.dio.get<Map<String, dynamic>>(
+        '/api/v1/assessments/students/$studentId/history',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      final data = response.data;
+      if (data == null) {
+        throw const FormatException('Invalid student history response.');
+      }
+      return StudentAssessmentHistoryDto.fromJson(data);
+    } catch (error) {
+      throw ApiErrorMapper.map(error);
+    }
+  }
+
+  @override
+  Future<StudentAttemptListDto> getAttemptsByStudent(
+    String studentId, {
+    int? limit,
+    int? offset,
+    String? status,
+    String? assessmentId,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (limit != null) queryParams['limit'] = limit;
+      if (offset != null) queryParams['offset'] = offset;
+      if (status != null) queryParams['status'] = status;
+      if (assessmentId != null) queryParams['assessment_id'] = assessmentId;
+      final response = await _apiClient.dio.get<Map<String, dynamic>>(
+        '/api/v1/assessments/students/$studentId/attempts',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      final data = response.data;
+      if (data == null) {
+        throw const FormatException('Invalid student attempts response.');
+      }
+      return StudentAttemptListDto.fromJson(data);
+    } catch (error) {
+      throw ApiErrorMapper.map(error);
+    }
+  }
+
+  @override
+  Future<AttemptReviewDto> getAttemptReview(String attemptId) async {
+    try {
+      final response = await _apiClient.dio.get<Map<String, dynamic>>(
+        '/api/v1/assessments/attempts/$attemptId/review',
+      );
+      final data = response.data;
+      if (data == null) {
+        throw const FormatException('Invalid attempt review response.');
+      }
+      return AttemptReviewDto.fromJson(data);
+    } catch (error) {
+      throw ApiErrorMapper.map(error);
+    }
+  }
+
+  @override
+  Future<RepeatAttemptResponseDto> repeatAttempt(
+    String attemptId, {
+    String? reason,
+  }) async {
+    try {
+      final body = <String, dynamic>{};
+      if (reason != null) body['reason'] = reason;
+      final response = await _apiClient.dio.post<Map<String, dynamic>>(
+        '/api/v1/assessments/attempts/$attemptId/repeat',
+        data: body.isNotEmpty ? body : null,
+      );
+      final data = response.data;
+      if (data == null) {
+        throw const FormatException('Invalid repeat attempt response.');
+      }
+      return RepeatAttemptResponseDto.fromJson(data);
     } catch (error) {
       throw ApiErrorMapper.map(error);
     }

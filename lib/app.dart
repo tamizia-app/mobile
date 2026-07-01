@@ -14,10 +14,12 @@ import 'features/assessment/presentation/pages/assessment_result_page.dart';
 import 'features/assessment/presentation/pages/assessment_config_page.dart';
 import 'features/assessment/presentation/pages/assessment_attempt_preview_page.dart';
 import 'features/assessment/presentation/pages/assessment_error_page.dart';
+import 'features/assessment/presentation/pages/attempt_review_page.dart';
 import 'features/assessment/presentation/pages/attempt_session_page.dart';
 import 'features/assessment/presentation/pages/build_word_page.dart';
 import 'features/assessment/presentation/pages/choose_word_page.dart';
 import 'features/assessment/presentation/pages/reading_assessment_page.dart';
+import 'features/assessment/presentation/pages/student_history_page.dart';
 import 'features/assessment/presentation/pages/template_catalog_page.dart';
 import 'features/assessment/presentation/pages/template_detail_page.dart';
 import 'features/assessment/presentation/pages/text_comparison_page.dart';
@@ -49,8 +51,9 @@ import 'features/students/presentation/pages/edit_student_page.dart';
 import 'features/students/presentation/pages/student_detail_page.dart';
 import 'features/teacher/data/datasources/teacher_remote_data_source_impl.dart';
 import 'features/teacher/data/repositories/teacher_repository_impl.dart';
+import 'features/teacher/data/datasources/dashboard_remote_data_source_impl.dart';
 import 'features/teacher/data/services/dashboard_summary_service.dart';
-import 'features/teacher/data/services/mock_dashboard_summary_service.dart';
+import 'features/teacher/data/services/dashboard_summary_service_impl.dart';
 import 'features/teacher/domain/repositories/teacher_repository.dart';
 import 'features/teacher/presentation/pages/teacher_home_page.dart';
 import 'features/teacher/presentation/pages/teacher_profile_page.dart';
@@ -74,14 +77,16 @@ class _TamiziaAppState extends State<TamiziaApp> {
   late final AuthSessionStorage _sessionStorage;
   late final AuthSessionManager _sessionManager;
 
-  final DashboardSummaryService _dashboardSummaryService =
-      MockDashboardSummaryService();
+  late final DashboardSummaryService _dashboardSummaryService;
   final ExerciseService _exerciseService = MockExerciseService();
 
   @override
   void initState() {
     super.initState();
     _apiClient = ApiClient();
+    _dashboardSummaryService = DashboardSummaryServiceImpl(
+      remoteDataSource: DashboardRemoteDataSourceImpl(apiClient: _apiClient),
+    );
     _authRepository = AuthRepositoryImpl(
       remoteDataSource: AuthRemoteDataSourceImpl(apiClient: _apiClient),
     );
@@ -225,6 +230,24 @@ class _TamiziaAppState extends State<TamiziaApp> {
         return const TextComparisonPage();
       case AppRoutes.assessmentError:
         return const AssessmentErrorPage();
+      case AppRoutes.studentHistory:
+        final studentId = settings.arguments as String?;
+        if (studentId == null || studentId.isEmpty) {
+          return const AssessmentErrorPage();
+        }
+        return StudentHistoryPage(
+          assessmentRepository: _assessmentRepository,
+          studentId: studentId,
+        );
+      case AppRoutes.attemptReview:
+        final attemptId = settings.arguments as String?;
+        if (attemptId == null || attemptId.isEmpty) {
+          return const AssessmentErrorPage();
+        }
+        return AttemptReviewPage(
+          assessmentRepository: _assessmentRepository,
+          attemptId: attemptId,
+        );
       default:
         return LoginPage(sessionManager: _sessionManager);
     }

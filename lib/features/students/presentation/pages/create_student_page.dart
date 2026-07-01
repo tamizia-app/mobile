@@ -96,7 +96,7 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
     return StudentFormScaffold(
       title: 'Agregar estudiante',
       subtitle: _classroomName == null
-          ? 'Aula: ${_classroomId ?? ''}'
+          ? 'Aula nueva'
           : 'Aula: $_classroomName',
       buttonText: 'Guardar',
       formKey: _formKey,

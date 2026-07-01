@@ -1,13 +1,17 @@
 class DashboardSummary {
   const DashboardSummary({
-    required this.classrooms,
-    required this.students,
-    required this.evaluations,
-    required this.suggestedReviews,
+    required this.totalStudents,
+    required this.totalClassrooms,
+    required this.totalTemplates,
+    required this.totalAssessments,
+    required this.completedAttempts,
+    required this.inProgressAttempts,
   });
 
-  final int classrooms;
-  final int students;
-  final int evaluations;
-  final int suggestedReviews;
+  final int totalStudents;
+  final int totalClassrooms;
+  final int totalTemplates;
+  final int totalAssessments;
+  final int completedAttempts;
+  final int inProgressAttempts;
 }

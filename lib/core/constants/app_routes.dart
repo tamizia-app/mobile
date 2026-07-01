@@ -30,4 +30,6 @@ class AppRoutes {
   static const assessmentResult = '/assessment/result';
   static const assessmentTextComparison = '/assessment/text-comparison';
   static const assessmentError = '/assessment/error';
+  static const studentHistory = '/assessment/student-history';
+  static const attemptReview = '/assessment/attempt-review';
 }

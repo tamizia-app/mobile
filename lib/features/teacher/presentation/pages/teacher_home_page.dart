@@ -75,22 +75,22 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                         children: [
                           MetricCard(
                             title: 'Aulas',
-                            value: '${summary?.classrooms ?? 12}',
+                            value: '${summary?.totalClassrooms ?? 0}',
                             icon: Icons.bookmark_border_rounded,
                           ),
                           MetricCard(
                             title: 'Estudiantes',
-                            value: '${summary?.students ?? 145}',
+                            value: '${summary?.totalStudents ?? 0}',
                             icon: Icons.people_alt_outlined,
                           ),
                           MetricCard(
                             title: 'Evaluaciones',
-                            value: '${summary?.evaluations ?? 89}',
+                            value: '${summary?.totalAssessments ?? 0}',
                             icon: Icons.assignment_outlined,
                           ),
                           WarningMetricCard(
-                            title: 'Revisión sugerida',
-                            value: '${summary?.suggestedReviews ?? 5}',
+                            title: 'En progreso',
+                            value: '${summary?.inProgressAttempts ?? 0}',
                           ),
                         ],
                       ),

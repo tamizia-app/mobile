@@ -85,7 +85,7 @@ class _IdentitySummary extends StatelessWidget {
         _SummaryRow(label: 'Plantilla', value: preview.template.name),
         _SummaryRow(
           label: 'Estado',
-          value: preview.attempt.status ?? 'Intento iniciado',
+          value: translateAttemptStatus(preview.attempt.status),
         ),
       ],
     );
