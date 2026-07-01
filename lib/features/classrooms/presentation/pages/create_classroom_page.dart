@@ -280,7 +280,7 @@ class _DropdownField extends StatelessWidget {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           key: ValueKey('$label-${value ?? 'empty'}'),
-          initialValue: value,
+          value: value,
           hint: Text(hint),
           items: items
               .map(
