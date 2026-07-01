@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/category_chip.dart';
 import '../../../../core/widgets/exercise_card.dart';
@@ -44,9 +43,6 @@ class _ExerciseCatalogPageState extends State<ExerciseCatalogPage> {
       builder: (context, _) {
         return Scaffold(
           backgroundColor: AppColors.teacherBackground,
-          bottomNavigationBar: const AppBottomNav(
-            currentItem: BottomNavItem.exercises,
-          ),
           body: Column(
             children: [
               _viewModel.isSearching

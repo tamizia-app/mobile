@@ -4,6 +4,8 @@ import '../models/student_consent.dart';
 import '../models/update_student_request.dart';
 
 abstract interface class StudentRepository {
+  Future<List<Student>> getAllStudents();
+
   Future<List<Student>> getStudentsByClassroom(String classroomId);
 
   Future<Student> createStudent(

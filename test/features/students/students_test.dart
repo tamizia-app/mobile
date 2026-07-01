@@ -370,6 +370,11 @@ class _FakeDataSource implements StudentRemoteDataSource {
   final List<String> deletedIds = [];
 
   @override
+  Future<List<StudentDto>> getAllStudents() async {
+    return [StudentDto.fromJson(_studentJson())];
+  }
+
+  @override
   Future<List<StudentDto>> getStudentsByClassroom(String classroomId) async {
     return [StudentDto.fromJson(_studentJson())];
   }
@@ -446,6 +451,9 @@ class _FakeRepository implements StudentRepository {
   final List<String> uploadStudentIds = [];
   final List<String> operationLog = [];
   final List<String> deletedIds = [];
+
+  @override
+  Future<List<Student>> getAllStudents() async => students;
 
   @override
   Future<List<Student>> getStudentsByClassroom(String classroomId) {

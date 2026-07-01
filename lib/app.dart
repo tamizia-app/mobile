@@ -49,6 +49,7 @@ import 'features/students/domain/repositories/student_repository.dart';
 import 'features/students/presentation/pages/create_student_page.dart';
 import 'features/students/presentation/pages/edit_student_page.dart';
 import 'features/students/presentation/pages/student_detail_page.dart';
+import 'features/students/presentation/pages/students_list_page.dart';
 import 'features/teacher/data/datasources/teacher_remote_data_source_impl.dart';
 import 'features/teacher/data/repositories/teacher_repository_impl.dart';
 import 'features/teacher/data/datasources/dashboard_remote_data_source_impl.dart';
@@ -190,8 +191,16 @@ class _TamiziaAppState extends State<TamiziaApp> {
         return EditClassroomPage(classroomRepository: _classroomRepository);
       case AppRoutes.createStudent:
         return CreateStudentPage(studentRepository: _studentRepository);
+      case AppRoutes.studentsList:
+        return StudentsListPage(
+          studentRepository: _studentRepository,
+          classroomRepository: _classroomRepository,
+        );
       case AppRoutes.studentDetail:
-        return StudentDetailPage(studentRepository: _studentRepository);
+        return StudentDetailPage(
+          studentRepository: _studentRepository,
+          classroomRepository: _classroomRepository,
+        );
       case AppRoutes.editStudent:
         return EditStudentPage(studentRepository: _studentRepository);
       case AppRoutes.exerciseCatalog:

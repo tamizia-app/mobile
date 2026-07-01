@@ -3,16 +3,23 @@ import 'package:file_picker/file_picker.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/assessment_labels.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../domain/models/student.dart';
 import '../../domain/models/student_consent.dart';
 import '../../domain/repositories/student_repository.dart';
+import '../../../classrooms/domain/repositories/classroom_repository.dart';
 import '../viewmodels/student_detail_viewmodel.dart';
 
 class StudentDetailPage extends StatefulWidget {
-  const StudentDetailPage({required this.studentRepository, super.key});
+  const StudentDetailPage({
+    required this.studentRepository,
+    required this.classroomRepository,
+    super.key,
+  });
 
   final StudentRepository studentRepository;
+  final ClassroomRepository classroomRepository;
 
   @override
   State<StudentDetailPage> createState() => _StudentDetailPageState();
@@ -22,6 +29,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
   late final StudentDetailViewModel _viewModel;
   String? _studentId;
   bool _requestedLoad = false;
+  String? _classroomName;
 
   @override
   void initState() {
@@ -44,6 +52,29 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     }
   }
 
+  void _onStudentLoaded() {
+    final student = _viewModel.student;
+    if (student == null || _classroomName != null) return;
+    _loadClassroom(student.classroomId);
+  }
+
+  Future<void> _loadClassroom(String classroomId) async {
+    try {
+      final classroom = await widget.classroomRepository.getClassroomById(
+        classroomId,
+      );
+      if (mounted) {
+        setState(() {
+          _classroomName = '${classroom.name} - ${classroom.gradeLevel} ${classroom.section}';
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _classroomName = null);
+      }
+    }
+  }
+
   @override
   void dispose() {
     _viewModel.dispose();
@@ -52,17 +83,13 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
 
   Future<void> _editStudent() async {
     final student = _viewModel.student;
-    if (student == null) {
-      return;
-    }
+    if (student == null) return;
     final updated = await Navigator.pushNamed(
       context,
       AppRoutes.editStudent,
       arguments: student.studentId,
     );
-    if (!mounted || updated is! Student) {
-      return;
-    }
+    if (!mounted || updated is! Student) return;
     _viewModel.applyUpdate(updated);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Estudiante actualizado correctamente.')),
@@ -88,13 +115,9 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
         ],
       ),
     );
-    if (confirmed != true) {
-      return;
-    }
+    if (confirmed != true) return;
     final deleted = await _viewModel.deleteStudent();
-    if (!mounted || !deleted) {
-      return;
-    }
+    if (!mounted || !deleted) return;
     Navigator.pop(context, _viewModel.student!.studentId);
   }
 
@@ -120,16 +143,12 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
         ],
       ),
     );
-    if (confirmed != true) {
-      return;
-    }
+    if (confirmed != true) return;
     final revoked = await _viewModel.revokeConsent();
-    if (!mounted || !revoked) {
-      return;
-    }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Consentimiento revocado.')));
+    if (!mounted || !revoked) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Consentimiento revocado.')),
+    );
   }
 
   Future<void> _uploadConsent() async {
@@ -139,9 +158,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       withData: true,
     );
     final file = result?.files.single;
-    if (file == null) {
-      return;
-    }
+    if (file == null) return;
     final bytes = file.bytes;
     if (bytes == null || bytes.isEmpty) {
       if (mounted) {
@@ -155,9 +172,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       bytes: bytes,
       fileName: file.name,
     );
-    if (!mounted || !uploaded) {
-      return;
-    }
+    if (!mounted || !uploaded) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Consentimiento adjuntado correctamente.')),
     );
@@ -172,6 +187,9 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     return AnimatedBuilder(
       animation: _viewModel,
       builder: (context, _) {
+        if (_viewModel.student != null && _classroomName == null && !_viewModel.isLoading) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _onStudentLoaded());
+        }
         return Scaffold(
           backgroundColor: AppColors.teacherBackground,
           body: Column(
@@ -243,7 +261,12 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             label: const Text('Editar estudiante'),
           ),
           const SizedBox(height: 22),
-          _StudentDetails(student: student),
+          _StudentDetails(
+            student: student,
+            classroomName: _classroomName,
+          ),
+          const SizedBox(height: 24),
+          _HistoryAccess(studentId: student.studentId),
           const SizedBox(height: 24),
           _ConsentDetails(
             consent: _viewModel.consent,
@@ -275,9 +298,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
 }
 
 class _StudentDetails extends StatelessWidget {
-  const _StudentDetails({required this.student});
+  const _StudentDetails({required this.student, this.classroomName});
 
   final Student student;
+  final String? classroomName;
 
   @override
   Widget build(BuildContext context) {
@@ -291,16 +315,56 @@ class _StudentDetails extends StatelessWidget {
       child: Column(
         children: [
           _DetailRow(label: 'Codigo', value: student.code),
-          _DetailRow(label: 'Edad', value: '${student.age} años'),
+          _DetailRow(label: 'Edad', value: '${student.age} anios'),
           _DetailRow(
             label: 'Genero',
-            value: student.gender == 'BOY' ? 'Niño' : 'Niña',
+            value: translateGender(student.gender),
           ),
           _DetailRow(
             label: 'Estado',
             value: student.isActive ? 'Activo' : 'Inactivo',
           ),
-          _DetailRow(label: 'Aula', value: 'Aula no disponible'),
+          _DetailRow(
+            label: 'Aula',
+            value: classroomName ?? 'Aula no disponible',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HistoryAccess extends StatelessWidget {
+  const _HistoryAccess({required this.studentId});
+
+  final String studentId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Historial de evaluaciones',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.studentHistory,
+              arguments: studentId,
+            ),
+            icon: const Icon(Icons.history),
+            label: const Text('Ver historial'),
+          ),
         ],
       ),
     );
@@ -365,9 +429,7 @@ class _ConsentDetails extends StatelessWidget {
         if (current != null && current.status && current.revokedAt == null)
           TextButton(
             onPressed: isUpdating ? null : onRevoke,
-            child: Text(
-              isUpdating ? 'Procesando...' : 'Revocar consentimiento',
-            ),
+            child: Text(isUpdating ? 'Procesando...' : 'Revocar consentimiento'),
           ),
         if (current == null || !current.status || current.revokedAt != null)
           TextButton.icon(
@@ -380,9 +442,7 @@ class _ConsentDetails extends StatelessWidget {
   }
 
   static String _formatDate(DateTime? date) {
-    if (date == null) {
-      return 'No disponible';
-    }
+    if (date == null) return 'No disponible';
     return '${date.day.toString().padLeft(2, '0')}/'
         '${date.month.toString().padLeft(2, '0')}/${date.year}';
   }

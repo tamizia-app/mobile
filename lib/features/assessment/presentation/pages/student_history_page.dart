@@ -7,7 +7,6 @@ import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/error_message.dart';
 import '../../domain/models/student_assessment_history.dart';
-import '../../domain/models/student_attempt_list.dart';
 import '../../domain/repositories/assessment_repository.dart';
 
 class StudentHistoryPage extends StatefulWidget {
@@ -26,7 +25,6 @@ class StudentHistoryPage extends StatefulWidget {
 
 class _StudentHistoryPageState extends State<StudentHistoryPage> {
   StudentAssessmentHistory? _history;
-  StudentAttemptList? _attempts;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -42,13 +40,11 @@ class _StudentHistoryPageState extends State<StudentHistoryPage> {
       _errorMessage = null;
     });
     try {
-      final results = await Future.wait([
-        widget.assessmentRepository.getStudentHistory(widget.studentId),
-        widget.assessmentRepository.getAttemptsByStudent(widget.studentId),
-      ]);
+      final history = await widget.assessmentRepository.getStudentHistory(
+        widget.studentId,
+      );
       setState(() {
-        _history = results[0] as StudentAssessmentHistory;
-        _attempts = results[1] as StudentAttemptList;
+        _history = history;
         _isLoading = false;
       });
     } catch (e) {
@@ -102,46 +98,75 @@ class _StudentHistoryPageState extends State<StudentHistoryPage> {
       );
     }
     final history = _history!;
-    final attempts = _attempts!;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(18, 22, 18, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (history.student != null) ...[
+            _StudentHeader(student: history.student!),
+            const SizedBox(height: 18),
+          ],
           _SummaryCards(summary: history.summary),
           const SizedBox(height: 22),
           if (history.chartPoints.isNotEmpty) _ChartSection(points: history.chartPoints),
           if (history.chartPoints.isNotEmpty) const SizedBox(height: 22),
           _HistorySection(items: history.items),
-          const SizedBox(height: 22),
-          _AttemptsSection(
-            items: attempts.items,
-            onTapAttempt: _onAttemptTap,
-          ),
         ],
       ),
     );
   }
+}
 
-  void _onAttemptTap(StudentAttemptListItem item) {
-    final status = item.status.trim().toUpperCase();
-    if (status == 'COMPLETED' || status == 'FINISHED') {
-      Navigator.pushNamed(
-        context,
-        AppRoutes.attemptReview,
-        arguments: item.attemptId,
-      );
-    } else if (status == 'IN_PROGRESS' || status == 'STARTED') {
-      Navigator.pushNamed(
-        context,
-        AppRoutes.assessmentAttemptSession,
-        arguments: item.attemptId,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Intento pendiente')),
-      );
-    }
+class _StudentHeader extends StatelessWidget {
+  const _StudentHeader({required this.student});
+
+  final StudentBrief student;
+
+  @override
+  Widget build(BuildContext context) {
+    final classroomStr = student.classroom != null
+        ? '${student.classroom!.name} - ${student.classroom!.gradeLevel} ${student.classroom!.section}'
+        : null;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+            child: const Icon(Icons.person_outline, color: AppColors.primaryBlue),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  student.code,
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${student.age} anios · ${translateGender(student.gender)}',
+                  style: const TextStyle(color: AppColors.mutedText, fontSize: 13),
+                ),
+                if (classroomStr != null)
+                  Text(
+                    'Aula: $classroomStr',
+                    style: const TextStyle(color: AppColors.mutedText, fontSize: 13),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -381,94 +406,4 @@ class _HistoryItemTile extends StatelessWidget {
   }
 }
 
-class _AttemptsSection extends StatelessWidget {
-  const _AttemptsSection({required this.items, required this.onTapAttempt});
 
-  final List<StudentAttemptListItem> items;
-  final void Function(StudentAttemptListItem) onTapAttempt;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Intentos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 12),
-          if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('No hay intentos registrados.', style: TextStyle(color: AppColors.mutedText)),
-            )
-          else
-            ...items.map((item) => _AttemptItemTile(item: item, onTap: () => onTapAttempt(item))),
-        ],
-      ),
-    );
-  }
-}
-
-class _AttemptItemTile extends StatelessWidget {
-  const _AttemptItemTile({required this.item, required this.onTap});
-
-  final StudentAttemptListItem item;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final dateStr = item.completedAt ?? item.startedAt;
-    final formattedDate = dateStr != null
-        ? '${dateStr.day}/${dateStr.month}/${dateStr.year}'
-        : '—';
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.assessmentName ?? 'Evaluacion',
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(formattedDate, style: const TextStyle(color: AppColors.mutedText, fontSize: 12)),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  translateAttemptStatus(item.status),
-                  style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
-                ),
-                if (item.finalScore != null)
-                  Text(
-                    '${item.finalScore!.toStringAsFixed(1)}%',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                  ),
-                Text(
-                  '${item.totalExercises} ejercicios',
-                  style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
-                ),
-              ],
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, color: AppColors.mutedText, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}

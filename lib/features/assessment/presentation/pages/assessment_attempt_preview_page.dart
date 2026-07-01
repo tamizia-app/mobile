@@ -155,45 +155,77 @@ class _ExerciseAttemptList extends StatelessWidget {
     }
     return _SectionCard(
       title: 'Ejercicios del intento',
-      children: exerciseAttempts
-          .map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.extension_outlined,
-                    color: AppColors.primaryBlue,
-                    size: 22,
+      children: exerciseAttempts.asMap().entries.map(
+        (entry) {
+          final index = entry.key;
+          final item = entry.value;
+          final title = item.displayName;
+          final displayTitle = title == 'Ejercicio'
+              ? 'Ejercicio ${index + 1}'
+              : title;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.displayName,
-                          style: const TextStyle(fontWeight: FontWeight.w900),
-                        ),
-                        if (item.type != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            translateExerciseType(item.type),
-                            style: const TextStyle(
-                              color: AppColors.mutedText,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ],
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: AppColors.primaryBlue,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayTitle,
+                        style: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                      if (item.type != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              translateExerciseType(item.type),
+                              style: const TextStyle(
+                                color: AppColors.mutedText,
+                                fontSize: 13,
+                              ),
+                            ),
+                            if (item.status != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                translateExerciseStatus(item.status),
+                                style: const TextStyle(
+                                  color: AppColors.mutedText,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
-          )
-          .toList(growable: false),
+          );
+        },
+      ).toList(growable: false),
     );
   }
 }

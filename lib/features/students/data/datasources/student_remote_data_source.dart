@@ -5,6 +5,8 @@ import '../models/student_dto.dart';
 import '../models/update_student_request_dto.dart';
 
 abstract interface class StudentRemoteDataSource {
+  Future<List<StudentDto>> getAllStudents();
+
   Future<List<StudentDto>> getStudentsByClassroom(String classroomId);
 
   Future<StudentDto> createStudent(

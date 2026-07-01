@@ -16,6 +16,12 @@ class StudentRepositoryImpl implements StudentRepository {
   final StudentRemoteDataSource _remoteDataSource;
 
   @override
+  Future<List<Student>> getAllStudents() async {
+    final response = await _remoteDataSource.getAllStudents();
+    return response.map((item) => item.toDomain()).toList(growable: false);
+  }
+
+  @override
   Future<List<Student>> getStudentsByClassroom(String classroomId) async {
     final response = await _remoteDataSource.getStudentsByClassroom(
       classroomId,

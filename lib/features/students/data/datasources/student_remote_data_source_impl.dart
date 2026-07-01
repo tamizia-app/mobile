@@ -16,6 +16,29 @@ class StudentRemoteDataSourceImpl implements StudentRemoteDataSource {
   final ApiClient _apiClient;
 
   @override
+  Future<List<StudentDto>> getAllStudents() async {
+    try {
+      final response = await _apiClient.dio.get<List<dynamic>>(
+        '/api/v1/students',
+      );
+      final data = response.data;
+      if (data == null) {
+        throw const FormatException('Invalid students response.');
+      }
+      return data
+          .map((item) {
+            if (item is! Map<String, dynamic>) {
+              throw const FormatException('Invalid student response.');
+            }
+            return StudentDto.fromJson(item);
+          })
+          .toList(growable: false);
+    } catch (error) {
+      throw ApiErrorMapper.map(error);
+    }
+  }
+
+  @override
   Future<List<StudentDto>> getStudentsByClassroom(String classroomId) async {
     try {
       final response = await _apiClient.dio.get<List<dynamic>>(

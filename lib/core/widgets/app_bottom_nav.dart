@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_routes.dart';
 import '../theme/app_colors.dart';
 
-enum BottomNavItem { home, classrooms, exercises, tests, profile }
+enum BottomNavItem { home, classrooms, tests, profile }
 
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({required this.currentItem, super.key});
@@ -13,7 +13,7 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 74,
+      height: 84,
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFD9E2EA))),
@@ -38,15 +38,6 @@ class AppBottomNav extends StatelessWidget {
               active: currentItem == BottomNavItem.classrooms,
               onTap: () =>
                   Navigator.pushReplacementNamed(context, AppRoutes.classrooms),
-            ),
-            _BottomNavButton(
-              icon: Icons.extension_outlined,
-              label: 'Ejercicios',
-              active: currentItem == BottomNavItem.exercises,
-              onTap: () => Navigator.pushReplacementNamed(
-                context,
-                AppRoutes.exerciseCatalog,
-              ),
             ),
             _BottomNavButton(
               icon: Icons.content_copy_outlined,
@@ -93,7 +84,7 @@ class _BottomNavButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: SizedBox(
-        width: 62,
+        width: 68,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
