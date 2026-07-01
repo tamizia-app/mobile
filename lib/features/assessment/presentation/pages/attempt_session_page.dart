@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/assessment_labels.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/assessment_result.dart';
@@ -200,14 +201,21 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                _InfoRow(label: 'Tipo', value: exercise.type ?? 'N/D'),
-                _InfoRow(
-                  label: 'exercise_attempt_id',
-                  value: exercise.exerciseAttemptId,
-                ),
+                _InfoRow(label: 'Tipo', value: translateExerciseType(exercise.type)),
               ],
             ),
           ),
+          if (_viewModel.errorMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _viewModel.errorMessage!,
+              style: const TextStyle(
+                color: AppColors.errorRed,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 24),
           PrimaryButton(
             text: 'Abrir ejercicio',

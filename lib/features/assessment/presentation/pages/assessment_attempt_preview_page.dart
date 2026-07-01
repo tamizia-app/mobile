@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/assessment_labels.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/info_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -37,12 +38,10 @@ class AssessmentAttemptPreviewPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (argument.resumedExistingAttempt) ...[
-                    _ResumeBanner(attemptId: argument.attempt.id),
+                    const _ResumeBanner(),
                     const SizedBox(height: 16),
                   ],
                   _IdentitySummary(preview: argument),
-                  const SizedBox(height: 20),
-                  _IdSummary(preview: argument),
                   const SizedBox(height: 20),
                   _ConsentSummary(hasValidConsent: argument.hasValidConsent),
                   const SizedBox(height: 20),
@@ -88,23 +87,6 @@ class _IdentitySummary extends StatelessWidget {
           label: 'Estado',
           value: preview.attempt.status ?? 'Intento iniciado',
         ),
-      ],
-    );
-  }
-}
-
-class _IdSummary extends StatelessWidget {
-  const _IdSummary({required this.preview});
-
-  final AssessmentAttemptPreview preview;
-
-  @override
-  Widget build(BuildContext context) {
-    return _SectionCard(
-      title: 'IDs reales guardados',
-      children: [
-        _SummaryRow(label: 'assessment_id', value: preview.assessment.id),
-        _SummaryRow(label: 'attempt_id', value: preview.attempt.id),
       ],
     );
   }
@@ -194,22 +176,16 @@ class _ExerciseAttemptList extends StatelessWidget {
                           item.displayName,
                           style: const TextStyle(fontWeight: FontWeight.w900),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'exercise_attempt_id: ${item.id}',
-                          style: const TextStyle(
-                            color: AppColors.mutedText,
-                            fontSize: 13,
-                          ),
-                        ),
-                        if (item.type != null)
+                        if (item.type != null) ...[
+                          const SizedBox(height: 4),
                           Text(
-                            'Tipo: ${item.type}',
+                            translateExerciseType(item.type),
                             style: const TextStyle(
                               color: AppColors.mutedText,
                               fontSize: 13,
                             ),
                           ),
+                        ],
                       ],
                     ),
                   ),
@@ -223,17 +199,15 @@ class _ExerciseAttemptList extends StatelessWidget {
 }
 
 class _ResumeBanner extends StatelessWidget {
-  const _ResumeBanner({required this.attemptId});
-
-  final String attemptId;
+  const _ResumeBanner();
 
   @override
   Widget build(BuildContext context) {
-    return InfoBanner(
+    return const InfoBanner(
       text:
-          'Hay un intento pendiente. Puedes continuar con el intento $attemptId sin crear otro flujo paralelo.',
-      backgroundColor: const Color(0xFFEFF6FF),
-      borderColor: const Color(0xFF93C5FD),
+          'Hay un intento pendiente. Puedes continuar desde donde lo dejaste sin crear otro flujo paralelo.',
+      backgroundColor: Color(0xFFEFF6FF),
+      borderColor: Color(0xFF93C5FD),
     );
   }
 }

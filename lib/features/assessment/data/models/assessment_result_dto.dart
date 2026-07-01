@@ -18,6 +18,7 @@ class AssessmentResultDto {
     this.pendingExercises = 0,
     this.writingAverageScore,
     this.writingReviewRequiredCount = 0,
+    this.exerciseSummaries = const [],
   });
 
   factory AssessmentResultDto.fromJson(Map<String, dynamic> json) {
@@ -40,6 +41,7 @@ class AssessmentResultDto {
       writingAverageScore: _optionalDouble(json, 'writing_average_score'),
       writingReviewRequiredCount:
           _optionalInt(json, 'writing_review_required_count') ?? 0,
+      exerciseSummaries: _readExerciseSummaries(json),
     );
   }
 
@@ -59,6 +61,7 @@ class AssessmentResultDto {
   final int pendingExercises;
   final double? writingAverageScore;
   final int writingReviewRequiredCount;
+  final List<ExerciseSummaryDto> exerciseSummaries;
 
   AssessmentResult toDomain() {
     return AssessmentResult(
@@ -78,6 +81,70 @@ class AssessmentResultDto {
       pendingExercises: pendingExercises,
       writingAverageScore: writingAverageScore,
       writingReviewRequiredCount: writingReviewRequiredCount,
+      exerciseSummaries: exerciseSummaries
+          .map((item) => item.toDomain())
+          .toList(growable: false),
+    );
+  }
+
+  static List<ExerciseSummaryDto> _readExerciseSummaries(
+    Map<String, dynamic> json,
+  ) {
+    final value = json['exercise_summaries'];
+    if (value is! List) {
+      return const [];
+    }
+    return value
+        .whereType<Map<String, dynamic>>()
+        .map(ExerciseSummaryDto.fromJson)
+        .toList(growable: false);
+  }
+}
+
+class ExerciseSummaryDto {
+  const ExerciseSummaryDto({
+    required this.exerciseAttemptId,
+    required this.exerciseId,
+    required this.orderIndex,
+    required this.type,
+    required this.title,
+    required this.status,
+    this.score,
+    this.reviewRequired = false,
+  });
+
+  factory ExerciseSummaryDto.fromJson(Map<String, dynamic> json) {
+    return ExerciseSummaryDto(
+      exerciseAttemptId: _requiredString(json, 'exercise_attempt_id'),
+      exerciseId: _requiredString(json, 'exercise_id'),
+      orderIndex: _optionalInt(json, 'order_index') ?? 0,
+      type: _requiredString(json, 'type'),
+      title: _requiredString(json, 'title'),
+      status: _requiredString(json, 'status'),
+      score: _optionalDouble(json, 'score'),
+      reviewRequired: _optionalBool(json, 'review_required') ?? false,
+    );
+  }
+
+  final String exerciseAttemptId;
+  final String exerciseId;
+  final int orderIndex;
+  final String type;
+  final String title;
+  final String status;
+  final double? score;
+  final bool reviewRequired;
+
+  ExerciseSummary toDomain() {
+    return ExerciseSummary(
+      exerciseAttemptId: exerciseAttemptId,
+      exerciseId: exerciseId,
+      orderIndex: orderIndex,
+      type: type,
+      title: title,
+      status: status,
+      score: score,
+      reviewRequired: reviewRequired,
     );
   }
 }
@@ -116,6 +183,11 @@ int? _optionalInt(Map<String, dynamic> json, String key) {
 double? _optionalDouble(Map<String, dynamic> json, String key) {
   final value = json[key];
   return value is num ? value.toDouble() : null;
+}
+
+bool? _optionalBool(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  return value is bool ? value : null;
 }
 
 DateTime? _optionalDateTime(Map<String, dynamic> json, String key) {

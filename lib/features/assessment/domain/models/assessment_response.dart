@@ -42,6 +42,7 @@ class SpeakingResponse {
     this.accuracyScore,
     this.fluencyScore,
     this.completenessScore,
+    this.prosodyScore,
   });
 
   final String responseId;
@@ -56,6 +57,7 @@ class SpeakingResponse {
   final double? accuracyScore;
   final double? fluencyScore;
   final double? completenessScore;
+  final double? prosodyScore;
 }
 
 class WritingResponse {

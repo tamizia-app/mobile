@@ -82,6 +82,7 @@ class SpeakingResponseDto {
     this.accuracyScore,
     this.fluencyScore,
     this.completenessScore,
+    this.prosodyScore,
   });
 
   factory SpeakingResponseDto.fromJson(Map<String, dynamic> json) {
@@ -103,6 +104,7 @@ class SpeakingResponseDto {
       accuracyScore: _optionalDouble(json, 'accuracy_score'),
       fluencyScore: _optionalDouble(json, 'fluency_score'),
       completenessScore: _optionalDouble(json, 'completeness_score'),
+      prosodyScore: _optionalDouble(json, 'prosody_score'),
     );
   }
 
@@ -118,6 +120,7 @@ class SpeakingResponseDto {
   final double? accuracyScore;
   final double? fluencyScore;
   final double? completenessScore;
+  final double? prosodyScore;
 
   SpeakingResponse toDomain() {
     return SpeakingResponse(
@@ -133,6 +136,7 @@ class SpeakingResponseDto {
       accuracyScore: accuracyScore,
       fluencyScore: fluencyScore,
       completenessScore: completenessScore,
+      prosodyScore: prosodyScore,
     );
   }
 }

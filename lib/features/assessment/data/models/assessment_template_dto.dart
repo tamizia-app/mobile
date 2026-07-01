@@ -6,7 +6,10 @@ class AssessmentTemplateDto {
     required this.name,
     this.description,
     this.version,
-    this.status,
+    this.isActive,
+    this.createdByTeacherId,
+    this.createdAt,
+    this.updatedAt,
     this.summary,
     this.exercises = const [],
   });
@@ -26,8 +29,11 @@ class AssessmentTemplateDto {
       templateId: templateId,
       name: name,
       description: _optionalString(json, 'description'),
-      version: _optionalString(json, 'version'),
-      status: _optionalString(json, 'status'),
+      version: _optionalInt(json, 'version'),
+      isActive: _optionalBool(json, 'is_active'),
+      createdByTeacherId: _optionalString(json, 'created_by_teacher_id'),
+      createdAt: _optionalDateTime(json, 'created_at'),
+      updatedAt: _optionalDateTime(json, 'updated_at'),
       summary: _optionalString(json, 'summary'),
       exercises: _readExercises(json),
     );
@@ -36,8 +42,11 @@ class AssessmentTemplateDto {
   final String templateId;
   final String name;
   final String? description;
-  final String? version;
-  final String? status;
+  final int? version;
+  final bool? isActive;
+  final String? createdByTeacherId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final String? summary;
   final List<TemplateExerciseSummaryDto> exercises;
 
@@ -47,7 +56,10 @@ class AssessmentTemplateDto {
       name: name,
       description: description,
       version: version,
-      status: status,
+      isActive: isActive,
+      createdByTeacherId: createdByTeacherId,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
       summary: summary,
       exercises: exercises
           .map((item) => item.toDomain())
@@ -115,4 +127,28 @@ String? _optionalString(Map<String, dynamic> json, String key) {
     return value.toString();
   }
   return null;
+}
+
+int? _optionalInt(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.toInt();
+  }
+  return null;
+}
+
+bool? _optionalBool(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  return value is bool ? value : null;
+}
+
+DateTime? _optionalDateTime(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is! String || value.trim().isEmpty) {
+    return null;
+  }
+  return DateTime.tryParse(value);
 }

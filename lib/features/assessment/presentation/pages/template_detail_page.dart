@@ -141,11 +141,15 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
           ),
           _DetailRow(
             label: 'Version',
-            value: template.version ?? 'No disponible',
+            value: template.version?.toString() ?? 'No disponible',
           ),
           _DetailRow(
             label: 'Estado',
-            value: template.status ?? 'No disponible',
+            value: template.isActive == null
+                ? 'No disponible'
+                : template.isActive!
+                    ? 'Activo'
+                    : 'Inactivo',
           ),
           const SizedBox(height: 28),
           const Text(

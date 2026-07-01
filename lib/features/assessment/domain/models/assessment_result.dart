@@ -16,6 +16,7 @@ class AssessmentResult {
     this.pendingExercises = 0,
     this.writingAverageScore,
     this.writingReviewRequiredCount = 0,
+    this.exerciseSummaries = const [],
   });
 
   final String attemptId;
@@ -34,4 +35,27 @@ class AssessmentResult {
   final int pendingExercises;
   final double? writingAverageScore;
   final int writingReviewRequiredCount;
+  final List<ExerciseSummary> exerciseSummaries;
+}
+
+class ExerciseSummary {
+  const ExerciseSummary({
+    required this.exerciseAttemptId,
+    required this.exerciseId,
+    required this.orderIndex,
+    required this.type,
+    required this.title,
+    required this.status,
+    this.score,
+    this.reviewRequired = false,
+  });
+
+  final String exerciseAttemptId;
+  final String exerciseId;
+  final int orderIndex;
+  final String type;
+  final String title;
+  final String status;
+  final double? score;
+  final bool reviewRequired;
 }

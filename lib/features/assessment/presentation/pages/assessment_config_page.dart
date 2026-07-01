@@ -175,7 +175,7 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
           ],
           if (_viewModel.pendingAttempt != null) ...[
             const SizedBox(height: 18),
-            _PendingAttemptBanner(attemptId: _viewModel.pendingAttempt!.id),
+            const _PendingAttemptBanner(),
           ],
           if (_viewModel.errorMessage != null) ...[
             const SizedBox(height: 12),
@@ -322,9 +322,7 @@ class _ConsentBlockedBanner extends StatelessWidget {
 }
 
 class _PendingAttemptBanner extends StatelessWidget {
-  const _PendingAttemptBanner({required this.attemptId});
-
-  final String attemptId;
+  const _PendingAttemptBanner();
 
   @override
   Widget build(BuildContext context) {
@@ -335,15 +333,15 @@ class _PendingAttemptBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF93C5FD)),
       ),
-      child: Row(
+      child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.play_circle_outline, color: AppColors.primaryBlue),
-          const SizedBox(width: 10),
+          Icon(Icons.play_circle_outline, color: AppColors.primaryBlue),
+          SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Se encontro un intento pendiente para reanudar: $attemptId',
-              style: const TextStyle(
+              'Se encontro un intento pendiente. Puedes continuar desde donde lo dejaste.',
+              style: TextStyle(
                 color: Color(0xFF1E3A8A),
                 fontWeight: FontWeight.w800,
                 height: 1.35,

@@ -4,7 +4,10 @@ class AssessmentTemplate {
     required this.name,
     this.description,
     this.version,
-    this.status,
+    this.isActive,
+    this.createdByTeacherId,
+    this.createdAt,
+    this.updatedAt,
     this.summary,
     this.exercises = const [],
   });
@@ -12,8 +15,11 @@ class AssessmentTemplate {
   final String templateId;
   final String name;
   final String? description;
-  final String? version;
-  final String? status;
+  final int? version;
+  final bool? isActive;
+  final String? createdByTeacherId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final String? summary;
   final List<TemplateExerciseSummary> exercises;
 

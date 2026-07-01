@@ -9,8 +9,6 @@ import 'core/storage/secure_auth_session_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'features/assessment/data/datasources/assessment_remote_data_source_impl.dart';
 import 'features/assessment/data/repositories/assessment_repository_impl.dart';
-import 'features/assessment/data/services/assessment_service.dart';
-import 'features/assessment/data/services/mock_assessment_service.dart';
 import 'features/assessment/domain/repositories/assessment_repository.dart';
 import 'features/assessment/presentation/pages/assessment_result_page.dart';
 import 'features/assessment/presentation/pages/assessment_config_page.dart';
@@ -20,7 +18,6 @@ import 'features/assessment/presentation/pages/attempt_session_page.dart';
 import 'features/assessment/presentation/pages/build_word_page.dart';
 import 'features/assessment/presentation/pages/choose_word_page.dart';
 import 'features/assessment/presentation/pages/reading_assessment_page.dart';
-import 'features/assessment/presentation/pages/student_instructions_page.dart';
 import 'features/assessment/presentation/pages/template_catalog_page.dart';
 import 'features/assessment/presentation/pages/template_detail_page.dart';
 import 'features/assessment/presentation/pages/text_comparison_page.dart';
@@ -80,9 +77,6 @@ class _TamiziaAppState extends State<TamiziaApp> {
   final DashboardSummaryService _dashboardSummaryService =
       MockDashboardSummaryService();
   final ExerciseService _exerciseService = MockExerciseService();
-  late final AssessmentService _assessmentService = MockAssessmentService(
-    exerciseService: _exerciseService,
-  );
 
   @override
   void initState() {
@@ -213,11 +207,6 @@ class _TamiziaAppState extends State<TamiziaApp> {
         return const AssessmentAttemptPreviewPage();
       case AppRoutes.assessmentAttemptSession:
         return AttemptSessionPage(assessmentRepository: _assessmentRepository);
-      case AppRoutes.assessmentInstructions:
-        return StudentInstructionsPage(
-          exerciseService: _exerciseService,
-          assessmentService: _assessmentService,
-        );
       case AppRoutes.assessmentReading:
         return ReadingAssessmentPage(
           assessmentRepository: _assessmentRepository,

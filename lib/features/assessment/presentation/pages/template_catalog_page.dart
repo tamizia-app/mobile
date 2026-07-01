@@ -152,7 +152,7 @@ class _TemplateCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (template.status != null) _MetaPill(label: template.status!),
+              if (template.isActive != null) _MetaPill(label: template.isActive! ? 'Activo' : 'Inactivo'),
             ],
           ),
           if (template.description != null) ...[
