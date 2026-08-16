@@ -207,14 +207,14 @@ class _ReadingAssessmentPageState extends State<ReadingAssessmentPage> {
 
   String _recordingLabel() {
     if (_viewModel.isPaused) {
-      return 'Grabacion pausada';
+      return 'Grabación pausada';
     }
     if (_viewModel.isRecording) {
-      return 'Grabando... toca el microfono para detener';
+      return 'Grabando... Toca el micrófono para detener la grabación';
     }
     if (_viewModel.audioPath != null) {
       return 'Audio temporal listo para subir';
     }
-    return 'Toca el microfono para grabar';
+    return 'Toca el micrófono para grabar';
   }
 }

@@ -134,7 +134,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
         return AlertDialog(
           title: const Text('¿Eliminar aula?'),
           content: const Text(
-            'Esta accion eliminara el aula. Verifica que no existan '
+            'Esta acción eliminará el aula. Verifica que no existan '
             'estudiantes o evaluaciones asociadas antes de continuar.',
           ),
           actions: [
@@ -291,7 +291,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
     if (_studentsViewModel.students.isEmpty) {
       return [
         const Text(
-          'Aun no hay estudiantes registrados en esta aula.',
+          'Aún no hay estudiantes registrados en esta aula.',
           textAlign: TextAlign.center,
           style: TextStyle(color: AppColors.neutralGray),
         ),
@@ -337,7 +337,7 @@ class _ClassroomSummary extends StatelessWidget {
         children: [
           _DetailRow(label: 'Grado', value: _capitalize(classroom.gradeLevel)),
           const SizedBox(height: 14),
-          _DetailRow(label: 'Seccion', value: classroom.section),
+          _DetailRow(label: 'Sección', value: classroom.section),
           const SizedBox(height: 14),
           _DetailRow(
             label: 'Año escolar',

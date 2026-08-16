@@ -183,7 +183,7 @@ class _StudentCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${student.age} anios · ${translateGender(student.gender)}',
+                      '${student.age} años · ${translateGender(student.gender)}',
                       style: const TextStyle(
                         color: AppColors.mutedText,
                         fontSize: 13,

@@ -169,8 +169,10 @@ class StudentHistorySummaryDto {
       bestScore: _optionalDouble(json, 'best_score'),
       lowestScore: _optionalDouble(json, 'lowest_score'),
       trendPercentage: _optionalDouble(json, 'trend_percentage'),
-      latestInterventionLevel:
-          _optionalString(json, 'latest_intervention_level'),
+      latestInterventionLevel: _optionalString(
+        json,
+        'latest_intervention_level',
+      ),
       latestCompletedAt: _optionalDateTime(json, 'latest_completed_at'),
     );
   }
@@ -214,7 +216,7 @@ class StudentHistoryChartPointDto {
     return StudentHistoryChartPointDto(
       attemptId: _requiredString(json, 'attempt_id'),
       assessmentId: _requiredString(json, 'assessment_id'),
-      assessmentName: _optionalString(json, 'assessment_name'),
+      assessmentName: _optionalAssessmentName(json),
       completedAt: _optionalDateTime(json, 'completed_at'),
       finalScore: _optionalDouble(json, 'final_score'),
       interventionLevel: _optionalString(json, 'intervention_level'),
@@ -268,7 +270,7 @@ class StudentHistoryItemDto {
     return StudentHistoryItemDto(
       attemptId: _requiredString(json, 'attempt_id'),
       assessmentId: _requiredString(json, 'assessment_id'),
-      assessmentName: _optionalString(json, 'assessment_name'),
+      assessmentName: _optionalAssessmentName(json),
       status: _requiredString(json, 'status'),
       startedAt: _optionalDateTime(json, 'started_at'),
       completedAt: _optionalDateTime(json, 'completed_at'),
@@ -356,6 +358,14 @@ String? _optionalString(Map<String, dynamic> json, String key) {
   return value is num || value is bool ? value.toString() : null;
 }
 
+String? _optionalAssessmentName(Map<String, dynamic> json) {
+  final name = _optionalString(json, 'assessment_name');
+  if (name == null || name.toLowerCase() == 'untitled') {
+    return null;
+  }
+  return name;
+}
+
 int? _optionalInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is int) return value;
@@ -367,6 +377,7 @@ double? _optionalDouble(Map<String, dynamic> json, String key) {
   final value = json[key];
   return value is num ? value.toDouble() : null;
 }
+
 DateTime? _optionalDateTime(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is! String || value.trim().isEmpty) return null;

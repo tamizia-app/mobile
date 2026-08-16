@@ -169,7 +169,7 @@ class _TemplateCard extends StatelessWidget {
           if (template.version != null) ...[
             const SizedBox(height: 12),
             Text(
-              'Version ${template.version}',
+              'Versión ${template.version}',
               style: const TextStyle(
                 color: AppColors.primaryBlue,
                 fontWeight: FontWeight.w800,

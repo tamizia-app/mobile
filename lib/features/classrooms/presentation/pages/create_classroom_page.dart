@@ -107,14 +107,14 @@ class ClassroomFormFields extends StatelessWidget {
             ),
             const SizedBox(height: 22),
             _DropdownField(
-              label: 'Seccion',
-              hint: 'Seleccionar seccion',
+              label: 'Sección',
+              hint: 'Seleccionar sección',
               value: viewModel.section.isEmpty ? null : viewModel.section,
               items: ClassroomFormViewModel.sections,
               validator: (_) =>
                   viewModel.fieldErrors['section'] ??
                   (viewModel.section.isEmpty
-                      ? 'Selecciona una seccion.'
+                      ? 'Selecciona una sección.'
                       : null),
               onChanged: (value) => viewModel.setSection(value ?? ''),
             ),

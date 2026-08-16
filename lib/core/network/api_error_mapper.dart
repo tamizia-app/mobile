@@ -9,7 +9,7 @@ abstract final class ApiErrorMapper {
     }
     if (error is! DioException) {
       return const UnknownApiException(
-        'No se pudo completar la solicitud. Intentalo nuevamente.',
+        'No se pudo completar la solicitud. Inténtalo nuevamente.',
       );
     }
 
@@ -18,7 +18,7 @@ abstract final class ApiErrorMapper {
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
         return const ApiTimeoutException(
-          'El servidor tardo demasiado en responder.',
+          'El servidor tardó demasiado en responder.',
         );
       case DioExceptionType.connectionError:
         return const NetworkException('No se pudo conectar con el servidor.');
@@ -28,7 +28,7 @@ abstract final class ApiErrorMapper {
       case DioExceptionType.badCertificate:
       case DioExceptionType.unknown:
         return const UnknownApiException(
-          'No se pudo completar la solicitud. Intentalo nuevamente.',
+          'No se pudo completar la solicitud. Inténtalo nuevamente.',
         );
     }
   }
@@ -51,20 +51,20 @@ abstract final class ApiErrorMapper {
     }
     if (statusCode == 401) {
       if (path.endsWith('/auth/signin')) {
-        return const UnauthorizedException('Correo o contrasena incorrectos.');
+        return const UnauthorizedException('Correo o contraseña incorrectos.');
       }
       if (path.endsWith('/auth/reset-password')) {
         return const UnauthorizedException(
-          'El enlace de recuperacion es invalido o ha expirado.',
+          'El enlace de recuperación no es válido o ha expirado.',
         );
       }
       return const UnauthorizedException(
-        'La sesion expiro. Inicia sesion nuevamente.',
+        'La sesión expiró. Inicia sesión nuevamente.',
       );
     }
     if (statusCode == 403) {
       return const ForbiddenException(
-        'La sesion expiro. Inicia sesion nuevamente.',
+        'La sesión expiró. Inicia sesión nuevamente.',
       );
     }
     if (statusCode == 404) {
@@ -75,7 +75,7 @@ abstract final class ApiErrorMapper {
         return const NotFoundException('El estudiante no fue encontrado.');
       }
       return NotFoundException(
-        backendMessage ?? 'No se encontro el recurso solicitado.',
+        backendMessage ?? 'No se encontró el recurso solicitado.',
       );
     }
     if (statusCode == 409) {
@@ -84,7 +84,7 @@ abstract final class ApiErrorMapper {
       }
       if (isStudentRequest) {
         return const ConflictException(
-          'Ya existe un estudiante con ese codigo.',
+          'Ya existe un estudiante con ese código.',
         );
       }
       return const ConflictException('El correo ya se encuentra registrado.');
@@ -97,16 +97,16 @@ abstract final class ApiErrorMapper {
     }
     if (statusCode == 429) {
       return const TooManyRequestsException(
-        'Demasiadas solicitudes. Intentalo nuevamente en unos minutos.',
+        'Demasiadas solicitudes. Inténtalo nuevamente en unos minutos.',
       );
     }
     if (statusCode != null && statusCode >= 500) {
       return const ServerException(
-        'Ocurrio un error en el servidor. Intentalo nuevamente.',
+        'Ocurrió un error en el servidor. Inténtalo nuevamente.',
       );
     }
     return const UnknownApiException(
-      'No se pudo completar la solicitud. Intentalo nuevamente.',
+      'No se pudo completar la solicitud. Inténtalo nuevamente.',
     );
   }
 
@@ -156,11 +156,11 @@ abstract final class ApiErrorMapper {
 
   static String _friendlyValidationMessage(String field, String message) {
     if (field == 'email') {
-      return 'Ingresa un correo electronico valido.';
+      return 'Ingresa un correo electrónico válido.';
     }
     if ((field == 'password' || field == 'new_password') &&
         message.contains('at least 8')) {
-      return 'La contrasena debe tener minimo 8 caracteres.';
+      return 'La contraseña debe tener como mínimo 8 caracteres.';
     }
     if (message.trim().isEmpty) {
       return 'Revisa este campo.';

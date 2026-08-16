@@ -78,7 +78,7 @@ class _IdentitySummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      title: 'Sesion',
+      title: 'Sesión',
       children: [
         _SummaryRow(label: 'Aula', value: preview.classroom.name),
         _SummaryRow(label: 'Estudiante', value: preview.student.alias),
@@ -125,7 +125,7 @@ class _ConsentSummary extends StatelessWidget {
             child: Text(
               hasValidConsent
                   ? 'Consentimiento validado para iniciar el intento.'
-                  : 'No hay consentimiento valido para continuar.',
+                  : 'No hay un consentimiento válido para continuar.',
               style: TextStyle(
                 color: hasValidConsent
                     ? const Color(0xFF1E3A8A)
@@ -150,7 +150,7 @@ class _ExerciseAttemptList extends StatelessWidget {
     if (exerciseAttempts.isEmpty) {
       return const InfoBanner(
         text:
-            'El intento fue creado, pero la respuesta no incluyo ejercicios asociados para mostrar.',
+            'El intento fue creado, pero la respuesta no incluyó ejercicios asociados para mostrar.',
       );
     }
     return _SectionCard(
@@ -323,7 +323,7 @@ class _InvalidPreviewPage extends StatelessWidget {
           ),
           const Expanded(
             child: Center(
-              child: Text('No se recibio informacion del intento.'),
+              child: Text('No se recibió información del intento.'),
             ),
           ),
         ],

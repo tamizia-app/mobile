@@ -31,7 +31,7 @@ class ChooseWordViewModel extends ChangeNotifier {
       exerciseAttempt?.prompt ??
       exerciseAttempt?.instructions ??
       exerciseAttempt?.title ??
-      'Elige la opcion correcta';
+      'Elige la opción correcta';
 
   List<MCOption> get options => exerciseAttempt?.mcOptions ?? const [];
 

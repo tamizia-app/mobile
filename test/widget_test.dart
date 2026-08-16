@@ -4,6 +4,7 @@ import 'package:tamizai_app/app.dart';
 import 'package:tamizai_app/core/constants/app_strings.dart';
 import 'package:tamizai_app/core/session/auth_session_manager.dart';
 import 'package:tamizai_app/core/storage/auth_session_storage.dart';
+import 'package:tamizai_app/core/widgets/app_header.dart';
 import 'package:tamizai_app/features/auth/domain/entities/auth_session.dart';
 import 'package:tamizai_app/features/auth/domain/models/login_request.dart';
 import 'package:tamizai_app/features/auth/domain/models/register_request.dart';
@@ -13,6 +14,28 @@ import 'package:tamizai_app/features/teacher/domain/models/update_teacher_profil
 import 'package:tamizai_app/features/teacher/domain/repositories/teacher_repository.dart';
 
 void main() {
+  testWidgets('teacher header keeps its content below the status bar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: MediaQuery(
+          data: MediaQueryData(
+            size: Size(390, 860),
+            padding: EdgeInsets.only(top: 40),
+          ),
+          child: Scaffold(
+            body: Column(children: [TeacherGreetingHeader(name: 'Sandro')]),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Hola, Sandro'), findsOneWidget);
+    expect(tester.getSize(find.byType(TeacherGreetingHeader)).height, 104);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('navigates through the initial auth screens', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 860));
     await tester.pumpWidget(_app());

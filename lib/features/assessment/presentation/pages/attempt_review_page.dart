@@ -51,7 +51,7 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'No se pudo cargar la revision del intento.';
+        _errorMessage = 'No se pudo cargar la revisión del intento.';
         _isLoading = false;
       });
     }
@@ -61,9 +61,9 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Repetir evaluacion'),
+        title: const Text('Repetir evaluación'),
         content: const Text(
-          'Se creara un nuevo intento basado en esta evaluacion. Desea continuar?',
+          'Se creará un nuevo intento basado en esta evaluación. ¿Deseas continuar?',
         ),
         actions: [
           TextButton(
@@ -82,7 +82,7 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
     try {
       final response = await widget.assessmentRepository.repeatAttempt(
         widget.attemptId,
-        reason: 'Repeticion solicitada por el docente',
+        reason: 'Repetición solicitada por el docente',
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -111,7 +111,7 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
       body: Column(
         children: [
           AppHeader(
-            title: 'Revision de intento',
+            title: 'Revisión del intento',
             showBack: true,
             centerTitle: true,
           ),
@@ -177,7 +177,7 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
           if (review.status.trim().toUpperCase() == 'COMPLETED') ...[
             const SizedBox(height: 26),
             PrimaryButton(
-              text: 'Repetir evaluacion',
+              text: 'Repetir evaluación',
               icon: Icons.replay,
               isLoading: _isRepeating,
               onPressed: _isRepeating ? null : _repeatAttempt,
@@ -217,9 +217,9 @@ class _StudentInfoCard extends StatelessWidget {
           if (student == null)
             const Text('No disponible', style: TextStyle(color: AppColors.mutedText))
           else ...[
-            _row('Codigo', student!.code),
+            _row('Código', student!.code),
             _row('Edad', '${student!.age}'),
-            _row('Genero', translateGender(student!.gender)),
+            _row('Género', translateGender(student!.gender)),
             if (student!.classroom != null)
               _row('Aula', student!.classroom!.name),
           ],
@@ -269,7 +269,7 @@ class _AssessmentInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Evaluacion', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+          const Text('Evaluación', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
           const SizedBox(height: 12),
           _row('Nombre', review.assessment?.title ?? '—'),
           _row('Estado', translateAttemptStatus(review.status)),
@@ -491,7 +491,7 @@ class _ExerciseReviewCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (syllables is List)
-            _detailRow('Silabas', syllables.join(' ')),
+            _detailRow('Sílabas', syllables.join(' ')),
           if (exercise.response?['formed_word'] != null)
             _detailRow(
               'Palabra formada',
@@ -512,7 +512,7 @@ class _ExerciseReviewCard extends StatelessWidget {
           if (exercise.referenceText != null)
             _detailRow('Texto de referencia', exercise.referenceText!),
           if (exercise.response?['free_transcription_text'] != null)
-            _detailRow('Transcripcion', exercise.response!['free_transcription_text'] as String),
+            _detailRow('Transcripción', exercise.response!['free_transcription_text'] as String),
           if (exercise.response?['recognized_text'] != null)
             _detailRow('Texto reconocido', exercise.response!['recognized_text'] as String),
           _pronunciationMetrics(exercise.metrics),
@@ -618,7 +618,7 @@ class _ExerciseReviewCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Metricas de pronunciacion:',
+            'Métricas de pronunciación:',
             style: TextStyle(color: AppColors.mutedText, fontSize: 12, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
@@ -650,7 +650,7 @@ class _ExerciseReviewCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Metricas OCR:',
+            'Métricas de OCR:',
             style: TextStyle(color: AppColors.mutedText, fontSize: 12, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),

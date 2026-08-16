@@ -136,11 +136,11 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
           ),
           const SizedBox(height: 24),
           _DetailRow(
-            label: 'Descripcion',
+            label: 'Descripción',
             value: template.description ?? 'No disponible',
           ),
           _DetailRow(
-            label: 'Version',
+            label: 'Versión',
             value: template.version?.toString() ?? 'No disponible',
           ),
           _DetailRow(
@@ -160,7 +160,7 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
           Text(
             template.summary ??
                 template.description ??
-                'El backend no devolvio un resumen adicional para esta plantilla.',
+                'El servidor no devolvió un resumen adicional para esta plantilla.',
             style: const TextStyle(
               color: Color(0xFF1F2937),
               fontSize: 16,
@@ -171,7 +171,7 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
           if (template.exercises.isEmpty)
             const InfoBanner(
               text:
-                  'Este detalle no devolvio ejercicios adjuntos. La interfaz queda preparada para mostrarlos cuando el backend los exponga.',
+                  'Este detalle no incluye ejercicios adjuntos. La interfaz está preparada para mostrarlos cuando el servidor los proporcione.',
             )
           else
             _TemplateExercises(exercises: template.exercises),

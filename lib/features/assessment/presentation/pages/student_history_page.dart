@@ -153,7 +153,7 @@ class _StudentHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${student.age} anios · ${translateGender(student.gender)}',
+                  '${student.age} años · ${translateGender(student.gender)}',
                   style: const TextStyle(color: AppColors.mutedText, fontSize: 13),
                 ),
                 if (classroomStr != null)
@@ -196,7 +196,7 @@ class _SummaryCards extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: [
-              _chip('Ultimo score', _fmt(summary.latestScore)),
+              _chip('Último puntaje', _fmt(summary.latestScore)),
               _chip('Promedio', _fmt(summary.averageScore)),
               _chip('Mejor', _fmt(summary.bestScore)),
               _chip('Menor', _fmt(summary.lowestScore)),
@@ -370,7 +370,7 @@ class _HistoryItemTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.assessmentName ?? 'Evaluacion',
+                    item.assessmentName ?? 'Evaluación',
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 2),

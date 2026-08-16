@@ -15,7 +15,7 @@ class AppStrings {
   static const createTeacherAccount = 'Crear cuenta docente';
   static const loginPrivacy =
       'Tus datos y los de tus estudiantes serán protegidos';
-  static const loginSuccess = 'Inicio de sesión correctamente.';
+  static const loginSuccess = 'Sesión iniciada correctamente.';
 
   static const registerTitle = 'Crear cuenta docente';
   static const registerDescription =
@@ -42,13 +42,13 @@ class AppStrings {
   static const namesHint = 'Ingresa tus nombres';
   static const lastNamesLabel = 'Apellidos *';
   static const lastNamesHint = 'Ingresa tus apellidos';
-  static const institutionalEmailLabel = 'Correo Electrónico *';
+  static const institutionalEmailLabel = 'Correo electrónico *';
   static const institutionalEmailHint = 'ejemplo@institucion.edu';
   static const passwordRequiredLabel = 'Contraseña *';
   static const passwordMinHint = 'Mínimo 8 caracteres';
-  static const confirmPasswordLabel = 'Confirmar Contraseña *';
+  static const confirmPasswordLabel = 'Confirmar contraseña *';
   static const confirmPasswordHint = 'Repite tu contraseña';
-  static const institutionLabel = 'Institución Educativa *';
+  static const institutionLabel = 'Institución educativa *';
   static const institutionHint = 'Nombre de la escuela o colegio';
   static const phoneLabel = 'Teléfono *';
   static const phoneHint = 'Ejemplo: 987654321';
@@ -56,9 +56,9 @@ class AppStrings {
   static const recoveryEmailHint = 'docente@escuela.edu';
 
   static const acceptTermsStart = 'Acepto los ';
-  static const termsAndConditions = 'Términos y Condiciones';
+  static const termsAndConditions = 'Términos y condiciones';
   static const andPrivacy = ' y la\n';
-  static const privacyPolicy = 'Política de Privacidad.';
+  static const privacyPolicy = 'Política de privacidad.';
   static const privacyNotice =
-      'Tus datos y los de tus estudiantes son tratados de manera confidencial y se utilizan exclusivamente para fines de gestión pedagógica dentro de LectorRisk.';
+      'Tus datos y los de tus estudiantes se tratan de manera confidencial y se utilizan exclusivamente para fines de gestión pedagógica dentro de TamizIA.';
 }

@@ -22,7 +22,7 @@ class AssessmentResultPage extends StatelessWidget {
       body: Column(
         children: [
           AppHeader(
-            title: 'Evaluacion completada',
+            title: 'Evaluación completada',
             showBack: true,
             centerTitle: true,
             onBack: () => Navigator.pushNamedAndRemoveUntil(
@@ -100,7 +100,7 @@ class _ScoreCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Sesion finalizada',
+            'Sesión finalizada',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 12),
@@ -158,16 +158,24 @@ class _SummaryCard extends StatelessWidget {
         children: [
           _Row(label: 'Ejercicios', value: '${result.evaluatedExercises}/${result.totalExercises}'),
           _Row(label: 'Pendientes', value: '${result.pendingExercises}'),
-          if (hasMC) _Row(label: 'MC correctas', value: '${result.mcCorrectCount ?? 0}'),
-          if (hasOS) _Row(label: 'OS correctas', value: '${result.osCorrectCount ?? 0}'),
+          if (hasMC)
+            _Row(
+              label: 'Selección múltiple',
+              value: '${result.mcCorrectCount ?? 0} correctas',
+            ),
+          if (hasOS)
+            _Row(
+              label: 'Orden de sílabas',
+              value: '${result.osCorrectCount ?? 0} correctas',
+            ),
           if (hasSpeaking)
             _Row(
-              label: 'Speaking',
+              label: 'Expresión oral',
               value: '${result.speakingCompletedCount ?? 0} completados | promedio ${_num(result.speakingAverageScore)}',
             ),
           if (hasWriting)
             _Row(
-              label: 'Writing',
+              label: 'Escritura',
               value: '${result.writingCompletedCount ?? 0} completados | promedio ${_num(result.writingAverageScore)}',
             ),
         ],
@@ -345,7 +353,7 @@ class _MissingResultPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: Text('No se recibio el resultado.')),
+      body: Center(child: Text('No se recibió el resultado.')),
     );
   }
 }

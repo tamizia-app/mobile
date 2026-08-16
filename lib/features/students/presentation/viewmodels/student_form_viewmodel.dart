@@ -116,7 +116,7 @@ class StudentFormViewModel extends ChangeNotifier {
     final extension = name.split('.').last.toLowerCase();
     const allowedExtensions = {'pdf', 'jpg', 'jpeg', 'png'};
     if (bytes.isEmpty || !allowedExtensions.contains(extension)) {
-      generalError = 'Selecciona un archivo PDF, JPG, JPEG o PNG valido.';
+      generalError = 'Selecciona un archivo PDF, JPG, JPEG o PNG válido.';
       notifyListeners();
       return false;
     }

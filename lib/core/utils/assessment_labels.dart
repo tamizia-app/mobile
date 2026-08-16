@@ -2,9 +2,9 @@ String translateExerciseType(String? type) {
   if (type == null) return 'No disponible';
   switch (type.trim().toUpperCase()) {
     case 'MULTIPLE_CHOICE':
-      return 'Seleccion multiple';
+      return 'Selección múltiple';
     case 'ORDER_SYLLABLES':
-      return 'Orden de silabas';
+      return 'Orden de sílabas';
     case 'READING_SPEAKING':
       return 'Lectura oral';
     case 'LISTENING_SPEAKING':
@@ -88,11 +88,11 @@ String translateReviewReason(String? reason) {
     case 'HIGH_WORD_ERROR_RATE':
       return 'Alta tasa de error por palabras';
     case 'EMPTY_RECOGNIZED_TEXT':
-      return 'No se reconocio texto';
+      return 'No se reconoció texto';
     case 'LOW_PRONUNCIATION_SCORE':
-      return 'Baja puntuacion de pronunciacion';
+      return 'Baja puntuación de pronunciación';
     case 'LOW_ACCURACY_SCORE':
-      return 'Baja precision';
+      return 'Baja precisión';
     case 'LOW_FLUENCY_SCORE':
       return 'Baja fluidez';
     case 'LOW_COMPLETENESS_SCORE':
@@ -106,9 +106,9 @@ String translateGender(String? gender) {
   if (gender == null) return 'No disponible';
   switch (gender.trim().toUpperCase()) {
     case 'BOY':
-      return 'Nino';
+      return 'Niño';
     case 'GIRL':
-      return 'Nina';
+      return 'Niña';
     default:
       return _fallback(gender);
   }

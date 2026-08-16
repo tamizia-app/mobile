@@ -101,7 +101,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('¿Eliminar estudiante?'),
-        content: const Text('Esta accion eliminara al estudiante del aula.'),
+        content: const Text('Esta acción eliminará al estudiante del aula.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -127,7 +127,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       builder: (dialogContext) => AlertDialog(
         title: const Text('¿Revocar consentimiento?'),
         content: const Text(
-          'El estudiante ya no podra continuar con evaluaciones que '
+          'El estudiante ya no podrá continuar con evaluaciones que '
           'requieran consentimiento.',
         ),
         actions: [
@@ -314,10 +314,10 @@ class _StudentDetails extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _DetailRow(label: 'Codigo', value: student.code),
-          _DetailRow(label: 'Edad', value: '${student.age} anios'),
+          _DetailRow(label: 'Código', value: student.code),
+          _DetailRow(label: 'Edad', value: '${student.age} años'),
           _DetailRow(
-            label: 'Genero',
+            label: 'Género',
             value: translateGender(student.gender),
           ),
           _DetailRow(
@@ -408,7 +408,7 @@ class _ConsentDetails extends StatelessWidget {
                   children: [
                     _DetailRow(
                       label: 'Registrado',
-                      value: current.status ? 'Si' : 'No',
+                      value: current.status ? 'Sí' : 'No',
                     ),
                     _DetailRow(
                       label: 'Fecha',
@@ -416,11 +416,11 @@ class _ConsentDetails extends StatelessWidget {
                     ),
                     _DetailRow(
                       label: 'Revocado',
-                      value: current.revokedAt == null ? 'No' : 'Si',
+                      value: current.revokedAt == null ? 'No' : 'Sí',
                     ),
                     if (current.revokedAt != null)
                       _DetailRow(
-                        label: 'Fecha revocacion',
+                        label: 'Fecha de revocación',
                         value: _formatDate(current.revokedAt),
                       ),
                   ],

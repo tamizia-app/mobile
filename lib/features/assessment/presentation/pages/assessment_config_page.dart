@@ -81,7 +81,7 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
           body: Column(
             children: [
               AppHeader(
-                title: 'Nueva evaluacion',
+                title: 'Nueva evaluación',
                 showBack: true,
                 centerTitle: true,
                 onBack: () => Navigator.pushReplacementNamed(
@@ -133,7 +133,7 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
           ),
           const SizedBox(height: 24),
           _ConfigDropdown(
-            label: 'Estudiante (seudonimo)',
+            label: 'Estudiante (seudónimo)',
             hint: 'Seleccionar estudiante',
             value: _viewModel.studentId.isEmpty ? null : _viewModel.studentId,
             items: _viewModel.students
@@ -189,7 +189,7 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
           ],
           const SizedBox(height: 28),
           const Text(
-            'Resumen de sesion',
+            'Resumen de la sesión',
             style: TextStyle(
               color: Color(0xFF111827),
               fontSize: 19,
@@ -203,17 +203,17 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
             template: _viewModel.selectedTemplate?.name,
           ),
           const SizedBox(height: 18),
-          const AssessmentSummaryCard(durationText: '15 - 20 min'),
+          const AssessmentSummaryCard(durationText: '15–20 min'),
           const SizedBox(height: 24),
           const InfoBanner(
             text:
-                'Se requiere consentimiento previo\nAsegurese de contar con la autorizacion de los tutores legales antes de iniciar la evaluacion con el estudiante.',
+                'Se requiere consentimiento previo\nAsegúrate de contar con la autorización de los tutores legales antes de iniciar la evaluación con el estudiante.',
             backgroundColor: Color(0xFFD1EAF6),
             borderColor: Color(0xFFABCEDF),
           ),
           const SizedBox(height: 48),
           PrimaryButton(
-            text: 'Crear assessment e iniciar intento',
+            text: 'Crear evaluación e iniciar intento',
             icon: Icons.arrow_forward,
             isLoading: _viewModel.isSubmitting,
             onPressed: _createAssessmentAndAttempt,
@@ -307,7 +307,7 @@ class _ConsentBlockedBanner extends StatelessWidget {
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'No se puede iniciar la evaluacion sin consentimiento valido.',
+              'No se puede iniciar la evaluación sin un consentimiento válido.',
               style: TextStyle(
                 color: AppColors.errorRed,
                 fontWeight: FontWeight.w800,
@@ -340,7 +340,7 @@ class _PendingAttemptBanner extends StatelessWidget {
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Se encontro un intento pendiente. Puedes continuar desde donde lo dejaste.',
+              'Se encontró un intento pendiente. Puedes continuar desde donde lo dejaste.',
               style: TextStyle(
                 color: Color(0xFF1E3A8A),
                 fontWeight: FontWeight.w800,

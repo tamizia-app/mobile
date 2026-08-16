@@ -99,7 +99,7 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
               AppHeader(
                 title: 'Mis aulas',
                 trailing: IconButton(
-                  tooltip: _showSearch ? 'Cerrar busqueda' : 'Buscar',
+                  tooltip: _showSearch ? 'Cerrar búsqueda' : 'Buscar',
                   icon: Icon(
                     _showSearch ? Icons.close : Icons.search,
                     size: 26,
@@ -115,7 +115,7 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
                     autofocus: true,
                     onChanged: _viewModel.search,
                     decoration: const InputDecoration(
-                      hintText: 'Buscar por nombre, grado, seccion o año',
+                      hintText: 'Buscar por nombre, grado, sección o año',
                       prefixIcon: Icon(Icons.search),
                     ),
                   ),
@@ -190,7 +190,7 @@ class _EmptyClassroomsState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Aun no tienes aulas registradas.',
+              'Aún no tienes aulas registradas.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),

@@ -1,11 +1,11 @@
 {
-    "name": "TamizAI",
-    "short_name": "TamizAI",
+    "name": "TamizIA",
+    "short_name": "TamizIA",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "TamizAI mobile application.",
+    "description": "Aplicación móvil para el tamizaje temprano de dificultades de lectoescritura.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -55,7 +55,7 @@ class _ExerciseCatalogPageState extends State<ExerciseCatalogPage> {
                       },
                     )
                   : AppHeader(
-                      title: 'Catálogo de Ejercicios',
+                      title: 'Catálogo de ejercicios',
                       trailing: CircleAvatar(
                         radius: 20,
                         backgroundColor: const Color(0xFFD5ECF7),

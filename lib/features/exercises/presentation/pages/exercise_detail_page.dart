@@ -63,7 +63,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
           body: Column(
             children: [
               AppHeader(
-                title: 'Detalle del Ejercicio',
+                title: 'Detalle del ejercicio',
                 showBack: true,
                 onBack: () => Navigator.pushReplacementNamed(
                   context,
@@ -78,7 +78,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                     children: [
                       Text(
                         exercise?.detailTitle ??
-                            'Análisis de Comprensión Lectora',
+                            'Análisis de comprensión lectora',
                         style: const TextStyle(
                           color: Color(0xFF111827),
                           fontSize: 32,
@@ -93,7 +93,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                       ),
                       _InfoRow(
                         label: 'Grado\nrecomendado',
-                        value: exercise?.recommendedGrade ?? '3er Año Básico',
+                        value: exercise?.recommendedGrade ?? '3.er grado de primaria',
                       ),
                       _InfoRow(
                         label: 'Duración\nestimada',

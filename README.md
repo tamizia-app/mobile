@@ -1,6 +1,6 @@
-# TamizAI
+# TamizIA
 
-Mobile application for TamizAI.
+Aplicación móvil de apoyo al tamizaje temprano de dificultades de lectoescritura.
 
 ## Getting Started
 

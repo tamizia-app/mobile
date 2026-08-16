@@ -125,7 +125,7 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
           body: Column(
             children: [
               AppHeader(
-                title: 'Sesion del intento',
+                title: 'Sesión del intento',
                 showBack: true,
                 centerTitle: true,
                 onBack: () => Navigator.pushReplacementNamed(

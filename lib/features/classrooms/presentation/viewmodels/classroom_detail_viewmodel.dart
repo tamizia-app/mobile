@@ -48,7 +48,7 @@ class ClassroomDetailViewModel extends ChangeNotifier {
       return true;
     } on ConflictException {
       errorMessage =
-          'No se puede eliminar el aula porque tiene informacion asociada.';
+          'No se puede eliminar el aula porque tiene información asociada.';
       return false;
     } on ApiException catch (error) {
       errorMessage = error.message;

@@ -23,7 +23,7 @@ class ResetPasswordViewModel extends ChangeNotifier {
 
   String? validateToken() {
     if (token.trim().isEmpty) {
-      return 'El enlace de recuperacion no contiene un token valido.';
+      return 'El enlace de recuperación no contiene un token válido.';
     }
     return null;
   }

@@ -13,13 +13,13 @@ class AssessmentErrorPage extends StatelessWidget {
     final argument = ModalRoute.of(context)?.settings.arguments;
     final message = argument is String && argument.trim().isNotEmpty
         ? argument
-        : 'No se pudo completar la sesion.';
+        : 'No se pudo completar la sesión.';
     return Scaffold(
       backgroundColor: AppColors.teacherBackground,
       body: Column(
         children: [
           AppHeader(
-            title: 'Sesion fallida',
+            title: 'Sesión fallida',
             showBack: true,
             centerTitle: true,
             onBack: () => Navigator.pushReplacementNamed(

@@ -60,7 +60,7 @@ class StudentCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Genero: ${student.gender == 'BOY' ? 'Niño' : 'Niña'}',
+                    'Género: ${student.gender == 'BOY' ? 'Niño' : 'Niña'}',
                     style: const TextStyle(
                       color: Color(0xFF3F4A55),
                       fontSize: 13,

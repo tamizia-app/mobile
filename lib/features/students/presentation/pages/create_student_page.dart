@@ -214,15 +214,15 @@ class StudentFormScaffold extends StatelessWidget {
                               ],
                               AppTextField(
                                 controller: codeController,
-                                label: 'Codigo del estudiante',
+                                label: 'Código del estudiante',
                                 hintText: 'Ej: EST-001',
                                 validator: (value) {
                                   final code = value?.trim() ?? '';
                                   if (code.isEmpty) {
-                                    return 'El codigo es obligatorio.';
+                                    return 'El código es obligatorio.';
                                   }
                                   if (code.length > 50) {
-                                    return 'El codigo admite hasta 50 caracteres.';
+                                    return 'El código admite hasta 50 caracteres.';
                                   }
                                   return viewModel.fieldErrors['code'];
                                 },
@@ -259,7 +259,7 @@ class StudentFormScaffold extends StatelessWidget {
                               ],
                               const InfoBanner(
                                 text:
-                                    'Usa un codigo para proteger la identidad '
+                                    'Usa un código para proteger la identidad '
                                     'del estudiante.',
                                 backgroundColor: Color(0xFFD6EEF9),
                                 borderColor: Color(0xFFB4D7E5),
@@ -317,7 +317,7 @@ class _OptionalConsentSection extends StatelessWidget {
         const SizedBox(height: 6),
         const Text(
           'Puedes adjuntar ahora el documento de consentimiento o hacerlo '
-          'mas adelante desde el detalle del estudiante.',
+          'más adelante desde el detalle del estudiante.',
           style: TextStyle(color: AppColors.neutralGray, height: 1.4),
         ),
         const SizedBox(height: 12),
@@ -398,17 +398,17 @@ class _GenderField extends StatelessWidget {
     return DropdownButtonFormField<String>(
       key: ValueKey('gender-${viewModel.gender}'),
       value: viewModel.gender.isEmpty ? null : viewModel.gender,
-      hint: const Text('Seleccionar genero'),
+      hint: const Text('Seleccionar género'),
       items: const [
         DropdownMenuItem(value: 'BOY', child: Text('Niño')),
         DropdownMenuItem(value: 'GIRL', child: Text('Niña')),
       ],
       validator: (_) =>
           viewModel.fieldErrors['gender'] ??
-          (viewModel.gender.isEmpty ? 'Selecciona un genero.' : null),
+          (viewModel.gender.isEmpty ? 'Selecciona un género.' : null),
       autovalidateMode: AutovalidateMode.onUserInteraction,
       onChanged: (value) => viewModel.setGender(value ?? ''),
-      decoration: const InputDecoration(labelText: 'Genero'),
+      decoration: const InputDecoration(labelText: 'Género'),
     );
   }
 }

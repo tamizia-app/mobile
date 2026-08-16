@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tamizai_app/core/network/api_client.dart';
 import 'package:tamizai_app/core/network/api_exception.dart';
+import 'package:tamizai_app/core/utils/assessment_labels.dart';
 import 'package:tamizai_app/features/students/data/datasources/student_remote_data_source.dart';
 import 'package:tamizai_app/features/students/data/datasources/student_remote_data_source_impl.dart';
 import 'package:tamizai_app/features/students/data/models/create_student_request_dto.dart';
@@ -23,6 +24,13 @@ import 'package:tamizai_app/features/students/presentation/viewmodels/student_fo
 import 'package:tamizai_app/features/students/presentation/viewmodels/students_by_classroom_viewmodel.dart';
 
 void main() {
+  group('Student labels', () {
+    test('translates both gender values with the correct letter', () {
+      expect(translateGender('BOY'), 'Niño');
+      expect(translateGender('GIRL'), 'Niña');
+    });
+  });
+
   group('Student DTOs', () {
     test('parses student snake_case fields and ISO dates', () {
       final student = StudentDto.fromJson(_studentJson()).toDomain();

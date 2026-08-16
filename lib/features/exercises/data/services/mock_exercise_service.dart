@@ -13,12 +13,12 @@ class MockExerciseService implements ExerciseService {
   final List<Exercise> _exercises = const [
     Exercise(
       id: 'visual-vocabulary',
-      title: 'Comprensión Lectora: Vocabulario Visual',
-      detailTitle: 'Análisis de Comprensión Lectora',
+      title: 'Comprensión lectora: vocabulario visual',
+      detailTitle: 'Análisis de comprensión lectora',
       category: 'Lectura',
       type: AssessmentType.mixed,
       typeLabel: 'Lectura y escritura',
-      recommendedGrade: '3er Año Básico',
+      recommendedGrade: '3.er grado de primaria',
       estimatedDurationMinutes: 45,
       description:
           'Ejercicio diseñado para mejorar el reconocimiento de palabras frecuentes. Los estudiantes asocian imágenes claras con su correspondiente palabra escrita.',
@@ -34,7 +34,7 @@ class MockExerciseService implements ExerciseService {
       category: 'Lectura',
       type: AssessmentType.reading,
       typeLabel: 'Lectura',
-      recommendedGrade: '3er Año Básico',
+      recommendedGrade: '3.er grado de primaria',
       estimatedDurationMinutes: 15,
       description:
           'Actividad guiada para escuchar la lectura del estudiante en voz alta.',
@@ -49,7 +49,7 @@ class MockExerciseService implements ExerciseService {
       category: 'Escritura',
       type: AssessmentType.writing,
       typeLabel: 'Escritura',
-      recommendedGrade: '3er Año Básico',
+      recommendedGrade: '3.er grado de primaria',
       estimatedDurationMinutes: 15,
       description:
           'Actividad para practicar trazos y escritura de frases cortas.',
@@ -64,7 +64,7 @@ class MockExerciseService implements ExerciseService {
       category: 'Juegos',
       type: AssessmentType.buildWord,
       typeLabel: 'Juego de sílabas',
-      recommendedGrade: '3er Año Básico',
+      recommendedGrade: '3.er grado de primaria',
       estimatedDurationMinutes: 10,
       description: 'Juego para ordenar sílabas y formar una palabra.',
       instructionsForTeacher:
@@ -79,7 +79,7 @@ class MockExerciseService implements ExerciseService {
       category: 'Juegos',
       type: AssessmentType.chooseWord,
       typeLabel: 'Selección de palabra',
-      recommendedGrade: '3er Año Básico',
+      recommendedGrade: '3.er grado de primaria',
       estimatedDurationMinutes: 10,
       description: 'Juego para elegir la palabra que corresponde a la imagen.',
       instructionsForTeacher:

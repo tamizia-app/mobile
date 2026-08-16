@@ -117,7 +117,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
           body: Column(
             children: [
               AppHeader(
-                title: 'Perfil del Docente',
+                title: 'Perfil del docente',
                 showBack: true,
                 centerTitle: true,
                 onBack: () => Navigator.pushReplacementNamed(
@@ -221,7 +221,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                               const SizedBox(height: 18),
                               AppTextField(
                                 controller: _emailController,
-                                label: 'Correo Electrónico',
+                                label: 'Correo electrónico',
                                 hintText: 'juan.perez@email.com',
                                 keyboardType: TextInputType.emailAddress,
                                 validator: AuthValidators.validateEmail,
@@ -230,8 +230,8 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                               const SizedBox(height: 18),
                               AppTextField(
                                 controller: _institutionController,
-                                label: 'Institución Educativa',
-                                hintText: 'Institución Educativa XYZ',
+                                label: 'Institución educativa',
+                                hintText: 'Institución educativa XYZ',
                                 validator: (value) =>
                                     AuthValidators.validateRequiredField(
                                       value,
@@ -242,7 +242,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                               const SizedBox(height: 18),
                               AppTextField(
                                 controller: _phoneController,
-                                label: 'Telefono',
+                                label: 'Teléfono',
                                 hintText: '987654321',
                                 keyboardType: TextInputType.phone,
                                 inputFormatters: [

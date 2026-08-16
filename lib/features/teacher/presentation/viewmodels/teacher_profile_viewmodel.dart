@@ -51,7 +51,7 @@ class TeacherProfileViewModel extends ChangeNotifier {
         AuthValidators.validateEmail(email) == null &&
         AuthValidators.validateRequiredField(
               institution,
-              'La institucion educativa es obligatoria.',
+              'La institución educativa es obligatoria.',
             ) ==
             null &&
         AuthValidators.validatePhone(phone) == null;
@@ -151,7 +151,7 @@ class TeacherProfileViewModel extends ChangeNotifier {
         AuthValidators.validateEmail(email) ??
         AuthValidators.validateRequiredField(
           institution,
-          'La institucion educativa es obligatoria.',
+          'La institución educativa es obligatoria.',
         ) ??
         AuthValidators.validatePhone(phone);
     return errorMessage == null;

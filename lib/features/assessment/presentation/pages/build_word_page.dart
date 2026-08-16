@@ -93,7 +93,7 @@ class _BuildWordPageState extends State<BuildWordPage> {
     }
     if (_viewModel.syllables.isEmpty) {
       return _StateMessage(
-        text: _viewModel.errorMessage ?? 'Este ejercicio no tiene silabas.',
+        text: _viewModel.errorMessage ?? 'Este ejercicio no tiene sílabas.',
       );
     }
     return SingleChildScrollView(

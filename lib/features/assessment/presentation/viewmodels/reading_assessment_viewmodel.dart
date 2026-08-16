@@ -85,7 +85,7 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
     errorMessage = null;
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
-      errorMessage = 'Activa el permiso de microfono para grabar.';
+      errorMessage = 'Activa el permiso del micrófono para grabar.';
       notifyListeners();
       return;
     }
@@ -156,7 +156,7 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
     }
     if (!await _isWaveFile(path)) {
       errorMessage =
-          'El archivo grabado no es WAV valido. Intenta grabar otra vez.';
+          'El archivo grabado no es un WAV válido. Intenta grabar otra vez.';
       notifyListeners();
       return false;
     }

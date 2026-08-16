@@ -168,7 +168,7 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
         ),
         const SizedBox(height: 16),
         const Text(
-          'Escribe aqui',
+          'Escribe aquí',
           style: TextStyle(color: Color(0xFF8A8F98), fontSize: 16),
         ),
         const SizedBox(height: 10),

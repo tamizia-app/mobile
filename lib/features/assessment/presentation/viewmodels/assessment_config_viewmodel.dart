@@ -136,7 +136,7 @@ class AssessmentConfigViewModel extends ChangeNotifier {
         );
     if (errorMessage == null && !hasValidConsent) {
       missingConsent = true;
-      errorMessage = 'No se puede iniciar sin consentimiento valido.';
+      errorMessage = 'No se puede iniciar sin un consentimiento válido.';
     }
     notifyListeners();
     return errorMessage == null;
@@ -150,7 +150,7 @@ class AssessmentConfigViewModel extends ChangeNotifier {
     final student = selectedStudent;
     final template = selectedTemplate;
     if (classroom == null || student == null || template == null) {
-      errorMessage = 'No se pudo preparar la evaluacion.';
+      errorMessage = 'No se pudo preparar la evaluación.';
       notifyListeners();
       return null;
     }
@@ -197,7 +197,7 @@ class AssessmentConfigViewModel extends ChangeNotifier {
       final message = _messageFor(error);
       if (_looksLikeConsentError(message)) {
         missingConsent = true;
-        errorMessage = 'No se puede iniciar sin consentimiento valido.';
+        errorMessage = 'No se puede iniciar sin un consentimiento válido.';
       } else {
         errorMessage = message;
       }

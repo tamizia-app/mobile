@@ -30,7 +30,7 @@ class BuildWordViewModel extends ChangeNotifier {
   String get prompt =>
       exerciseAttempt?.prompt ??
       exerciseAttempt?.instructions ??
-      'Ordena las silabas';
+      'Ordena las sílabas';
 
   List<String> get syllables => exerciseAttempt?.syllables ?? const [];
 
@@ -107,7 +107,7 @@ class BuildWordViewModel extends ChangeNotifier {
     final exerciseAttemptId = exerciseAttempt?.id;
     if (exerciseAttemptId == null ||
         selectedSyllables.length != syllables.length) {
-      validationMessage = 'Ordena todas las silabas para continuar.';
+      validationMessage = 'Ordena todas las sílabas para continuar.';
       notifyListeners();
       return false;
     }

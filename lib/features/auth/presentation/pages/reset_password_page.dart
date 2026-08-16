@@ -58,7 +58,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     _passwordController.clear();
     _confirmationController.clear();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Contrasena restablecida correctamente.')),
+      const SnackBar(content: Text('Contraseña restablecida correctamente.')),
     );
     Navigator.pushNamedAndRemoveUntil(
       context,
@@ -85,7 +85,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const BackHeader(
-                          title: 'Restablecer contrasena',
+                          title: 'Restablecer contraseña',
                           outsideCard: true,
                         ),
                         const SizedBox(height: 64),
@@ -97,16 +97,16 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         const SizedBox(height: 32),
                         PasswordField(
                           controller: _passwordController,
-                          label: 'Nueva contrasena',
-                          hintText: 'Minimo 8 caracteres',
+                          label: 'Nueva contraseña',
+                          hintText: 'Mínimo 8 caracteres',
                           validator: AuthValidators.validateMinimumPassword,
                           onChanged: _viewModel.setNewPassword,
                         ),
                         const SizedBox(height: 18),
                         PasswordField(
                           controller: _confirmationController,
-                          label: 'Confirmar nueva contrasena',
-                          hintText: 'Repite tu contrasena',
+                          label: 'Confirmar nueva contraseña',
+                          hintText: 'Repite tu contraseña',
                           validator: (value) =>
                               AuthValidators.validateConfirmPassword(
                                 value,
@@ -120,7 +120,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         ],
                         const SizedBox(height: 32),
                         PrimaryButton(
-                          text: 'Restablecer contrasena',
+                          text: 'Restablecer contraseña',
                           isLoading: _viewModel.isLoading,
                           onPressed: _submit,
                         ),

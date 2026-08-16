@@ -55,7 +55,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
       summary = await _dashboardSummaryService.getDashboardSummary();
       errorMessage = null;
     } catch (_) {
-      errorMessage = 'No se pudo cargar el dashboard.';
+      errorMessage = 'No se pudo cargar el panel principal.';
     }
     isLoading = false;
     notifyListeners();
