@@ -148,8 +148,8 @@ class AssessmentConfigViewModel extends ChangeNotifier {
     }
     final classroom = selectedClassroom;
     final student = selectedStudent;
-    final template = selectedTemplate;
-    if (classroom == null || student == null || template == null) {
+    final selectedTemplateValue = selectedTemplate;
+    if (classroom == null || student == null || selectedTemplateValue == null) {
       errorMessage = 'No se pudo preparar la evaluación.';
       notifyListeners();
       return null;
@@ -161,6 +161,7 @@ class AssessmentConfigViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
+      final template = await _loadTemplateDetails(selectedTemplateValue);
       final assessment = await _assessmentRepository.createAssessment(
         classroomId: classroomId,
         templateId: templateId,
@@ -205,6 +206,24 @@ class AssessmentConfigViewModel extends ChangeNotifier {
     } finally {
       isSubmitting = false;
       notifyListeners();
+    }
+  }
+
+  Future<AssessmentTemplate> _loadTemplateDetails(
+    AssessmentTemplate template,
+  ) async {
+    final hasCompleteExerciseTitles =
+        template.exercises.isNotEmpty &&
+        template.exercises.every(
+          (exercise) => exercise.title?.trim().isNotEmpty == true,
+        );
+    if (hasCompleteExerciseTitles) {
+      return template;
+    }
+    try {
+      return await _assessmentRepository.getTemplateById(template.id);
+    } catch (_) {
+      return template;
     }
   }
 

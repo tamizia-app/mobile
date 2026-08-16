@@ -6,6 +6,7 @@ import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../../core/widgets/app_floating_button.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/classroom_card.dart';
+import '../../../../core/widgets/responsive_layout.dart';
 import '../../domain/models/classroom.dart';
 import '../../domain/repositories/classroom_repository.dart';
 import '../viewmodels/classrooms_viewmodel.dart';
@@ -153,19 +154,52 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
                 Center(child: Text('No se encontraron aulas.')),
               ],
             )
-          : ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(26, 34, 26, 120),
-              itemCount: classrooms.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final classroom = classrooms[index];
-                return ClassroomCard(
-                  classroom: classroom,
-                  onTap: () => _openClassroom(classroom),
-                );
-              },
-            ),
+          : _buildClassroomCollection(classrooms),
+    );
+  }
+
+  Widget _buildClassroomCollection(List<Classroom> classrooms) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = responsiveColumnCount(
+          constraints.maxWidth,
+          tablet: 2,
+          desktop: 2,
+        );
+        if (columns == 1) {
+          return ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(26, 34, 26, 120),
+            itemCount: classrooms.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final classroom = classrooms[index];
+              return ClassroomCard(
+                classroom: classroom,
+                onTap: () => _openClassroom(classroom),
+              );
+            },
+          );
+        }
+        return GridView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(26, 34, 26, 120),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            mainAxisExtent: 150,
+          ),
+          itemCount: classrooms.length,
+          itemBuilder: (context, index) {
+            final classroom = classrooms[index];
+            return ClassroomCard(
+              classroom: classroom,
+              onTap: () => _openClassroom(classroom),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:tamizai_app/core/constants/app_strings.dart';
 import 'package:tamizai_app/core/session/auth_session_manager.dart';
 import 'package:tamizai_app/core/storage/auth_session_storage.dart';
 import 'package:tamizai_app/core/widgets/app_header.dart';
+import 'package:tamizai_app/core/widgets/responsive_layout.dart';
 import 'package:tamizai_app/features/auth/domain/entities/auth_session.dart';
 import 'package:tamizai_app/features/auth/domain/models/login_request.dart';
 import 'package:tamizai_app/features/auth/domain/models/register_request.dart';
@@ -92,6 +93,41 @@ void main() {
 
     expect(find.text('Hola, Ada'), findsOneWidget);
     expect(find.textContaining('Accesos'), findsOneWidget);
+  });
+
+  testWidgets('adapts the dashboard to a tablet viewport', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Comenzar'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'ejemplo@escuela.edu'),
+      'docente@escuela.edu',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'password123'),
+      'Password123',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, AppStrings.loginButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getSize(find.byType(Scaffold).first).width,
+      AppBreakpoints.maxAppWidth,
+    );
+    final tabletGrids = tester
+        .widgetList<GridView>(find.byType(GridView))
+        .where((grid) {
+          final delegate = grid.gridDelegate;
+          return delegate is SliverGridDelegateWithFixedCrossAxisCount &&
+              delegate.crossAxisCount == 4;
+        });
+    expect(tabletGrids.length, 2);
+    expect(tester.takeException(), isNull);
   });
 }
 
