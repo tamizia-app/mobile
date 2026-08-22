@@ -95,9 +95,7 @@ class _CreateStudentPageState extends State<CreateStudentPage> {
   Widget build(BuildContext context) {
     return StudentFormScaffold(
       title: 'Agregar estudiante',
-      subtitle: _classroomName == null
-          ? 'Aula nueva'
-          : 'Aula: $_classroomName',
+      subtitle: _classroomName == null ? 'Aula nueva' : 'Aula: $_classroomName',
       buttonText: 'Guardar',
       formKey: _formKey,
       viewModel: _viewModel,
@@ -397,7 +395,7 @@ class _GenderField extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       key: ValueKey('gender-${viewModel.gender}'),
-      value: viewModel.gender.isEmpty ? null : viewModel.gender,
+      initialValue: viewModel.gender.isEmpty ? null : viewModel.gender,
       hint: const Text('Seleccionar género'),
       items: const [
         DropdownMenuItem(value: 'BOY', child: Text('Niño')),

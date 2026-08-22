@@ -8,6 +8,7 @@ import '../../../../core/widgets/info_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/assessment_attempt.dart';
 import '../../domain/models/assessment_attempt_preview.dart';
+import '../../domain/models/assessment_template.dart';
 
 class AssessmentAttemptPreviewPage extends StatelessWidget {
   const AssessmentAttemptPreviewPage({super.key});
@@ -47,6 +48,7 @@ class AssessmentAttemptPreviewPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   _ExerciseAttemptList(
                     exerciseAttempts: argument.attempt.exerciseAttempts,
+                    templateExercises: argument.template.exercises,
                   ),
                   const SizedBox(height: 34),
                   PrimaryButton(
@@ -141,9 +143,13 @@ class _ConsentSummary extends StatelessWidget {
 }
 
 class _ExerciseAttemptList extends StatelessWidget {
-  const _ExerciseAttemptList({required this.exerciseAttempts});
+  const _ExerciseAttemptList({
+    required this.exerciseAttempts,
+    required this.templateExercises,
+  });
 
   final List<ExerciseAttempt> exerciseAttempts;
+  final List<TemplateExerciseSummary> templateExercises;
 
   @override
   Widget build(BuildContext context) {
@@ -155,78 +161,113 @@ class _ExerciseAttemptList extends StatelessWidget {
     }
     return _SectionCard(
       title: 'Ejercicios del intento',
-      children: exerciseAttempts.asMap().entries.map(
-        (entry) {
-          final index = entry.key;
-          final item = entry.value;
-          final title = item.displayName;
-          final displayTitle = title == 'Ejercicio'
-              ? 'Ejercicio ${index + 1}'
-              : title;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${index + 1}',
-                    style: const TextStyle(
-                      color: AppColors.primaryBlue,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
+      children: exerciseAttempts
+          .asMap()
+          .entries
+          .map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final templateExercise = _findTemplateExercise(item, index);
+            final displayTitle = _resolveTitle(item, templateExercise, index);
+            final displayType = item.type ?? templateExercise?.type;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayTitle,
-                        style: const TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                      if (item.type != null) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              translateExerciseType(item.type),
-                              style: const TextStyle(
-                                color: AppColors.mutedText,
-                                fontSize: 13,
-                              ),
-                            ),
-                            if (item.status != null) ...[
-                              const SizedBox(width: 8),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayTitle,
+                          style: const TextStyle(fontWeight: FontWeight.w900),
+                        ),
+                        if (displayType != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
                               Text(
-                                translateExerciseStatus(item.status),
+                                translateExerciseType(displayType),
                                 style: const TextStyle(
                                   color: AppColors.mutedText,
                                   fontSize: 13,
                                 ),
                               ),
+                              if (item.status != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  translateExerciseStatus(item.status),
+                                  style: const TextStyle(
+                                    color: AppColors.mutedText,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ],
-                          ],
-                        ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
-      ).toList(growable: false),
+                ],
+              ),
+            );
+          })
+          .toList(growable: false),
     );
+  }
+
+  TemplateExerciseSummary? _findTemplateExercise(
+    ExerciseAttempt attempt,
+    int index,
+  ) {
+    final exerciseId = attempt.exerciseId;
+    if (exerciseId != null && exerciseId.isNotEmpty) {
+      for (final exercise in templateExercises) {
+        if (exercise.exerciseId == exerciseId) {
+          return exercise;
+        }
+      }
+    }
+    if (index < templateExercises.length) {
+      return templateExercises[index];
+    }
+    return null;
+  }
+
+  String _resolveTitle(
+    ExerciseAttempt attempt,
+    TemplateExerciseSummary? templateExercise,
+    int index,
+  ) {
+    final attemptTitle = attempt.title?.trim();
+    if (attemptTitle != null && attemptTitle.isNotEmpty) {
+      return attemptTitle;
+    }
+    final templateTitle = templateExercise?.title?.trim();
+    if (templateTitle != null && templateTitle.isNotEmpty) {
+      return templateTitle;
+    }
+    return 'Ejercicio ${index + 1}';
   }
 }
 

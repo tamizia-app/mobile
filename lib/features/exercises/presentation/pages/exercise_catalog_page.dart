@@ -5,7 +5,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/category_chip.dart';
 import '../../../../core/widgets/exercise_card.dart';
+import '../../../../core/widgets/responsive_layout.dart';
 import '../../data/services/exercise_service.dart';
+import '../../domain/models/exercise.dart';
 import '../viewmodels/exercise_catalog_viewmodel.dart';
 
 class ExerciseCatalogPage extends StatefulWidget {
@@ -70,57 +72,83 @@ class _ExerciseCatalogPageState extends State<ExerciseCatalogPage> {
                       ),
                     ),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(24, 18, 24, 28),
-                  children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _viewModel.categories.map((category) {
-                        return CategoryChip(
-                          label: category.name,
-                          selected:
-                              category.name == _viewModel.selectedCategory,
-                          onTap: () => _viewModel.selectCategory(category.name),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 18),
-                    if (_viewModel.filteredExercises.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 80),
-                        child: Center(
-                          child: Text(
-                            'No se encontraron ejercicios.',
-                            style: TextStyle(
-                              color: AppColors.neutralGray,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isTablet =
+                        constraints.maxWidth >= AppBreakpoints.tablet;
+                    final availableWidth = constraints.maxWidth - 48;
+                    final cardWidth = (availableWidth - 16) / 2;
+                    return ListView(
+                      padding: const EdgeInsets.fromLTRB(24, 18, 24, 28),
+                      children: [
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _viewModel.categories.map((category) {
+                            return CategoryChip(
+                              label: category.name,
+                              selected:
+                                  category.name == _viewModel.selectedCategory,
+                              onTap: () =>
+                                  _viewModel.selectCategory(category.name),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 18),
+                        if (_viewModel.filteredExercises.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 80),
+                            child: Center(
+                              child: Text(
+                                'No se encontraron ejercicios.',
+                                style: TextStyle(
+                                  color: AppColors.neutralGray,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          )
+                        else if (isTablet)
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 18,
+                            children: _viewModel.filteredExercises
+                                .map(
+                                  (exercise) => SizedBox(
+                                    width: cardWidth,
+                                    child: _exerciseCard(exercise),
+                                  ),
+                                )
+                                .toList(),
+                          )
+                        else
+                          ..._viewModel.filteredExercises.map(
+                            (exercise) => Padding(
+                              padding: const EdgeInsets.only(bottom: 18),
+                              child: _exerciseCard(exercise),
                             ),
                           ),
-                        ),
-                      )
-                    else
-                      ..._viewModel.filteredExercises.map(
-                        (exercise) => Padding(
-                          padding: const EdgeInsets.only(bottom: 18),
-                          child: ExerciseCard(
-                            exercise: exercise,
-                            onSelect: () => Navigator.pushNamed(
-                              context,
-                              AppRoutes.exerciseDetail,
-                              arguments: exercise.id,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _exerciseCard(Exercise exercise) {
+    return ExerciseCard(
+      exercise: exercise,
+      onSelect: () => Navigator.pushNamed(
+        context,
+        AppRoutes.exerciseDetail,
+        arguments: exercise.id,
+      ),
     );
   }
 }
@@ -139,34 +167,38 @@ class _SearchHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 66,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Color(0xFFD9E2EA))),
       ),
       child: SafeArea(
         bottom: false,
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                autofocus: true,
-                onChanged: onChanged,
-                decoration: const InputDecoration(
-                  hintText: 'Buscar ejercicios',
-                  border: InputBorder.none,
-                  prefixIcon: Icon(Icons.search),
+        child: SizedBox(
+          height: 56,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    onChanged: onChanged,
+                    decoration: const InputDecoration(
+                      hintText: 'Buscar ejercicios',
+                      border: InputBorder.none,
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                  ),
                 ),
-              ),
+                IconButton(
+                  tooltip: 'Cerrar búsqueda',
+                  onPressed: onClose,
+                  icon: const Icon(Icons.close),
+                ),
+              ],
             ),
-            IconButton(
-              tooltip: 'Cerrar búsqueda',
-              onPressed: onClose,
-              icon: const Icon(Icons.close),
-            ),
-          ],
+          ),
         ),
       ),
     );

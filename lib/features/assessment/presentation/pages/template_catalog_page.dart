@@ -4,6 +4,7 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../../core/widgets/app_header.dart';
+import '../../../../core/widgets/responsive_layout.dart';
 import '../../domain/models/assessment_template.dart';
 import '../../domain/repositories/assessment_repository.dart';
 import '../viewmodels/template_catalog_viewmodel.dart';
@@ -82,27 +83,52 @@ class _TemplateCatalogPageState extends State<TemplateCatalogPage> {
     }
     return RefreshIndicator(
       onRefresh: _viewModel.load,
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
-        itemCount: _viewModel.templates.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          final template = _viewModel.templates[index];
-          return _TemplateCard(
-            template: template,
-            onDetail: () => Navigator.pushNamed(
-              context,
-              AppRoutes.templateDetail,
-              arguments: template.id,
-            ),
-            onSelect: () => Navigator.pushNamed(
-              context,
-              AppRoutes.assessmentConfigure,
-              arguments: template.id,
-            ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth >= AppBreakpoints.tablet;
+          final availableWidth = constraints.maxWidth - 48;
+          final cardWidth = (availableWidth - 16) / 2;
+          return ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
+            children: [
+              if (isTablet)
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: _viewModel.templates.map((template) {
+                    return SizedBox(
+                      width: cardWidth,
+                      child: _buildTemplateCard(template),
+                    );
+                  }).toList(),
+                )
+              else
+                ..._viewModel.templates.map(
+                  (template) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _buildTemplateCard(template),
+                  ),
+                ),
+            ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTemplateCard(AssessmentTemplate template) {
+    return _TemplateCard(
+      template: template,
+      onDetail: () => Navigator.pushNamed(
+        context,
+        AppRoutes.templateDetail,
+        arguments: template.id,
+      ),
+      onSelect: () => Navigator.pushNamed(
+        context,
+        AppRoutes.assessmentConfigure,
+        arguments: template.id,
       ),
     );
   }
@@ -152,7 +178,8 @@ class _TemplateCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (template.isActive != null) _MetaPill(label: template.isActive! ? 'Activo' : 'Inactivo'),
+              if (template.isActive != null)
+                _MetaPill(label: template.isActive! ? 'Activo' : 'Inactivo'),
             ],
           ),
           if (template.description != null) ...[

@@ -4,6 +4,7 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/assessment_labels.dart';
 import '../../../../core/widgets/app_header.dart';
+import '../../../../core/widgets/responsive_layout.dart';
 import '../../domain/models/student.dart';
 import '../../domain/repositories/student_repository.dart';
 import '../../../classrooms/domain/repositories/classroom_repository.dart';
@@ -71,12 +72,9 @@ class _StudentsListPageState extends State<StudentsListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.teacherBackground,
-          body: Column(
+      body: Column(
         children: [
-          AppHeader(
-            title: 'Estudiantes',
-            centerTitle: true,
-          ),
+          AppHeader(title: 'Estudiantes', centerTitle: true),
           Expanded(child: _buildBody()),
         ],
       ),
@@ -92,7 +90,10 @@ class _StudentsListPageState extends State<StudentsListPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_errorMessage!, style: const TextStyle(color: AppColors.errorRed)),
+            Text(
+              _errorMessage!,
+              style: const TextStyle(color: AppColors.errorRed),
+            ),
             const SizedBox(height: 16),
             TextButton.icon(
               onPressed: _loadData,
@@ -114,21 +115,48 @@ class _StudentsListPageState extends State<StudentsListPage> {
     }
     return RefreshIndicator(
       onRefresh: _loadData,
-      child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
-        itemCount: students.length,
-        itemBuilder: (context, index) {
-          final student = students[index];
-          return _StudentCard(
-            student: student,
-            classroomName: _classroomNames[student.classroomId],
-            onTap: () => Navigator.pushNamed(
-              context,
-              AppRoutes.studentDetail,
-              arguments: student.studentId,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final columns = responsiveColumnCount(
+            constraints.maxWidth,
+            tablet: 2,
+            desktop: 2,
+          );
+          if (columns == 1) {
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+              itemCount: students.length,
+              itemBuilder: (context, index) =>
+                  _buildStudentCard(context, students[index]),
+            );
+          }
+          return GridView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              mainAxisExtent: 126,
             ),
+            itemCount: students.length,
+            itemBuilder: (context, index) =>
+                _buildStudentCard(context, students[index]),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildStudentCard(BuildContext context, Student student) {
+    return _StudentCard(
+      student: student,
+      classroomName: _classroomNames[student.classroomId],
+      onTap: () => Navigator.pushNamed(
+        context,
+        AppRoutes.studentDetail,
+        arguments: student.studentId,
       ),
     );
   }
@@ -204,7 +232,10 @@ class _StudentCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: student.isActive
                           ? AppColors.successGreen.withValues(alpha: 0.12)

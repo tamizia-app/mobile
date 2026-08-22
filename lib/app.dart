@@ -7,6 +7,7 @@ import 'core/session/authentication_status.dart';
 import 'core/storage/auth_session_storage.dart';
 import 'core/storage/secure_auth_session_storage.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/responsive_layout.dart';
 import 'features/assessment/data/datasources/assessment_remote_data_source_impl.dart';
 import 'features/assessment/data/repositories/assessment_repository_impl.dart';
 import 'features/assessment/domain/repositories/assessment_repository.dart';
@@ -132,6 +133,8 @@ class _TamiziaAppState extends State<TamiziaApp> {
       title: 'TamizIA',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      builder: (context, child) =>
+          ResponsiveAppViewport(child: child ?? const SizedBox.shrink()),
       initialRoute: AppRoutes.splash,
       onGenerateRoute: _onGenerateRoute,
     );
