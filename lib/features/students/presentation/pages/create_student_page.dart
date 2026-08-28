@@ -395,7 +395,7 @@ class _GenderField extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       key: ValueKey('gender-${viewModel.gender}'),
-      initialValue: viewModel.gender.isEmpty ? null : viewModel.gender,
+      value: viewModel.gender.isEmpty ? null : viewModel.gender,
       hint: const Text('Seleccionar género'),
       items: const [
         DropdownMenuItem(value: 'BOY', child: Text('Niño')),
