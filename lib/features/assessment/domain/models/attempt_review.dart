@@ -1,4 +1,5 @@
 import 'assessment_result.dart';
+import 'exercise_integrity.dart';
 
 class AttemptReview {
   const AttemptReview({
@@ -53,10 +54,7 @@ class AttemptReviewClassroom {
 }
 
 class AttemptReviewAssessment {
-  const AttemptReviewAssessment({
-    required this.assessmentId,
-    this.title,
-  });
+  const AttemptReviewAssessment({required this.assessmentId, this.title});
 
   final String assessmentId;
   final String? title;
@@ -81,6 +79,8 @@ class AttemptReviewResult {
     this.writingAverageScore,
     this.writingReviewRequiredCount = 0,
     this.exerciseSummaries = const [],
+    this.scoreDenominator = 0,
+    this.scoringSnapshot = const [],
   });
 
   final String attemptId;
@@ -100,6 +100,8 @@ class AttemptReviewResult {
   final double? writingAverageScore;
   final int writingReviewRequiredCount;
   final List<ExerciseSummary> exerciseSummaries;
+  final int scoreDenominator;
+  final List<Map<String, dynamic>> scoringSnapshot;
 }
 
 class ExerciseReview {
@@ -120,6 +122,10 @@ class ExerciseReview {
     this.metrics,
     this.reviewRequired = false,
     this.reviewReasons = const [],
+    this.technicalStatus = TechnicalStatus.invalid,
+    this.scoreEligible = false,
+    this.qualityReasons = const [],
+    this.scoringComponents = const ScoringComponents(),
   });
 
   final String exerciseAttemptId;
@@ -138,4 +144,8 @@ class ExerciseReview {
   final Map<String, dynamic>? metrics;
   final bool reviewRequired;
   final List<String> reviewReasons;
+  final TechnicalStatus technicalStatus;
+  final bool scoreEligible;
+  final List<String> qualityReasons;
+  final ScoringComponents scoringComponents;
 }

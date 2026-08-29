@@ -1,5 +1,7 @@
 import '../../domain/models/attempt_review.dart';
 import 'assessment_result_dto.dart';
+import '../../domain/models/exercise_integrity.dart';
+import 'exercise_integrity_dto.dart';
 
 class AttemptReviewDto {
   const AttemptReviewDto({
@@ -56,8 +58,9 @@ class AttemptReviewDto {
       student: student?.toDomain(),
       assessment: assessment?.toDomain(),
       result: result?.toDomain(),
-      exerciseReviews:
-          exerciseReviews.map((e) => e.toDomain()).toList(growable: false),
+      exerciseReviews: exerciseReviews
+          .map((e) => e.toDomain())
+          .toList(growable: false),
     );
   }
 
@@ -146,10 +149,7 @@ class AttemptReviewClassroomDto {
 }
 
 class AttemptReviewAssessmentDto {
-  const AttemptReviewAssessmentDto({
-    required this.assessmentId,
-    this.title,
-  });
+  const AttemptReviewAssessmentDto({required this.assessmentId, this.title});
 
   factory AttemptReviewAssessmentDto.fromJson(Map<String, dynamic> json) {
     return AttemptReviewAssessmentDto(
@@ -162,10 +162,7 @@ class AttemptReviewAssessmentDto {
   final String? title;
 
   AttemptReviewAssessment toDomain() {
-    return AttemptReviewAssessment(
-      assessmentId: assessmentId,
-      title: title,
-    );
+    return AttemptReviewAssessment(assessmentId: assessmentId, title: title);
   }
 }
 
@@ -188,6 +185,8 @@ class AttemptReviewResultDto {
     this.writingAverageScore,
     this.writingReviewRequiredCount = 0,
     this.exerciseSummaries = const [],
+    this.scoreDenominator = 0,
+    this.scoringSnapshot = const [],
   });
 
   factory AttemptReviewResultDto.fromJson(Map<String, dynamic> json) {
@@ -211,6 +210,8 @@ class AttemptReviewResultDto {
       writingReviewRequiredCount:
           _optionalInt(json, 'writing_review_required_count') ?? 0,
       exerciseSummaries: _readExerciseSummaries(json),
+      scoreDenominator: _optionalInt(json, 'score_denominator') ?? 0,
+      scoringSnapshot: _readScoringSnapshot(json),
     );
   }
 
@@ -231,6 +232,8 @@ class AttemptReviewResultDto {
   final double? writingAverageScore;
   final int writingReviewRequiredCount;
   final List<ExerciseSummaryDto> exerciseSummaries;
+  final int scoreDenominator;
+  final List<Map<String, dynamic>> scoringSnapshot;
 
   AttemptReviewResult toDomain() {
     return AttemptReviewResult(
@@ -253,6 +256,8 @@ class AttemptReviewResultDto {
       exerciseSummaries: exerciseSummaries
           .map((e) => e.toDomain())
           .toList(growable: false),
+      scoreDenominator: scoreDenominator,
+      scoringSnapshot: scoringSnapshot,
     );
   }
 
@@ -264,6 +269,17 @@ class AttemptReviewResultDto {
     return value
         .whereType<Map<String, dynamic>>()
         .map(ExerciseSummaryDto.fromJson)
+        .toList(growable: false);
+  }
+
+  static List<Map<String, dynamic>> _readScoringSnapshot(
+    Map<String, dynamic> json,
+  ) {
+    final value = json['scoring_snapshot'];
+    if (value is! List) return const [];
+    return value
+        .whereType<Map<String, dynamic>>()
+        .map((item) => Map<String, dynamic>.unmodifiable(item))
         .toList(growable: false);
   }
 }
@@ -286,6 +302,10 @@ class ExerciseReviewDto {
     this.metrics,
     this.reviewRequired = false,
     this.reviewReasons = const [],
+    this.technicalStatus = 'INVALID',
+    this.scoreEligible = false,
+    this.qualityReasons = const [],
+    this.scoringComponents = const ScoringComponentsDto(),
   });
 
   factory ExerciseReviewDto.fromJson(Map<String, dynamic> json) {
@@ -306,6 +326,12 @@ class ExerciseReviewDto {
       metrics: _optionalMap(json, 'metrics'),
       reviewRequired: _optionalBool(json, 'review_required') ?? false,
       reviewReasons: _readStringList(json, 'review_reasons'),
+      technicalStatus: _optionalString(json, 'technical_status') ?? 'INVALID',
+      scoreEligible: _optionalBool(json, 'score_eligible') ?? false,
+      qualityReasons: _readStringList(json, 'quality_reasons'),
+      scoringComponents: ScoringComponentsDto.fromJson(
+        _optionalMap(json, 'scoring_components'),
+      ),
     );
   }
 
@@ -325,6 +351,10 @@ class ExerciseReviewDto {
   final Map<String, dynamic>? metrics;
   final bool reviewRequired;
   final List<String> reviewReasons;
+  final String technicalStatus;
+  final bool scoreEligible;
+  final List<String> qualityReasons;
+  final ScoringComponentsDto scoringComponents;
 
   ExerciseReview toDomain() {
     return ExerciseReview(
@@ -344,6 +374,10 @@ class ExerciseReviewDto {
       metrics: metrics,
       reviewRequired: reviewRequired,
       reviewReasons: reviewReasons,
+      technicalStatus: TechnicalStatus.fromApi(technicalStatus),
+      scoreEligible: scoreEligible,
+      qualityReasons: qualityReasons,
+      scoringComponents: scoringComponents.toDomain(),
     );
   }
 }

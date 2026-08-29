@@ -1,4 +1,6 @@
 import '../../domain/models/assessment_result.dart';
+import '../../domain/models/exercise_integrity.dart';
+import 'exercise_integrity_dto.dart';
 
 class AssessmentResultDto {
   const AssessmentResultDto({
@@ -19,6 +21,8 @@ class AssessmentResultDto {
     this.writingAverageScore,
     this.writingReviewRequiredCount = 0,
     this.exerciseSummaries = const [],
+    this.scoreDenominator = 0,
+    this.scoringSnapshot = const [],
   });
 
   factory AssessmentResultDto.fromJson(Map<String, dynamic> json) {
@@ -42,6 +46,8 @@ class AssessmentResultDto {
       writingReviewRequiredCount:
           _optionalInt(json, 'writing_review_required_count') ?? 0,
       exerciseSummaries: _readExerciseSummaries(json),
+      scoreDenominator: _optionalInt(json, 'score_denominator') ?? 0,
+      scoringSnapshot: _readScoringSnapshot(json),
     );
   }
 
@@ -62,6 +68,8 @@ class AssessmentResultDto {
   final double? writingAverageScore;
   final int writingReviewRequiredCount;
   final List<ExerciseSummaryDto> exerciseSummaries;
+  final int scoreDenominator;
+  final List<Map<String, dynamic>> scoringSnapshot;
 
   AssessmentResult toDomain() {
     return AssessmentResult(
@@ -84,6 +92,8 @@ class AssessmentResultDto {
       exerciseSummaries: exerciseSummaries
           .map((item) => item.toDomain())
           .toList(growable: false),
+      scoreDenominator: scoreDenominator,
+      scoringSnapshot: scoringSnapshot,
     );
   }
 
@@ -99,6 +109,19 @@ class AssessmentResultDto {
         .map(ExerciseSummaryDto.fromJson)
         .toList(growable: false);
   }
+
+  static List<Map<String, dynamic>> _readScoringSnapshot(
+    Map<String, dynamic> json,
+  ) {
+    final value = json['scoring_snapshot'];
+    if (value is! List) {
+      return const [];
+    }
+    return value
+        .whereType<Map<String, dynamic>>()
+        .map((item) => Map<String, dynamic>.unmodifiable(item))
+        .toList(growable: false);
+  }
 }
 
 class ExerciseSummaryDto {
@@ -111,6 +134,10 @@ class ExerciseSummaryDto {
     required this.status,
     this.score,
     this.reviewRequired = false,
+    this.technicalStatus = 'INVALID',
+    this.scoreEligible = false,
+    this.qualityReasons = const [],
+    this.scoringComponents = const ScoringComponentsDto(),
   });
 
   factory ExerciseSummaryDto.fromJson(Map<String, dynamic> json) {
@@ -123,6 +150,14 @@ class ExerciseSummaryDto {
       status: _requiredString(json, 'status'),
       score: _optionalDouble(json, 'score'),
       reviewRequired: _optionalBool(json, 'review_required') ?? false,
+      technicalStatus: _optionalString(json, 'technical_status') ?? 'INVALID',
+      scoreEligible: _optionalBool(json, 'score_eligible') ?? false,
+      qualityReasons: _stringList(json, 'quality_reasons'),
+      scoringComponents: ScoringComponentsDto.fromJson(
+        json['scoring_components'] is Map<String, dynamic>
+            ? json['scoring_components'] as Map<String, dynamic>
+            : null,
+      ),
     );
   }
 
@@ -134,6 +169,10 @@ class ExerciseSummaryDto {
   final String status;
   final double? score;
   final bool reviewRequired;
+  final String technicalStatus;
+  final bool scoreEligible;
+  final List<String> qualityReasons;
+  final ScoringComponentsDto scoringComponents;
 
   ExerciseSummary toDomain() {
     return ExerciseSummary(
@@ -145,8 +184,19 @@ class ExerciseSummaryDto {
       status: status,
       score: score,
       reviewRequired: reviewRequired,
+      technicalStatus: TechnicalStatus.fromApi(technicalStatus),
+      scoreEligible: scoreEligible,
+      qualityReasons: qualityReasons,
+      scoringComponents: scoringComponents.toDomain(),
     );
   }
+}
+
+List<String> _stringList(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  return value is List
+      ? value.whereType<String>().toList(growable: false)
+      : const [];
 }
 
 String _requiredString(Map<String, dynamic> json, String key) {

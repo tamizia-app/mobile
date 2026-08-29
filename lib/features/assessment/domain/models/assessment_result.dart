@@ -1,3 +1,5 @@
+import 'exercise_integrity.dart';
+
 class AssessmentResult {
   const AssessmentResult({
     required this.attemptId,
@@ -17,6 +19,8 @@ class AssessmentResult {
     this.writingAverageScore,
     this.writingReviewRequiredCount = 0,
     this.exerciseSummaries = const [],
+    this.scoreDenominator = 0,
+    this.scoringSnapshot = const [],
   });
 
   final String attemptId;
@@ -36,6 +40,8 @@ class AssessmentResult {
   final double? writingAverageScore;
   final int writingReviewRequiredCount;
   final List<ExerciseSummary> exerciseSummaries;
+  final int scoreDenominator;
+  final List<Map<String, dynamic>> scoringSnapshot;
 }
 
 class ExerciseSummary {
@@ -48,6 +54,10 @@ class ExerciseSummary {
     required this.status,
     this.score,
     this.reviewRequired = false,
+    this.technicalStatus = TechnicalStatus.invalid,
+    this.scoreEligible = false,
+    this.qualityReasons = const [],
+    this.scoringComponents = const ScoringComponents(),
   });
 
   final String exerciseAttemptId;
@@ -58,4 +68,8 @@ class ExerciseSummary {
   final String status;
   final double? score;
   final bool reviewRequired;
+  final TechnicalStatus technicalStatus;
+  final bool scoreEligible;
+  final List<String> qualityReasons;
+  final ScoringComponents scoringComponents;
 }

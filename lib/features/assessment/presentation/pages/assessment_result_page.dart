@@ -37,7 +37,10 @@ class AssessmentResultPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _ScoreCard(score: result.finalScore, interventionLevel: result.interventionLevel),
+                  _ScoreCard(
+                    score: result.finalScore,
+                    interventionLevel: result.interventionLevel,
+                  ),
                   const SizedBox(height: 18),
                   _SummaryCard(result: result),
                   if (result.exerciseSummaries.isNotEmpty) ...[
@@ -145,8 +148,10 @@ class _SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasMC = result.mcCorrectCount != null;
     final hasOS = result.osCorrectCount != null;
-    final hasSpeaking = _hasType('READING_SPEAKING') || _hasType('LISTENING_SPEAKING');
-    final hasWriting = _hasType('READING_WRITING') || _hasType('LISTENING_WRITING');
+    final hasSpeaking =
+        _hasType('READING_SPEAKING') || _hasType('LISTENING_SPEAKING');
+    final hasWriting =
+        _hasType('READING_WRITING') || _hasType('LISTENING_WRITING');
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -156,7 +161,10 @@ class _SummaryCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _Row(label: 'Ejercicios', value: '${result.evaluatedExercises}/${result.totalExercises}'),
+          _Row(
+            label: 'Ejercicios',
+            value: '${result.evaluatedExercises}/${result.totalExercises}',
+          ),
           _Row(label: 'Pendientes', value: '${result.pendingExercises}'),
           if (hasMC)
             _Row(
@@ -171,12 +179,14 @@ class _SummaryCard extends StatelessWidget {
           if (hasSpeaking)
             _Row(
               label: 'Expresión oral',
-              value: '${result.speakingCompletedCount ?? 0} completados | promedio ${_num(result.speakingAverageScore)}',
+              value:
+                  '${result.speakingCompletedCount ?? 0} completados | promedio ${_num(result.speakingAverageScore)}',
             ),
           if (hasWriting)
             _Row(
               label: 'Escritura',
-              value: '${result.writingCompletedCount ?? 0} completados | promedio ${_num(result.writingAverageScore)}',
+              value:
+                  '${result.writingCompletedCount ?? 0} completados | promedio ${_num(result.writingAverageScore)}',
             ),
         ],
       ),
@@ -250,14 +260,21 @@ class _ExerciseSummariesCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 summary.title,
-                                style: const TextStyle(fontWeight: FontWeight.w800),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                             ),
                             if (summary.reviewRequired)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.secondaryOrange.withValues(alpha: 0.15),
+                                  color: AppColors.secondaryOrange.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Text(
@@ -287,6 +304,17 @@ class _ExerciseSummariesCard extends StatelessWidget {
                               style: const TextStyle(
                                 color: AppColors.mutedText,
                                 fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              summary.technicalStatus.apiValue,
+                              style: TextStyle(
+                                color: summary.scoreEligible
+                                    ? AppColors.successGreen
+                                    : AppColors.secondaryOrange,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                             if (summary.score != null) ...[

@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/error_message.dart';
 import '../../domain/models/attempt_review.dart';
+import '../../domain/models/exercise_integrity.dart';
 import '../../domain/repositories/assessment_repository.dart';
 
 class AttemptReviewPage extends StatefulWidget {
@@ -85,9 +86,9 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
         reason: 'Repetición solicitada por el docente',
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nuevo intento creado.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Nuevo intento creado.')));
       Navigator.pushReplacementNamed(
         context,
         AppRoutes.assessmentAttemptSession,
@@ -132,7 +133,11 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, color: AppColors.errorRed, size: 48),
+              const Icon(
+                Icons.error_outline,
+                color: AppColors.errorRed,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               ErrorMessage(text: _errorMessage!),
               const SizedBox(height: 20),
@@ -212,10 +217,16 @@ class _StudentInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Estudiante', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+          const Text(
+            'Estudiante',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+          ),
           const SizedBox(height: 12),
           if (student == null)
-            const Text('No disponible', style: TextStyle(color: AppColors.mutedText))
+            const Text(
+              'No disponible',
+              style: TextStyle(color: AppColors.mutedText),
+            )
           else ...[
             _row('Código', student!.code),
             _row('Edad', '${student!.age}'),
@@ -235,10 +246,17 @@ class _StudentInfoCard extends StatelessWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text(label, style: const TextStyle(color: AppColors.mutedText)),
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.mutedText),
+            ),
           ),
           Expanded(
-            child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.w800)),
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),
@@ -269,7 +287,10 @@ class _AssessmentInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Evaluación', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+          const Text(
+            'Evaluación',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+          ),
           const SizedBox(height: 12),
           _row('Nombre', review.assessment?.title ?? '—'),
           _row('Estado', translateAttemptStatus(review.status)),
@@ -287,10 +308,17 @@ class _AssessmentInfoCard extends StatelessWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text(label, style: const TextStyle(color: AppColors.mutedText)),
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.mutedText),
+            ),
           ),
           Expanded(
-            child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.w800)),
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),
@@ -324,14 +352,19 @@ class _ResultCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            const Text('Puntaje final', style: TextStyle(color: AppColors.mutedText, fontSize: 13)),
+            const Text(
+              'Puntaje final',
+              style: TextStyle(color: AppColors.mutedText, fontSize: 13),
+            ),
           ],
           if (result.interventionLevel != null) ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: _levelColor(result.interventionLevel).withValues(alpha: 0.12),
+                color: _levelColor(
+                  result.interventionLevel,
+                ).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -405,24 +438,36 @@ class _ExerciseReviewCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(exercise.title, style: const TextStyle(fontWeight: FontWeight.w800)),
+                    Text(
+                      exercise.title,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
                     const SizedBox(height: 2),
                     Row(
                       children: [
                         Text(
                           translateExerciseType(exercise.type),
-                          style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                          style: const TextStyle(
+                            color: AppColors.mutedText,
+                            fontSize: 12,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           translateExerciseStatus(exercise.status),
-                          style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                          style: const TextStyle(
+                            color: AppColors.mutedText,
+                            fontSize: 12,
+                          ),
                         ),
                         if (exercise.score != null) ...[
                           const SizedBox(width: 8),
                           Text(
                             '${exercise.score!.toStringAsFixed(1)}%',
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ],
@@ -432,14 +477,21 @@ class _ExerciseReviewCard extends StatelessWidget {
               ),
               if (exercise.reviewRequired)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.secondaryOrange.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text(
                     'Revisar',
-                    style: TextStyle(color: AppColors.secondaryOrange, fontSize: 11, fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                      color: AppColors.secondaryOrange,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
             ],
@@ -451,7 +503,10 @@ class _ExerciseReviewCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   '- ${translateReviewReason(reason)}',
-                  style: const TextStyle(color: AppColors.secondaryOrange, fontSize: 12),
+                  style: const TextStyle(
+                    color: AppColors.secondaryOrange,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ),
@@ -472,15 +527,18 @@ class _ExerciseReviewCard extends StatelessWidget {
         children: [
           if (exercise.questionText != null)
             _detailRow('Pregunta', exercise.questionText!),
-          if (exercise.response?['selected_option_text'] != null)
+          if (exercise.response?['selected_text'] != null)
             _detailRow(
               'Seleccionado',
-              exercise.response!['selected_option_text'] as String,
+              exercise.response!['selected_text'] as String,
               isCorrect: exercise.response?['is_correct'] == true,
               isIncorrect: exercise.response?['is_correct'] == false,
             ),
-          if (exercise.expected?['correct_option_text'] != null)
-            _detailRow('Correcto', exercise.expected!['correct_option_text'] as String),
+          if (exercise.expected?['correct_text'] != null)
+            _detailRow(
+              'Correcto',
+              exercise.expected!['correct_text'] as String,
+            ),
         ],
       );
     }
@@ -490,8 +548,7 @@ class _ExerciseReviewCard extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (syllables is List)
-            _detailRow('Sílabas', syllables.join(' ')),
+          if (syllables is List) _detailRow('Sílabas', syllables.join(' ')),
           if (exercise.response?['formed_word'] != null)
             _detailRow(
               'Palabra formada',
@@ -500,34 +557,54 @@ class _ExerciseReviewCard extends StatelessWidget {
               isIncorrect: exercise.response?['is_correct'] == false,
             ),
           if (exercise.expected?['correct_word'] != null)
-            _detailRow('Palabra correcta', exercise.expected!['correct_word'] as String),
+            _detailRow(
+              'Palabra correcta',
+              exercise.expected!['correct_word'] as String,
+            ),
         ],
       );
     }
 
-    if (type == 'READING_SPEAKING') {
+    if (type == 'READING_SPEAKING' || type == 'LISTENING_SPEAKING') {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (exercise.referenceText != null)
             _detailRow('Texto de referencia', exercise.referenceText!),
           if (exercise.response?['free_transcription_text'] != null)
-            _detailRow('Transcripción', exercise.response!['free_transcription_text'] as String),
+            _detailRow(
+              'Transcripción',
+              exercise.response!['free_transcription_text'] as String,
+            ),
           if (exercise.response?['recognized_text'] != null)
-            _detailRow('Texto reconocido', exercise.response!['recognized_text'] as String),
-          _pronunciationMetrics(exercise.metrics),
+            _detailRow(
+              'Texto reconocido',
+              exercise.response!['recognized_text'] as String,
+            ),
+          _pronunciationMetrics(exercise.scoringComponents),
           if (exercise.response?['audio_url'] != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: InkWell(
-                onTap: () => _openUrl(context, exercise.response!['audio_url'] as String),
+                onTap: () => _openUrl(
+                  context,
+                  exercise.response!['audio_url'] as String,
+                ),
                 child: const Row(
                   children: [
-                    Icon(Icons.audiotrack, color: AppColors.primaryBlue, size: 18),
+                    Icon(
+                      Icons.audiotrack,
+                      color: AppColors.primaryBlue,
+                      size: 18,
+                    ),
                     SizedBox(width: 6),
                     Text(
                       'Copiar enlace de audio',
-                      style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.w800, fontSize: 13),
+                      style: TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
@@ -544,13 +621,18 @@ class _ExerciseReviewCard extends StatelessWidget {
           if (exercise.referenceText != null)
             _detailRow('Texto de referencia', exercise.referenceText!),
           if (exercise.response?['recognized_text'] != null)
-            _detailRow('Texto reconocido (OCR)', exercise.response!['recognized_text'] as String),
+            _detailRow(
+              'Texto reconocido (OCR)',
+              exercise.response!['recognized_text'] as String,
+            ),
           if (exercise.response?['image_url'] != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: _ImagePreview(url: exercise.response!['image_url'] as String),
+              child: _ImagePreview(
+                url: exercise.response!['image_url'] as String,
+              ),
             ),
-          _ocrMetrics(exercise.metrics),
+          _ocrMetrics(exercise.scoringComponents),
         ],
       );
     }
@@ -558,17 +640,22 @@ class _ExerciseReviewCard extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  Widget _detailRow(String label, String value, {bool? isCorrect, bool? isIncorrect}) {
+  Widget _detailRow(
+    String label,
+    String value, {
+    bool? isCorrect,
+    bool? isIncorrect,
+  }) {
     final icon = isCorrect == true
         ? Icons.check_circle
         : isIncorrect == true
-            ? Icons.cancel
-            : null;
+        ? Icons.cancel
+        : null;
     final iconColor = isCorrect == true
         ? AppColors.successGreen
         : isIncorrect == true
-            ? AppColors.errorRed
-            : null;
+        ? AppColors.errorRed
+        : null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
@@ -576,7 +663,10 @@ class _ExerciseReviewCard extends StatelessWidget {
         children: [
           SizedBox(
             width: 130,
-            child: Text('$label:', style: const TextStyle(color: AppColors.mutedText, fontSize: 12)),
+            child: Text(
+              '$label:',
+              style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+            ),
           ),
           Expanded(
             child: Row(
@@ -596,20 +686,38 @@ class _ExerciseReviewCard extends StatelessWidget {
     );
   }
 
-  Widget _pronunciationMetrics(Map<String, dynamic>? metrics) {
-    if (metrics == null) return const SizedBox.shrink();
+  Widget _pronunciationMetrics(ScoringComponents metrics) {
     final chips = <Widget>[];
-    if (metrics['pronunciation_score'] != null) {
-      chips.add(_metricChip('Pron', '${(metrics['pronunciation_score'] as num).toDouble().toStringAsFixed(0)}%'));
+    if (metrics.pronunciationScore != null) {
+      chips.add(
+        _metricChip(
+          'Pron',
+          '${metrics.pronunciationScore!.toStringAsFixed(0)}%',
+        ),
+      );
     }
-    if (metrics['accuracy_score'] != null) {
-      chips.add(_metricChip('Prec', '${(metrics['accuracy_score'] as num).toDouble().toStringAsFixed(0)}%'));
+    if (metrics.accuracyScore != null) {
+      chips.add(
+        _metricChip('Prec', '${metrics.accuracyScore!.toStringAsFixed(0)}%'),
+      );
     }
-    if (metrics['fluency_score'] != null) {
-      chips.add(_metricChip('Fluid', '${(metrics['fluency_score'] as num).toDouble().toStringAsFixed(0)}%'));
+    if (metrics.fluencyScore != null) {
+      chips.add(
+        _metricChip('Fluid', '${metrics.fluencyScore!.toStringAsFixed(0)}%'),
+      );
     }
-    if (metrics['completeness_score'] != null) {
-      chips.add(_metricChip('Comp', '${(metrics['completeness_score'] as num).toDouble().toStringAsFixed(0)}%'));
+    if (metrics.completenessScore != null) {
+      chips.add(
+        _metricChip(
+          'Comp',
+          '${metrics.completenessScore!.toStringAsFixed(0)}%',
+        ),
+      );
+    }
+    if (metrics.lexicalMatch != null) {
+      chips.add(
+        _metricChip('Lex', '${metrics.lexicalMatch!.toStringAsFixed(0)}%'),
+      );
     }
     if (chips.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -619,7 +727,11 @@ class _ExerciseReviewCard extends StatelessWidget {
         children: [
           const Text(
             'Métricas de pronunciación:',
-            style: TextStyle(color: AppColors.mutedText, fontSize: 12, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: AppColors.mutedText,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 4),
           Wrap(spacing: 8, runSpacing: 4, children: chips),
@@ -628,20 +740,30 @@ class _ExerciseReviewCard extends StatelessWidget {
     );
   }
 
-  Widget _ocrMetrics(Map<String, dynamic>? metrics) {
-    if (metrics == null) return const SizedBox.shrink();
+  Widget _ocrMetrics(ScoringComponents metrics) {
     final chips = <Widget>[];
-    if (metrics['ocr_confidence_score'] != null) {
-      chips.add(_metricChip('Conf', '${(metrics['ocr_confidence_score'] as num).toDouble().toStringAsFixed(0)}%'));
+    if (metrics.confidenceAvg != null) {
+      chips.add(
+        _metricChip(
+          'Conf',
+          '${(metrics.confidenceAvg! * 100).toStringAsFixed(0)}%',
+        ),
+      );
     }
-    if (metrics['text_similarity_score'] != null) {
-      chips.add(_metricChip('Sim', '${(metrics['text_similarity_score'] as num).toDouble().toStringAsFixed(0)}%'));
+    if (metrics.similarityScore != null) {
+      chips.add(
+        _metricChip('Sim', '${metrics.similarityScore!.toStringAsFixed(0)}%'),
+      );
     }
-    if (metrics['character_error_rate'] != null) {
-      chips.add(_metricChip('CER', '${((metrics['character_error_rate'] as num).toDouble() * 100).toStringAsFixed(0)}%'));
+    if (metrics.cer != null) {
+      chips.add(
+        _metricChip('CER', '${(metrics.cer! * 100).toStringAsFixed(0)}%'),
+      );
     }
-    if (metrics['word_error_rate'] != null) {
-      chips.add(_metricChip('WER', '${((metrics['word_error_rate'] as num).toDouble() * 100).toStringAsFixed(0)}%'));
+    if (metrics.wer != null) {
+      chips.add(
+        _metricChip('WER', '${(metrics.wer! * 100).toStringAsFixed(0)}%'),
+      );
     }
     if (chips.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -651,7 +773,11 @@ class _ExerciseReviewCard extends StatelessWidget {
         children: [
           const Text(
             'Métricas de OCR:',
-            style: TextStyle(color: AppColors.mutedText, fontSize: 12, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: AppColors.mutedText,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 4),
           Wrap(spacing: 8, runSpacing: 4, children: chips),
@@ -669,7 +795,11 @@ class _ExerciseReviewCard extends StatelessWidget {
       ),
       child: Text(
         '$label: $value',
-        style: const TextStyle(color: AppColors.primaryBlue, fontSize: 11, fontWeight: FontWeight.w600),
+        style: const TextStyle(
+          color: AppColors.primaryBlue,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -710,7 +840,7 @@ class _ImagePreview extends StatelessWidget {
 
 void _openUrl(BuildContext context, String url) {
   Clipboard.setData(ClipboardData(text: url));
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('URL copiada al portapapeles.')),
-  );
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(const SnackBar(content: Text('URL copiada al portapapeles.')));
 }

@@ -1,15 +1,23 @@
+import 'exercise_integrity.dart';
+
 class MCResponse {
   const MCResponse({
     required this.responseId,
     required this.exerciseAttemptId,
     required this.selectedOptionId,
     this.isCorrect,
+    this.exerciseScore,
+    this.technicalStatus = TechnicalStatus.valid,
+    this.scoreEligible = true,
   });
 
   final String responseId;
   final String exerciseAttemptId;
   final String selectedOptionId;
   final bool? isCorrect;
+  final double? exerciseScore;
+  final TechnicalStatus technicalStatus;
+  final bool scoreEligible;
 }
 
 class OSResponse {
@@ -19,6 +27,9 @@ class OSResponse {
     required this.selectedSyllables,
     this.formedWord,
     this.isCorrect,
+    this.exerciseScore,
+    this.technicalStatus = TechnicalStatus.valid,
+    this.scoreEligible = true,
   });
 
   final String responseId;
@@ -26,6 +37,9 @@ class OSResponse {
   final List<String> selectedSyllables;
   final String? formedWord;
   final bool? isCorrect;
+  final double? exerciseScore;
+  final TechnicalStatus technicalStatus;
+  final bool scoreEligible;
 }
 
 class SpeakingResponse {
@@ -43,6 +57,14 @@ class SpeakingResponse {
     this.fluencyScore,
     this.completenessScore,
     this.prosodyScore,
+    this.exerciseScore,
+    this.technicalStatus = TechnicalStatus.invalid,
+    this.scoreEligible = false,
+    this.manualReviewRequired = true,
+    this.qualityReasons = const [],
+    this.scoringComponents = const ScoringComponents(),
+    this.comparison,
+    this.review = const ReviewDecision(required: false),
   });
 
   final String responseId;
@@ -58,6 +80,14 @@ class SpeakingResponse {
   final double? fluencyScore;
   final double? completenessScore;
   final double? prosodyScore;
+  final double? exerciseScore;
+  final TechnicalStatus technicalStatus;
+  final bool scoreEligible;
+  final bool manualReviewRequired;
+  final List<String> qualityReasons;
+  final ScoringComponents scoringComponents;
+  final TextComparison? comparison;
+  final ReviewDecision review;
 }
 
 class WritingResponse {
@@ -73,6 +103,13 @@ class WritingResponse {
     this.canvasMetadata,
     this.inputMetadata,
     this.frontendMetrics,
+    this.metrics,
+    this.exerciseScore,
+    this.technicalStatus = TechnicalStatus.invalid,
+    this.scoreEligible = false,
+    this.manualReviewRequired = true,
+    this.qualityReasons = const [],
+    this.scoringComponents = const ScoringComponents(),
   });
 
   final String responseId;
@@ -86,4 +123,11 @@ class WritingResponse {
   final Map<String, dynamic>? canvasMetadata;
   final Map<String, dynamic>? inputMetadata;
   final Map<String, dynamic>? frontendMetrics;
+  final WritingMetrics? metrics;
+  final double? exerciseScore;
+  final TechnicalStatus technicalStatus;
+  final bool scoreEligible;
+  final bool manualReviewRequired;
+  final List<String> qualityReasons;
+  final ScoringComponents scoringComponents;
 }

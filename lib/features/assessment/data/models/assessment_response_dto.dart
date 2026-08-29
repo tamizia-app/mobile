@@ -1,4 +1,6 @@
 import '../../domain/models/assessment_response.dart';
+import '../../domain/models/exercise_integrity.dart';
+import 'exercise_integrity_dto.dart';
 
 class MCResponseDto {
   const MCResponseDto({
@@ -6,6 +8,9 @@ class MCResponseDto {
     required this.exerciseAttemptId,
     required this.selectedOptionId,
     this.isCorrect,
+    this.exerciseScore,
+    this.technicalStatus = 'VALID',
+    this.scoreEligible = true,
   });
 
   factory MCResponseDto.fromJson(Map<String, dynamic> json) {
@@ -14,6 +19,9 @@ class MCResponseDto {
       exerciseAttemptId: _requiredString(json, 'exercise_attempt_id'),
       selectedOptionId: _requiredString(json, 'selected_option_id'),
       isCorrect: _optionalBool(json, 'is_correct'),
+      exerciseScore: _optionalDouble(json, 'exercise_score'),
+      technicalStatus: _optionalString(json, 'technical_status') ?? 'VALID',
+      scoreEligible: _optionalBool(json, 'score_eligible') ?? true,
     );
   }
 
@@ -21,6 +29,9 @@ class MCResponseDto {
   final String exerciseAttemptId;
   final String selectedOptionId;
   final bool? isCorrect;
+  final double? exerciseScore;
+  final String technicalStatus;
+  final bool scoreEligible;
 
   MCResponse toDomain() {
     return MCResponse(
@@ -28,6 +39,9 @@ class MCResponseDto {
       exerciseAttemptId: exerciseAttemptId,
       selectedOptionId: selectedOptionId,
       isCorrect: isCorrect,
+      exerciseScore: exerciseScore,
+      technicalStatus: TechnicalStatus.fromApi(technicalStatus),
+      scoreEligible: scoreEligible,
     );
   }
 }
@@ -39,6 +53,9 @@ class OSResponseDto {
     required this.selectedSyllables,
     this.formedWord,
     this.isCorrect,
+    this.exerciseScore,
+    this.technicalStatus = 'VALID',
+    this.scoreEligible = true,
   });
 
   factory OSResponseDto.fromJson(Map<String, dynamic> json) {
@@ -48,6 +65,9 @@ class OSResponseDto {
       selectedSyllables: _stringList(json, 'selected_syllables'),
       formedWord: _optionalString(json, 'formed_word'),
       isCorrect: _optionalBool(json, 'is_correct'),
+      exerciseScore: _optionalDouble(json, 'exercise_score'),
+      technicalStatus: _optionalString(json, 'technical_status') ?? 'VALID',
+      scoreEligible: _optionalBool(json, 'score_eligible') ?? true,
     );
   }
 
@@ -56,6 +76,9 @@ class OSResponseDto {
   final List<String> selectedSyllables;
   final String? formedWord;
   final bool? isCorrect;
+  final double? exerciseScore;
+  final String technicalStatus;
+  final bool scoreEligible;
 
   OSResponse toDomain() {
     return OSResponse(
@@ -64,6 +87,9 @@ class OSResponseDto {
       selectedSyllables: selectedSyllables,
       formedWord: formedWord,
       isCorrect: isCorrect,
+      exerciseScore: exerciseScore,
+      technicalStatus: TechnicalStatus.fromApi(technicalStatus),
+      scoreEligible: scoreEligible,
     );
   }
 }
@@ -83,6 +109,14 @@ class SpeakingResponseDto {
     this.fluencyScore,
     this.completenessScore,
     this.prosodyScore,
+    this.exerciseScore,
+    this.technicalStatus = 'INVALID',
+    this.scoreEligible = false,
+    this.manualReviewRequired = true,
+    this.qualityReasons = const [],
+    this.scoringComponents = const ScoringComponentsDto(),
+    this.comparison,
+    this.review = const ReviewDecisionDto(required: false),
   });
 
   factory SpeakingResponseDto.fromJson(Map<String, dynamic> json) {
@@ -93,9 +127,7 @@ class SpeakingResponseDto {
       originalFilename: _optionalString(json, 'original_filename'),
       contentType: _optionalString(json, 'content_type'),
       durationMs: _optionalInt(json, 'duration_ms'),
-      recognizedText:
-          _optionalString(json, 'recognized_text') ??
-          _optionalString(json, 'free_transcription_text'),
+      recognizedText: _optionalString(json, 'recognized_text'),
       assessmentRecognizedText: _optionalString(
         json,
         'assessment_recognized_text',
@@ -105,6 +137,21 @@ class SpeakingResponseDto {
       fluencyScore: _optionalDouble(json, 'fluency_score'),
       completenessScore: _optionalDouble(json, 'completeness_score'),
       prosodyScore: _optionalDouble(json, 'prosody_score'),
+      exerciseScore: _optionalDouble(json, 'exercise_score'),
+      technicalStatus: _optionalString(json, 'technical_status') ?? 'INVALID',
+      scoreEligible: _optionalBool(json, 'score_eligible') ?? false,
+      manualReviewRequired:
+          _optionalBool(json, 'manual_review_required') ?? true,
+      qualityReasons: _stringList(json, 'quality_reasons'),
+      scoringComponents: ScoringComponentsDto.fromJson(
+        _optionalMap(json, 'scoring_components'),
+      ),
+      comparison: json['comparison'] is Map<String, dynamic>
+          ? TextComparisonDto.fromJson(
+              json['comparison'] as Map<String, dynamic>,
+            )
+          : null,
+      review: ReviewDecisionDto.fromJson(_optionalMap(json, 'review')),
     );
   }
 
@@ -121,6 +168,14 @@ class SpeakingResponseDto {
   final double? fluencyScore;
   final double? completenessScore;
   final double? prosodyScore;
+  final double? exerciseScore;
+  final String technicalStatus;
+  final bool scoreEligible;
+  final bool manualReviewRequired;
+  final List<String> qualityReasons;
+  final ScoringComponentsDto scoringComponents;
+  final TextComparisonDto? comparison;
+  final ReviewDecisionDto review;
 
   SpeakingResponse toDomain() {
     return SpeakingResponse(
@@ -137,6 +192,14 @@ class SpeakingResponseDto {
       fluencyScore: fluencyScore,
       completenessScore: completenessScore,
       prosodyScore: prosodyScore,
+      exerciseScore: exerciseScore,
+      technicalStatus: TechnicalStatus.fromApi(technicalStatus),
+      scoreEligible: scoreEligible,
+      manualReviewRequired: manualReviewRequired,
+      qualityReasons: qualityReasons,
+      scoringComponents: scoringComponents.toDomain(),
+      comparison: comparison?.toDomain(),
+      review: review.toDomain(),
     );
   }
 }
@@ -154,6 +217,13 @@ class WritingResponseDto {
     this.canvasMetadata,
     this.inputMetadata,
     this.frontendMetrics,
+    this.metrics,
+    this.exerciseScore,
+    this.technicalStatus = 'INVALID',
+    this.scoreEligible = false,
+    this.manualReviewRequired = true,
+    this.qualityReasons = const [],
+    this.scoringComponents = const ScoringComponentsDto(),
   });
 
   factory WritingResponseDto.fromJson(Map<String, dynamic> json) {
@@ -169,6 +239,18 @@ class WritingResponseDto {
       canvasMetadata: _optionalMap(json, 'canvas_metadata'),
       inputMetadata: _optionalMap(json, 'input_metadata'),
       frontendMetrics: _optionalMap(json, 'frontend_metrics'),
+      metrics: json['metrics'] is Map<String, dynamic>
+          ? WritingMetricsDto.fromJson(json['metrics'] as Map<String, dynamic>)
+          : null,
+      exerciseScore: _optionalDouble(json, 'exercise_score'),
+      technicalStatus: _optionalString(json, 'technical_status') ?? 'INVALID',
+      scoreEligible: _optionalBool(json, 'score_eligible') ?? false,
+      manualReviewRequired:
+          _optionalBool(json, 'manual_review_required') ?? true,
+      qualityReasons: _stringList(json, 'quality_reasons'),
+      scoringComponents: ScoringComponentsDto.fromJson(
+        _optionalMap(json, 'scoring_components'),
+      ),
     );
   }
 
@@ -183,6 +265,13 @@ class WritingResponseDto {
   final Map<String, dynamic>? canvasMetadata;
   final Map<String, dynamic>? inputMetadata;
   final Map<String, dynamic>? frontendMetrics;
+  final WritingMetricsDto? metrics;
+  final double? exerciseScore;
+  final String technicalStatus;
+  final bool scoreEligible;
+  final bool manualReviewRequired;
+  final List<String> qualityReasons;
+  final ScoringComponentsDto scoringComponents;
 
   WritingResponse toDomain() {
     return WritingResponse(
@@ -197,6 +286,13 @@ class WritingResponseDto {
       canvasMetadata: canvasMetadata,
       inputMetadata: inputMetadata,
       frontendMetrics: frontendMetrics,
+      metrics: metrics?.toDomain(),
+      exerciseScore: exerciseScore,
+      technicalStatus: TechnicalStatus.fromApi(technicalStatus),
+      scoreEligible: scoreEligible,
+      manualReviewRequired: manualReviewRequired,
+      qualityReasons: qualityReasons,
+      scoringComponents: scoringComponents.toDomain(),
     );
   }
 }
