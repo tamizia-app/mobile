@@ -1,0 +1,6 @@
+abstract final class ApiConfig {
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://backend-production-0c0e.up.railway.app',
+  );
+}

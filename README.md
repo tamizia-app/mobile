@@ -1,6 +1,6 @@
-# tamizia_app
+# TamizIA
 
-A new Flutter project.
+Aplicación móvil de apoyo al tamizaje temprano de dificultades de lectoescritura.
 
 ## Getting Started
 
