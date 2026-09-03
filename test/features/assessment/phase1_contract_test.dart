@@ -203,7 +203,10 @@ void main() {
           'score': 90,
           'technical_status': 'VALID',
           'score_eligible': true,
-          'response': {'recognized_text': 'hola mundo'},
+          'response': {
+            'recognized_text': 'hola mundo',
+            'audio_url': 'https://example.com/audio.wav',
+          },
           'scoring_components': {
             'pronunciation_score': 85,
             'accuracy_score': 80,
@@ -222,7 +225,10 @@ void main() {
           'score': 86.35,
           'technical_status': 'VALID',
           'score_eligible': true,
-          'response': {'recognized_text': 'El gato duerme.'},
+          'response': {
+            'recognized_text': 'El gato duerme.',
+            'image_url': 'https://example.com/writing.png',
+          },
           'scoring_components': {
             'confidence_avg': 0.948,
             'cer': 0.071,
@@ -254,6 +260,18 @@ void main() {
     expect(find.text('Conf: 95%'), findsOneWidget);
     expect(find.text('CER: 7%'), findsOneWidget);
     expect(find.text('WER: 33%'), findsOneWidget);
+    expect(find.byTooltip('Reproducir audio'), findsOneWidget);
+
+    final imagePreview = find.text('Tocar para ampliar');
+    await tester.ensureVisible(imagePreview);
+    await tester.tap(imagePreview);
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Cerrar imagen'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Cerrar imagen'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Cerrar imagen'), findsNothing);
   });
 }
 
