@@ -11,14 +11,24 @@ import 'package:tamizai_app/features/assessment/presentation/pages/attempt_revie
 
 void main() {
   testWidgets(
-    'API result maps through DTO/domain and renders canonical score',
+    'API result maps current scoring contract through DTO/domain and renders canonical score',
     (tester) async {
       final result = AssessmentResultDto.fromJson({
         'attempt_id': 'attempt-1',
         'final_score': 82.5,
         'max_score': 100.0,
         'intervention_level': 'LOW',
-        'score_denominator': 1,
+        'score_denominator': 2,
+        'scoring_version': 'phase2_v1',
+        'final_scoring_formula': 'weighted_mean_by_template_exercise_points',
+        'included_weight_sum': 2,
+        'total_template_weight_sum': 2,
+        'coverage_weight_percentage': 100.0,
+        'included_exercise_count': 1,
+        'total_exercise_count': 1,
+        'invalid_or_excluded_exercise_count': 0,
+        'score_denominator_type': 'included_weight_sum',
+        'score_denominator_deprecated': true,
         'scoring_snapshot': [
           {'exercise_attempt_id': 'ea-1', 'included': true, 'score': 82.5},
         ],
@@ -50,7 +60,11 @@ void main() {
 
       expect(result.finalScore, 82.5);
       expect(result.interventionLevel, 'LOW');
-      expect(result.scoreDenominator, 1);
+      expect(result.scoreDenominator, 2);
+      expect(result.scoreDenominatorType, 'included_weight_sum');
+      expect(result.scoreDenominatorDeprecated, isTrue);
+      expect(result.includedExerciseCount, 1);
+      expect(result.includedWeightSum, 2);
       expect(result.scoringSnapshot.single['included'], isTrue);
       expect(result.exerciseSummaries.single.score, 82.5);
       expect(

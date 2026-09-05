@@ -186,6 +186,16 @@ class AttemptReviewResultDto {
     this.writingReviewRequiredCount = 0,
     this.exerciseSummaries = const [],
     this.scoreDenominator = 0,
+    this.scoringVersion = 'phase2_v1',
+    this.finalScoringFormula = 'weighted_mean_by_template_exercise_points',
+    this.includedWeightSum = 0,
+    this.totalTemplateWeightSum = 0,
+    this.coverageWeightPercentage = 0,
+    this.includedExerciseCount = 0,
+    this.totalExerciseCount = 0,
+    this.invalidOrExcludedExerciseCount = 0,
+    this.scoreDenominatorType = 'included_weight_sum',
+    this.scoreDenominatorDeprecated = true,
     this.scoringSnapshot = const [],
   });
 
@@ -211,6 +221,26 @@ class AttemptReviewResultDto {
           _optionalInt(json, 'writing_review_required_count') ?? 0,
       exerciseSummaries: _readExerciseSummaries(json),
       scoreDenominator: _optionalInt(json, 'score_denominator') ?? 0,
+      scoringVersion: _optionalString(json, 'scoring_version') ?? 'phase2_v1',
+      finalScoringFormula: _optionalString(json, 'final_scoring_formula') ??
+          'weighted_mean_by_template_exercise_points',
+      includedWeightSum: _optionalDouble(json, 'included_weight_sum') ?? 0,
+      totalTemplateWeightSum:
+          _optionalDouble(json, 'total_template_weight_sum') ?? 0,
+      coverageWeightPercentage:
+          _optionalDouble(json, 'coverage_weight_percentage') ?? 0,
+      includedExerciseCount:
+          _optionalInt(json, 'included_exercise_count') ?? 0,
+      totalExerciseCount: _optionalInt(json, 'total_exercise_count') ?? 0,
+      invalidOrExcludedExerciseCount:
+          _optionalInt(json, 'invalid_or_excluded_exercise_count') ?? 0,
+      scoreDenominatorType:
+          _optionalString(json, 'score_denominator_type') ??
+              'included_weight_sum',
+      scoreDenominatorDeprecated:
+          json['score_denominator_deprecated'] is bool
+              ? json['score_denominator_deprecated'] as bool
+              : true,
       scoringSnapshot: _readScoringSnapshot(json),
     );
   }
@@ -233,6 +263,16 @@ class AttemptReviewResultDto {
   final int writingReviewRequiredCount;
   final List<ExerciseSummaryDto> exerciseSummaries;
   final int scoreDenominator;
+  final String scoringVersion;
+  final String finalScoringFormula;
+  final double includedWeightSum;
+  final double totalTemplateWeightSum;
+  final double coverageWeightPercentage;
+  final int includedExerciseCount;
+  final int totalExerciseCount;
+  final int invalidOrExcludedExerciseCount;
+  final String scoreDenominatorType;
+  final bool scoreDenominatorDeprecated;
   final List<Map<String, dynamic>> scoringSnapshot;
 
   AttemptReviewResult toDomain() {
@@ -257,6 +297,16 @@ class AttemptReviewResultDto {
           .map((e) => e.toDomain())
           .toList(growable: false),
       scoreDenominator: scoreDenominator,
+      scoringVersion: scoringVersion,
+      finalScoringFormula: finalScoringFormula,
+      includedWeightSum: includedWeightSum,
+      totalTemplateWeightSum: totalTemplateWeightSum,
+      coverageWeightPercentage: coverageWeightPercentage,
+      includedExerciseCount: includedExerciseCount,
+      totalExerciseCount: totalExerciseCount,
+      invalidOrExcludedExerciseCount: invalidOrExcludedExerciseCount,
+      scoreDenominatorType: scoreDenominatorType,
+      scoreDenominatorDeprecated: scoreDenominatorDeprecated,
       scoringSnapshot: scoringSnapshot,
     );
   }

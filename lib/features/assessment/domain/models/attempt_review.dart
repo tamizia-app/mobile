@@ -80,6 +80,16 @@ class AttemptReviewResult {
     this.writingReviewRequiredCount = 0,
     this.exerciseSummaries = const [],
     this.scoreDenominator = 0,
+    this.scoringVersion = 'phase2_v1',
+    this.finalScoringFormula = 'weighted_mean_by_template_exercise_points',
+    this.includedWeightSum = 0,
+    this.totalTemplateWeightSum = 0,
+    this.coverageWeightPercentage = 0,
+    this.includedExerciseCount = 0,
+    this.totalExerciseCount = 0,
+    this.invalidOrExcludedExerciseCount = 0,
+    this.scoreDenominatorType = 'included_weight_sum',
+    this.scoreDenominatorDeprecated = true,
     this.scoringSnapshot = const [],
   });
 
@@ -101,6 +111,16 @@ class AttemptReviewResult {
   final int writingReviewRequiredCount;
   final List<ExerciseSummary> exerciseSummaries;
   final int scoreDenominator;
+  final String scoringVersion;
+  final String finalScoringFormula;
+  final double includedWeightSum;
+  final double totalTemplateWeightSum;
+  final double coverageWeightPercentage;
+  final int includedExerciseCount;
+  final int totalExerciseCount;
+  final int invalidOrExcludedExerciseCount;
+  final String scoreDenominatorType;
+  final bool scoreDenominatorDeprecated;
   final List<Map<String, dynamic>> scoringSnapshot;
 }
 
