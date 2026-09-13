@@ -78,7 +78,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('82.5%'), findsWidgets);
       expect(find.text('Intervención: Bajo'), findsOneWidget);
-      expect(find.text('Calidad: VALID'), findsOneWidget);
+      expect(find.text('Evidencia: Válida'), findsOneWidget);
     },
   );
 
@@ -258,19 +258,19 @@ void main() {
       'Indicadores de escritura',
     ]) {
       await tester.ensureVisible(find.text(title));
-      await tester.tap(find.text(title));
       await tester.pumpAndSettle();
     }
-    expect(find.text('Métricas de pronunciación:'), findsOneWidget);
-    expect(find.text('Pronunciación: 85%'), findsOneWidget);
-    expect(find.text('Precisión: 80%'), findsOneWidget);
-    expect(find.text('Fluidez: 90%'), findsOneWidget);
-    expect(find.text('Lectura completa: 95%'), findsOneWidget);
-    expect(find.text('Coincidencia léxica: 100%'), findsOneWidget);
-    expect(find.text('Métricas de OCR:'), findsOneWidget);
-    expect(find.text('Confianza del reconocimiento: 95%'), findsOneWidget);
-    expect(find.text('Error por caracteres (CER): 7%'), findsOneWidget);
-    expect(find.text('Error por palabras (WER): 33%'), findsOneWidget);
+    expect(find.text('Pronunciación'), findsOneWidget);
+    expect(find.text('85.0 / 100'), findsOneWidget);
+    expect(find.text('80.0 / 100'), findsOneWidget);
+    expect(find.text('90.0 / 100'), findsOneWidget);
+    expect(find.text('95.0 / 100'), findsOneWidget);
+    expect(find.text('Coincidencia de palabras'), findsOneWidget);
+    expect(find.text('100.0%'), findsOneWidget);
+    expect(find.text('Calidad del reconocimiento'), findsOneWidget);
+    expect(find.text('94.8%'), findsOneWidget);
+    expect(find.text('7.1%'), findsOneWidget);
+    expect(find.text('33.3%'), findsOneWidget);
     expect(find.byTooltip('Reproducir audio'), findsOneWidget);
 
     final imagePreview = find.text('Tocar para ampliar');

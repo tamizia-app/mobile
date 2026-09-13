@@ -179,64 +179,68 @@ class ClassroomFormScaffold extends StatelessWidget {
         final saveAction = viewModel.isEditing
             ? (viewModel.canSave ? onSave : null)
             : (viewModel.isLoading ? null : onSave);
+        final actions = AppActionGroup(
+          children: [
+            OutlinedButton(
+              onPressed: viewModel.isLoading ? null : onCancel,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(AppSizes.button),
+                foregroundColor: AppColors.textPrimary,
+                side: const BorderSide(color: AppColors.border),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.control),
+                ),
+              ),
+              child: const Text('Cancelar'),
+            ),
+            PrimaryButton(
+              text: buttonText,
+              isLoading: viewModel.isLoading,
+              onPressed: saveAction,
+            ),
+          ],
+        );
         return Scaffold(
           backgroundColor: Colors.white,
-          bottomNavigationBar: viewModel.isInitialized
-              ? Container(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.xl,
-                    AppSpacing.lg,
-                    AppSpacing.xl,
-                    AppSpacing.xl,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(top: BorderSide(color: AppColors.divider)),
-                  ),
-                  child: SafeArea(
-                    child: AppActionGroup(
-                      children: [
-                        OutlinedButton(
-                          onPressed: viewModel.isLoading ? null : onCancel,
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(AppSizes.button),
-                            foregroundColor: AppColors.textPrimary,
-                            side: const BorderSide(color: AppColors.border),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.control,
-                              ),
-                            ),
-                          ),
-                          child: const Text('Cancelar'),
-                        ),
-                        PrimaryButton(
-                          text: buttonText,
-                          isLoading: viewModel.isLoading,
-                          onPressed: saveAction,
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : null,
           body: Column(
             children: [
               AppHeader(title: title, showBack: true),
               Expanded(
                 child: viewModel.isInitialized
-                    ? SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.xl,
-                          AppSpacing.xl,
-                          AppSpacing.xl,
-                          AppSpacing.xxxl,
-                        ),
-                        child: Form(
-                          key: formKey,
-                          child: ClassroomFormFields(
-                            viewModel: viewModel,
-                            nameController: nameController,
+                    ? SafeArea(
+                        top: false,
+                        child: SingleChildScrollView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.xl,
+                            AppSpacing.xl,
+                            AppSpacing.xl,
+                            AppSpacing.xxxl,
+                          ),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                maxWidth: AppSizes.formWidth,
+                              ),
+                              child: Form(
+                                key: formKey,
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    ClassroomFormFields(
+                                      viewModel: viewModel,
+                                      nameController: nameController,
+                                    ),
+                                    const SizedBox(height: AppSpacing.xl),
+                                    const Divider(),
+                                    const SizedBox(height: AppSpacing.md),
+                                    actions,
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       )
@@ -288,6 +292,7 @@ class _DropdownField extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         DropdownButtonFormField<String>(
+          isExpanded: true,
           itemHeight: null,
           key: ValueKey('$label-${value ?? 'empty'}'),
           initialValue: value,

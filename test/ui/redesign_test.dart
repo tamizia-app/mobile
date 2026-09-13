@@ -32,6 +32,7 @@ import 'package:tamizai_app/features/assessment/domain/models/assessment_result.
 import 'package:tamizai_app/features/assessment/domain/models/assessment_response.dart';
 import 'package:tamizai_app/features/assessment/domain/models/attempt_exercise_args.dart';
 import 'package:tamizai_app/features/assessment/domain/models/attempt_review.dart';
+import 'package:tamizai_app/features/assessment/domain/models/exercise_integrity.dart';
 import 'package:tamizai_app/features/assessment/domain/models/student_assessment_history.dart';
 import 'package:tamizai_app/features/exercises/data/services/mock_exercise_service.dart';
 import 'package:tamizai_app/features/auth/presentation/pages/splash_page.dart';
@@ -197,6 +198,16 @@ class _Assessments implements AssessmentRepository {
       const AttemptReview(
         attemptId: 'a',
         status: 'COMPLETED',
+        student: AttemptReviewStudent(
+          studentId: 's',
+          code: 'EST-003',
+          age: 8,
+          gender: 'GIRL',
+        ),
+        assessment: AttemptReviewAssessment(
+          assessmentId: 'v',
+          title: 'Lectura y escritura · Tercer grado',
+        ),
         result: AttemptReviewResult(
           attemptId: 'a',
           finalScore: 72.5,
@@ -212,6 +223,37 @@ class _Assessments implements AssessmentRepository {
             status: 'EVALUATED',
             score: 72.5,
             referenceText: 'El sol brilla en el cielo.',
+            technicalStatus: TechnicalStatus.valid,
+            scoreEligible: true,
+            scoringComponents: ScoringComponents(
+              pronunciationScore: 72.5,
+              accuracyScore: 80.2,
+              fluencyScore: 68.4,
+              completenessScore: 95,
+              lexicalMatch: 83.3,
+            ),
+            response: {'recognized_text': 'El sol brilla en cielo.'},
+          ),
+          ExerciseReview(
+            exerciseAttemptId: 'w',
+            exerciseId: 'w',
+            orderIndex: 2,
+            type: 'READING_WRITING',
+            title: 'Escribe la oración',
+            status: 'EVALUATED',
+            score: 86.3,
+            referenceText: 'El sol brilla en el cielo.',
+            technicalStatus: TechnicalStatus.partial,
+            scoreEligible: false,
+            reviewRequired: true,
+            reviewReasons: ['LOW_OCR_CONFIDENCE'],
+            scoringComponents: ScoringComponents(
+              similarityScore: 86.3,
+              confidenceAvg: 0.748,
+              cer: 0.071,
+              wer: 0.333,
+            ),
+            response: {'recognized_text': 'El sol brila en el cielo.'},
           ),
         ],
       );
@@ -618,6 +660,80 @@ void main() {
       await tester.binding.setSurfaceSize(null);
     });
   }
+  for (final configuration in [
+    (const Size(390, 844), 1.0, 0.0),
+    (const Size(320, 640), 2.0, 0.0),
+    (const Size(390, 844), 1.5, 280.0),
+  ]) {
+    testWidgets(
+      'classroom fields remain visible before actions at $configuration',
+      (tester) async {
+        final (size, scale, keyboard) = configuration;
+        await _pump(
+          tester,
+          CreateClassroomPage(classroomRepository: _Classrooms()),
+          size: size,
+          scale: scale,
+          keyboard: keyboard,
+        );
+        final name = find.byType(TextFormField).first;
+        expect(name.hitTestable(), findsOneWidget);
+        expect(tester.getTopLeft(name).dy, greaterThan(48));
+        await tester.enterText(name, 'Exploradores');
+        final dropdowns = find.byType(DropdownButtonFormField<String>);
+        for (var i = 0; i < 3; i++) {
+          await tester.ensureVisible(dropdowns.at(i));
+          await tester.pumpAndSettle();
+          expect(dropdowns.at(i).hitTestable(), findsOneWidget);
+        }
+        final save = find.text('Guardar');
+        expect(
+          tester.getTopLeft(save).dy,
+          greaterThan(tester.getBottomLeft(dropdowns.last).dy),
+        );
+        await tester.ensureVisible(save);
+        await tester.pumpAndSettle();
+        expect(save.hitTestable(), findsOneWidget);
+        await tester.tap(save);
+        await tester.pumpAndSettle();
+        expect(find.text('Selecciona un grado.'), findsOneWidget);
+        expect(find.text('Exploradores'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.binding.setSurfaceSize(null);
+      },
+    );
+  }
+  testWidgets(
+    'review exposes reading and writing indicators with their evidence',
+    (tester) async {
+      await _pump(
+        tester,
+        AttemptReviewPage(assessmentRepository: _Assessments(), attemptId: 'a'),
+      );
+      for (final entry in [
+        ('Indicadores de lectura', 'review_reading_metrics'),
+        ('Indicadores de escritura', 'review_writing_metrics'),
+      ]) {
+        await tester.ensureVisible(find.text(entry.$1));
+        await tester.pumpAndSettle();
+        expect(find.text(entry.$1).hitTestable(), findsOneWidget);
+        await _capture(tester, entry.$2);
+      }
+      expect(find.text('7.1%'), findsOneWidget);
+      expect(find.text('33.3%'), findsOneWidget);
+      expect(find.text('74.8%'), findsOneWidget);
+      expect(find.text('80.2 / 100'), findsOneWidget);
+      expect(
+        find.text('No se incluye en el cálculo del resultado.'),
+        findsOneWidget,
+      );
+      expect(find.text('Requiere revisión docente'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.binding.setSurfaceSize(null);
+    },
+  );
   testWidgets('form works with keyboard and text scaling', (tester) async {
     final session = _session();
     await _pump(

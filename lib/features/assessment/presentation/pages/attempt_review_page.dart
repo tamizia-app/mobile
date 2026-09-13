@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/assessment_result_summary.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../widgets/exercise_metrics_panel.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -13,7 +15,6 @@ import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/error_message.dart';
 import '../../domain/models/attempt_review.dart';
-import '../../domain/models/exercise_integrity.dart';
 import '../../domain/repositories/assessment_repository.dart';
 
 class AttemptReviewPage extends StatefulWidget {
@@ -51,11 +52,13 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
       final review = await widget.assessmentRepository.getAttemptReview(
         widget.attemptId,
       );
+      if (!mounted) return;
       setState(() {
         _review = review;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'No se pudo cargar la revisión del intento.';
         _isLoading = false;
@@ -117,7 +120,7 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
       body: Column(
         children: [
           AppHeader(
-            title: 'Revisión del intento',
+            title: 'Detalle de la evaluación',
             showBack: true,
             centerTitle: true,
           ),
@@ -167,19 +170,26 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _StudentInfoCard(student: review.student),
-          const SizedBox(height: AppSpacing.lg),
-          _AssessmentInfoCard(review: review),
-          const SizedBox(height: AppSpacing.lg),
           if (review.result != null) _ResultCard(result: review.result!),
+          const SizedBox(height: AppSpacing.lg),
+          ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            title: Text(review.student?.code ?? 'Datos de la evaluación'),
+            subtitle: Text(
+              review.assessment?.title ?? translateAttemptStatus(review.status),
+            ),
+            children: [
+              _StudentInfoCard(student: review.student),
+              const SizedBox(height: AppSpacing.md),
+              _AssessmentInfoCard(review: review),
+            ],
+          ),
           if (review.exerciseReviews.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.lg),
-            const Text(
-              'Ejercicios',
-              style: TextStyle(
-                fontSize: AppFontSizes.bodyLarge,
-                fontWeight: FontWeight.w700,
-              ),
+            const AppSectionHeader(
+              title: 'Análisis por ejercicio',
+              description:
+                  'Revisa el puntaje, los indicadores y la evidencia de cada actividad.',
             ),
             const SizedBox(height: AppSpacing.sm),
             ...review.exerciseReviews.asMap().entries.map(
@@ -359,421 +369,189 @@ class _ResultCard extends StatelessWidget {
 
 class _ExerciseReviewCard extends StatelessWidget {
   const _ExerciseReviewCard({required this.index, required this.exercise});
-
   final int index;
   final ExerciseReview exercise;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.control),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.card),
-                ),
-                child: Text(
-                  '${index + 1}',
-                  style: const TextStyle(
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w700,
-                    fontSize: AppFontSizes.support,
-                  ),
-                ),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(AppSpacing.lg),
+    decoration: AppSurfaces.card,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Ejercicio ${index + 1} · ${translateExerciseType(exercise.type)}',
+          style: AppTextStyles.labelMedium,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(exercise.title, style: AppTextStyles.headingSmall),
+        const SizedBox(height: AppSpacing.md),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            AppStatusBadge(label: translateExerciseStatus(exercise.status), icon: Icons.assignment_outlined),
+            if (exercise.reviewRequired)
+              const AppStatusBadge(
+                label: 'Requiere revisión docente',
+                icon: Icons.flag_outlined,
+                color: AppColors.warning,
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      exercise.title,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: [
-                        Text(
-                          translateExerciseType(exercise.type),
-                          style: const TextStyle(
-                            color: AppColors.mutedText,
-                            fontSize: AppFontSizes.support,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          translateExerciseStatus(exercise.status),
-                          style: const TextStyle(
-                            color: AppColors.mutedText,
-                            fontSize: AppFontSizes.support,
-                          ),
-                        ),
-                        if (exercise.score != null) ...[
-                          const SizedBox(width: AppSpacing.sm),
-                          Text(
-                            '${exercise.score!.toStringAsFixed(1)}%',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: AppFontSizes.support,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              if (exercise.reviewRequired)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryOrange.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppRadius.card),
-                  ),
-                  child: const Text(
-                    'Revisar',
-                    style: TextStyle(
-                      color: AppColors.secondaryOrange,
-                      fontSize: AppFontSizes.support,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          if (exercise.reviewReasons.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.sm),
-            ...exercise.reviewReasons.map(
-              (reason) => Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  '- ${translateReviewReason(reason)}',
-                  style: const TextStyle(
-                    color: AppColors.secondaryOrange,
-                    fontSize: AppFontSizes.support,
-                  ),
-                ),
-              ),
-            ),
           ],
-          const SizedBox(height: AppSpacing.sm),
-          _buildTypeSpecificDetails(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTypeSpecificDetails(BuildContext context) {
-    final type = exercise.type.trim().toUpperCase();
-
-    if (type == 'MULTIPLE_CHOICE') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (exercise.questionText != null)
-            _detailRow('Pregunta', exercise.questionText!),
-          if (exercise.response?['selected_text'] != null)
-            _detailRow(
-              'Seleccionado',
-              exercise.response!['selected_text'] as String,
-              isCorrect: exercise.response?['is_correct'] == true,
-              isIncorrect: exercise.response?['is_correct'] == false,
+        ),
+        AppDetailRow(
+          label: 'Puntaje del ejercicio',
+          value: exercise.score == null
+              ? 'Sin puntaje disponible'
+              : '${exercise.score!.toStringAsFixed(1)} / 100',
+        ),
+        AppDetailRow(
+          label: 'Calidad de la evidencia',
+          value: translateTechnicalStatus(exercise.technicalStatus.apiValue),
+        ),
+        Text(
+          exercise.scoreEligible
+              ? 'Incluido en el cálculo del resultado.'
+              : 'No se incluye en el cálculo del resultado.',
+          style: AppTextStyles.bodySmall,
+        ),
+        if (exercise.reviewReasons.isNotEmpty ||
+            exercise.qualityReasons.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.warningContainer,
+              borderRadius: BorderRadius.circular(AppRadius.control),
             ),
-          if (exercise.expected?['correct_text'] != null)
-            _detailRow(
-              'Correcto',
-              exercise.expected!['correct_text'] as String,
-            ),
-        ],
-      );
-    }
-
-    if (type == 'ORDER_SYLLABLES') {
-      final syllables = exercise.response?['selected_syllables'];
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (syllables is List) _detailRow('Sílabas', syllables.join(' ')),
-          if (exercise.response?['formed_word'] != null)
-            _detailRow(
-              'Palabra formada',
-              exercise.response!['formed_word'] as String,
-              isCorrect: exercise.response?['is_correct'] == true,
-              isIncorrect: exercise.response?['is_correct'] == false,
-            ),
-          if (exercise.expected?['correct_word'] != null)
-            _detailRow(
-              'Palabra correcta',
-              exercise.expected!['correct_word'] as String,
-            ),
-        ],
-      );
-    }
-
-    if (type == 'READING_SPEAKING' || type == 'LISTENING_SPEAKING') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (exercise.referenceText != null)
-            _detailRow('Texto de referencia', exercise.referenceText!),
-          if (exercise.response?['free_transcription_text'] != null)
-            _detailRow(
-              'Transcripción',
-              exercise.response!['free_transcription_text'] as String,
-            ),
-          if (exercise.response?['recognized_text'] != null)
-            _detailRow(
-              'Texto reconocido',
-              exercise.response!['recognized_text'] as String,
-            ),
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            title: const Text('Indicadores de lectura'),
-            children: [_pronunciationMetrics(exercise.scoringComponents)],
-          ),
-          if (exercise.response?['audio_url'] != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: _AudioPlayer(
-                url: exercise.response!['audio_url'] as String,
-              ),
-            ),
-        ],
-      );
-    }
-
-    if (type == 'READING_WRITING' || type == 'LISTENING_WRITING') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (exercise.referenceText != null)
-            _detailRow('Texto de referencia', exercise.referenceText!),
-          if (exercise.response?['recognized_text'] != null)
-            _detailRow(
-              'Texto reconocido (OCR)',
-              exercise.response!['recognized_text'] as String,
-            ),
-          if (exercise.response?['image_url'] != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: _ImagePreview(
-                url: exercise.response!['image_url'] as String,
-              ),
-            ),
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            title: const Text('Indicadores de escritura'),
-            children: [_ocrMetrics(exercise.scoringComponents)],
-          ),
-        ],
-      );
-    }
-
-    return const SizedBox.shrink();
-  }
-
-  Widget _detailRow(
-    String label,
-    String value, {
-    bool? isCorrect,
-    bool? isIncorrect,
-  }) {
-    final icon = isCorrect == true
-        ? Icons.check_circle
-        : isIncorrect == true
-        ? Icons.cancel
-        : null;
-    final iconColor = isCorrect == true
-        ? AppColors.successGreen
-        : isIncorrect == true
-        ? AppColors.errorRed
-        : null;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 130,
-            child: Text(
-              '$label:',
-              style: const TextStyle(
-                color: AppColors.mutedText,
-                fontSize: AppFontSizes.support,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Flexible(
-                  child: Text(
-                    value,
-                    style: const TextStyle(fontSize: AppFontSizes.support),
-                  ),
+                const Text(
+                  'Aspectos que revisar',
+                  style: AppTextStyles.labelLarge,
                 ),
-                if (icon != null) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  Icon(icon, color: iconColor, size: 16),
-                ],
+                for (final reason in {
+                  ...exercise.reviewReasons,
+                  ...exercise.qualityReasons,
+                })
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text('• ${translateReviewReason(reason)}'),
+                  ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
+        const Divider(),
+        _buildTypeSpecificDetails(context),
+      ],
+    ),
+  );
 
-  Widget _pronunciationMetrics(ScoringComponents metrics) {
-    final chips = <Widget>[];
-    if (metrics.pronunciationScore != null) {
-      chips.add(
-        _metricChip(
-          'Pronunciación',
-          '${metrics.pronunciationScore!.toStringAsFixed(0)}%',
-        ),
-      );
-    }
-    if (metrics.accuracyScore != null) {
-      chips.add(
-        _metricChip(
-          'Precisión',
-          '${metrics.accuracyScore!.toStringAsFixed(0)}%',
-        ),
-      );
-    }
-    if (metrics.fluencyScore != null) {
-      chips.add(
-        _metricChip('Fluidez', '${metrics.fluencyScore!.toStringAsFixed(0)}%'),
-      );
-    }
-    if (metrics.completenessScore != null) {
-      chips.add(
-        _metricChip(
-          'Lectura completa',
-          '${metrics.completenessScore!.toStringAsFixed(0)}%',
-        ),
-      );
-    }
-    if (metrics.lexicalMatch != null) {
-      chips.add(
-        _metricChip(
-          'Coincidencia léxica',
-          '${metrics.lexicalMatch!.toStringAsFixed(0)}%',
-        ),
-      );
-    }
-    if (chips.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTypeSpecificDetails(BuildContext context) {
+    final type = exercise.type.trim().toUpperCase();
+    final response = exercise.response;
+    if (type == 'MULTIPLE_CHOICE' || type == 'ORDER_SYLLABLES') {
+      final choice = type == 'MULTIPLE_CHOICE';
+      final given = response?[choice ? 'selected_text' : 'formed_word'];
+      final expected =
+          exercise.expected?[choice ? 'correct_text' : 'correct_word'];
+      final correct = response?['is_correct'];
+      final syllables = response?['selected_syllables'];
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Métricas de pronunciación:',
-            style: TextStyle(
-              color: AppColors.mutedText,
-              fontSize: AppFontSizes.support,
-              fontWeight: FontWeight.w600,
-            ),
+          if (exercise.questionText != null)
+            _textBlock('Consigna', exercise.questionText!),
+          if (syllables is List)
+            _textBlock('Sílabas elegidas', syllables.join(' · ')),
+          _textBlock(
+            'Respuesta del estudiante',
+            given?.toString() ?? 'No disponible',
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Wrap(spacing: 8, runSpacing: 4, children: chips),
+          if (correct is bool)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AppStatusBadge(
+                label: correct ? 'Respuesta correcta' : 'Respuesta incorrecta',
+                icon: correct
+                    ? Icons.check_circle_outline
+                    : Icons.cancel_outlined,
+                color: correct ? AppColors.success : AppColors.error,
+              ),
+            ),
+          const SizedBox(height: AppSpacing.md),
+          _textBlock(
+            'Respuesta esperada',
+            expected?.toString() ?? 'No disponible',
+          ),
         ],
-      ),
+      );
+    }
+    final writing = type == 'READING_WRITING' || type == 'LISTENING_WRITING';
+    final speaking = type == 'READING_SPEAKING' || type == 'LISTENING_SPEAKING';
+    if (!writing && !speaking) {
+      return const Text('No hay detalles disponibles para este ejercicio.');
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ExerciseMetricsPanel(
+          metrics: exercise.scoringComponents,
+          writing: writing,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        const AppSectionHeader(title: 'Respuesta y evidencia'),
+        const SizedBox(height: AppSpacing.md),
+        if (exercise.referenceText != null)
+          _textBlock('Texto de referencia', exercise.referenceText!),
+        if (response?['free_transcription_text'] != null)
+          _textBlock(
+            'Transcripción del audio',
+            response!['free_transcription_text'].toString(),
+          ),
+        if (response?['recognized_text'] != null)
+          _textBlock(
+            writing
+                ? 'Texto reconocido de la escritura (OCR)'
+                : 'Texto reconocido',
+            response!['recognized_text'].toString(),
+          ),
+        if (writing && response?['image_url'] != null)
+          _ImagePreview(url: response!['image_url'].toString()),
+        if (speaking && response?['audio_url'] != null)
+          _AudioPlayer(url: response!['audio_url'].toString()),
+        if (response == null || response.isEmpty)
+          const Text(
+            'No hay una respuesta disponible.',
+            style: AppTextStyles.bodySmall,
+          ),
+      ],
     );
   }
 
-  Widget _ocrMetrics(ScoringComponents metrics) {
-    final chips = <Widget>[];
-    if (metrics.confidenceAvg != null) {
-      chips.add(
-        _metricChip(
-          'Confianza del reconocimiento',
-          '${(metrics.confidenceAvg! * 100).toStringAsFixed(0)}%',
-        ),
-      );
-    }
-    if (metrics.similarityScore != null) {
-      chips.add(
-        _metricChip(
-          'Similitud con el texto',
-          '${metrics.similarityScore!.toStringAsFixed(0)}%',
-        ),
-      );
-    }
-    if (metrics.cer != null) {
-      chips.add(
-        _metricChip(
-          'Error por caracteres (CER)',
-          '${(metrics.cer! * 100).toStringAsFixed(0)}%',
-        ),
-      );
-    }
-    if (metrics.wer != null) {
-      chips.add(
-        _metricChip(
-          'Error por palabras (WER)',
-          '${(metrics.wer! * 100).toStringAsFixed(0)}%',
-        ),
-      );
-    }
-    if (chips.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Métricas de OCR:',
-            style: TextStyle(
-              color: AppColors.mutedText,
-              fontSize: AppFontSizes.support,
-              fontWeight: FontWeight.w600,
-            ),
+  Widget _textBlock(String label, String value) => Padding(
+    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: AppTextStyles.labelMedium),
+        const SizedBox(height: AppSpacing.sm),
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(AppRadius.control),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Wrap(spacing: 8, runSpacing: 4, children: chips),
-        ],
-      ),
-    );
-  }
-
-  Widget _metricChip(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.infoBlueLight,
-        borderRadius: BorderRadius.circular(AppRadius.control),
-      ),
-      child: Text(
-        '$label: $value',
-        style: const TextStyle(
-          color: AppColors.primaryBlue,
-          fontSize: AppFontSizes.support,
-          fontWeight: FontWeight.w600,
+          child: SelectableText(
+            value.trim().isEmpty ? 'Sin texto reconocido' : value,
+            style: AppTextStyles.bodyMedium,
+          ),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }
 
 class _ImagePreview extends StatelessWidget {

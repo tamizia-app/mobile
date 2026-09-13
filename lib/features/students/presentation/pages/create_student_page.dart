@@ -407,6 +407,7 @@ class _GenderField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
+      isExpanded: true,
       itemHeight: null,
       key: ValueKey('gender-${viewModel.gender}'),
       initialValue: viewModel.gender.isEmpty ? null : viewModel.gender,

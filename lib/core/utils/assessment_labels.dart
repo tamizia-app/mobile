@@ -62,6 +62,14 @@ String translateAttemptStatus(String? status) {
   }
 }
 
+String translateTechnicalStatus(String? status) =>
+    switch (status?.trim().toUpperCase()) {
+      'VALID' => 'Válida',
+      'PARTIAL' => 'Parcial',
+      'INVALID' => 'No válida',
+      _ => 'No disponible',
+    };
+
 String translateInterventionLevel(String? level) {
   if (level == null) return 'No disponible';
   switch (level.trim().toUpperCase()) {

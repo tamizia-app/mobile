@@ -118,9 +118,15 @@ class _SummaryCard extends StatelessWidget {
     final hasMC = result.mcCorrectCount != null;
     final hasOS = result.osCorrectCount != null;
     final hasSpeaking =
-        _hasType('READING_SPEAKING') || _hasType('LISTENING_SPEAKING');
+        result.speakingCompletedCount != null ||
+        result.speakingAverageScore != null ||
+        _hasType('READING_SPEAKING') ||
+        _hasType('LISTENING_SPEAKING');
     final hasWriting =
-        _hasType('READING_WRITING') || _hasType('LISTENING_WRITING');
+        result.writingCompletedCount != null ||
+        result.writingAverageScore != null ||
+        _hasType('READING_WRITING') ||
+        _hasType('LISTENING_WRITING');
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -129,10 +135,12 @@ class _SummaryCard extends StatelessWidget {
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const AppSectionHeader(title: 'Resumen de actividades'),
           _Row(
-            label: 'Ejercicios',
-            value: '${result.evaluatedExercises}/${result.totalExercises}',
+            label: 'Ejercicios evaluados',
+            value: '${result.evaluatedExercises} de ${result.totalExercises}',
           ),
           _Row(label: 'Pendientes', value: '${result.pendingExercises}'),
           if (hasMC)
@@ -149,13 +157,13 @@ class _SummaryCard extends StatelessWidget {
             _Row(
               label: 'Expresión oral',
               value:
-                  '${result.speakingCompletedCount ?? 0} completados | promedio ${_num(result.speakingAverageScore)}',
+                  '${result.speakingCompletedCount?.toString() ?? "No disponible"} completados\nPromedio: ${_num(result.speakingAverageScore)}',
             ),
           if (hasWriting)
             _Row(
               label: 'Escritura',
               value:
-                  '${result.writingCompletedCount ?? 0} completados | promedio ${_num(result.writingAverageScore)}',
+                  '${result.writingCompletedCount?.toString() ?? "No disponible"} completados\nPromedio: ${_num(result.writingAverageScore)}',
             ),
         ],
       ),
@@ -169,7 +177,7 @@ class _SummaryCard extends StatelessWidget {
   }
 
   String _num(double? value) =>
-      value == null ? 'N/D' : value.toStringAsFixed(1);
+      value == null ? 'No disponible' : '${value.toStringAsFixed(1)} / 100';
 }
 
 class _ExerciseSummariesCard extends StatelessWidget {
@@ -284,7 +292,7 @@ class _ExerciseSummariesCard extends StatelessWidget {
                             ),
                             const SizedBox(width: AppSpacing.md),
                             Text(
-                              'Calidad: ${summary.technicalStatus.apiValue}',
+                              'Evidencia: ${translateTechnicalStatus(summary.technicalStatus.apiValue)}',
                               style: TextStyle(
                                 color: summary.scoreEligible
                                     ? AppColors.successGreen
@@ -296,7 +304,7 @@ class _ExerciseSummariesCard extends StatelessWidget {
                             if (summary.score != null) ...[
                               const SizedBox(width: AppSpacing.md),
                               Text(
-                                '${summary.score!.toStringAsFixed(1)}%',
+                                'Puntaje: ${summary.score!.toStringAsFixed(1)} / 100',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: AppFontSizes.support,
@@ -320,35 +328,11 @@ class _ExerciseSummariesCard extends StatelessWidget {
 
 class _Row extends StatelessWidget {
   const _Row({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              label,
-              style: const TextStyle(color: AppColors.mutedText),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppDetailRow(label: label, value: value);
 }
 
 class _MissingResultPage extends StatelessWidget {

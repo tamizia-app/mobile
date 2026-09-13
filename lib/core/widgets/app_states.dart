@@ -207,6 +207,7 @@ class AppActionGroup extends StatelessWidget {
       if (constraints.maxWidth < 380 ||
           MediaQuery.textScalerOf(context).scale(16) > 20) {
         return Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (var i = 0; i < children.length; i++) ...[
