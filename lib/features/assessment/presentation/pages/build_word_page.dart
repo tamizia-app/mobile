@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/student_activity_layout.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_header.dart';
+
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/student_action_button.dart';
 import '../../domain/models/attempt_exercise_args.dart';
@@ -63,33 +66,18 @@ class _BuildWordPageState extends State<BuildWordPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _viewModel,
-      builder: (context, _) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: Column(
-              children: [
-                AppHeader(
-                  title: 'Forma la palabra',
-                  showBack: true,
-                  centerTitle: true,
-                  onBack: () => Navigator.pop(context, false),
-                ),
-                Expanded(child: _buildContent()),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _viewModel,
+    builder: (context, _) => StudentActivityLayout(
+      title: 'Forma la palabra',
+      onBack: () => Navigator.pop(context, false),
+      child: _buildContent(),
+    ),
+  );
 
   Widget _buildContent() {
     if (_viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Preparando la actividad…');
     }
     if (_viewModel.syllables.isEmpty) {
       return _StateMessage(
@@ -97,39 +85,35 @@ class _BuildWordPageState extends State<BuildWordPage> {
       );
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 22, 16, 24),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xl,
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            _viewModel.progressText,
-            style: const TextStyle(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.w900,
-            ),
+          StudentTaskHeading(
+            progress: _viewModel.progressText,
+            instruction: _viewModel.prompt,
           ),
-          const SizedBox(height: 14),
-          Text(
-            _viewModel.prompt,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF5B3A9A),
-              fontSize: 19,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 22),
+          const SizedBox(height: AppSpacing.xl),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 26),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2EAF6),
+              color: AppColors.studentLilac,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFCFC3D7), width: 3),
+              border: Border.all(
+                color: AppColors.studentPurple.withValues(alpha: 0.3),
+                width: 2,
+              ),
             ),
             child: Wrap(
               alignment: WrapAlignment.center,
-              spacing: 12,
-              runSpacing: 12,
+              spacing: AppSpacing.md,
+              runSpacing: AppSpacing.md,
               children: List.generate(_viewModel.placedSyllables.length, (
                 index,
               ) {
@@ -142,11 +126,11 @@ class _BuildWordPageState extends State<BuildWordPage> {
               }),
             ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: AppSpacing.xl),
           Wrap(
             alignment: WrapAlignment.center,
-            spacing: 14,
-            runSpacing: 14,
+            spacing: AppSpacing.lg,
+            runSpacing: AppSpacing.lg,
             children: _viewModel.availableSyllables
                 .map(
                   (syllable) => _SyllableButton(
@@ -156,43 +140,39 @@ class _BuildWordPageState extends State<BuildWordPage> {
                 )
                 .toList(),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.lg),
           Text(
-            'formed_word: ${_viewModel.formedWord}',
+            'Tu palabra: ${_viewModel.formedWord}',
             style: const TextStyle(
               color: AppColors.mutedText,
               fontWeight: FontWeight.w700,
             ),
           ),
           if (_viewModel.errorMessage != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               _viewModel.errorMessage!,
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
               style: const TextStyle(
                 color: AppColors.errorRed,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
-          const SizedBox(height: 24),
-          Row(
+          const SizedBox(height: AppSpacing.xl),
+          AppActionGroup(
             children: [
-              Expanded(
-                child: StudentActionButton(
-                  text: 'Limpiar',
-                  icon: Icons.cleaning_services_outlined,
-                  onPressed: _viewModel.clear,
-                ),
+              StudentActionButton(
+                text: 'Limpiar',
+                icon: Icons.cleaning_services_outlined,
+                onPressed: _viewModel.clear,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: PrimaryButton(
-                  text: 'Guardar',
-                  icon: Icons.arrow_forward,
-                  isLoading: _viewModel.isSubmitting,
-                  onPressed: _submit,
-                ),
+              PrimaryButton(
+                text: 'Guardar',
+                student: true,
+                icon: Icons.arrow_forward,
+                isLoading: _viewModel.isSubmitting,
+                onPressed: _submit,
               ),
             ],
           ),
@@ -222,19 +202,25 @@ class _SyllableTargetBox extends StatelessWidget {
           onTap: text == null ? null : onTap,
           borderRadius: BorderRadius.circular(20),
           child: Container(
-            width: 76,
-            height: 76,
-            alignment: Alignment.center,
+            constraints: const BoxConstraints(minWidth: 76, minHeight: 76),
+            padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: candidateData.isEmpty
                   ? Colors.white
-                  : const Color(0xFFDDF2FF),
+                  : AppColors.secondaryContainer,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFC9C1CF), width: 3),
+              border: Border.all(color: AppColors.studentPurple, width: 2),
             ),
-            child: Text(
-              text ?? '',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            child: Center(
+              widthFactor: 1,
+              heightFactor: 1,
+              child: Text(
+                text ?? '',
+                style: const TextStyle(
+                  fontSize: AppFontSizes.section,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         );
@@ -256,12 +242,12 @@ class _SyllableButton extends StatelessWidget {
       data: text,
       feedback: Material(
         color: Colors.transparent,
-        child: _SyllableTile(text: text, elevated: true),
+        child: _SyllableTile(text: text),
       ),
       childWhenDragging: Opacity(opacity: 0.35, child: child),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         child: child,
       ),
     );
@@ -269,34 +255,33 @@ class _SyllableButton extends StatelessWidget {
 }
 
 class _SyllableTile extends StatelessWidget {
-  const _SyllableTile({required this.text, this.elevated = false});
+  const _SyllableTile({required this.text});
 
   final String text;
-  final bool elevated;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 82,
-      height: 82,
-      alignment: Alignment.center,
+      constraints: const BoxConstraints(minWidth: 80, minHeight: 80),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFFDDF2FF),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFACDDF3),
-            offset: Offset(0, elevated ? 8 : 4),
-            blurRadius: elevated ? 8 : 0,
-          ),
+        color: AppColors.secondaryContainer,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.secondary, width: 1.5),
+        boxShadow: const [
+          BoxShadow(color: AppColors.studentYellow, offset: Offset(0, 4)),
         ],
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Color(0xFF0056B3),
-          fontSize: 28,
-          fontWeight: FontWeight.w900,
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: AppColors.secondary,
+            fontSize: AppFontSizes.heading,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -312,8 +297,8 @@ class _StateMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Text(text, textAlign: TextAlign.center),
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Text(text, textAlign: TextAlign.left),
       ),
     );
   }

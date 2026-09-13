@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/assessment_result_summary.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -126,12 +129,12 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando resultados…');
     }
     if (_errorMessage != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -140,9 +143,9 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
                 color: AppColors.errorRed,
                 size: 48,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ErrorMessage(text: _errorMessage!),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.lg),
               PrimaryButton(
                 text: 'Reintentar',
                 icon: Icons.refresh,
@@ -155,22 +158,30 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
     }
     final review = _review!;
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 22, 18, 32),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xxl,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _StudentInfoCard(student: review.student),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.lg),
           _AssessmentInfoCard(review: review),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.lg),
           if (review.result != null) _ResultCard(result: review.result!),
           if (review.exerciseReviews.isNotEmpty) ...[
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
             const Text(
               'Ejercicios',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                fontSize: AppFontSizes.bodyLarge,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             ...review.exerciseReviews.asMap().entries.map(
               (entry) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -182,7 +193,7 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
             ),
           ],
           if (review.status.trim().toUpperCase() == 'COMPLETED') ...[
-            const SizedBox(height: 26),
+            const SizedBox(height: AppSpacing.xl),
             PrimaryButton(
               text: 'Repetir evaluación',
               icon: Icons.replay,
@@ -190,9 +201,10 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
               onPressed: _isRepeating ? null : _repeatAttempt,
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           PrimaryButton(
             text: 'Volver al historial',
+            variant: AppButtonVariant.secondary,
             icon: Icons.arrow_back,
             onPressed: () => Navigator.pop(context),
           ),
@@ -210,10 +222,10 @@ class _StudentInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -221,9 +233,12 @@ class _StudentInfoCard extends StatelessWidget {
         children: [
           const Text(
             'Estudiante',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              fontSize: AppFontSizes.bodyLarge,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           if (student == null)
             const Text(
               'No disponible',
@@ -257,7 +272,7 @@ class _StudentInfoCard extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -280,10 +295,10 @@ class _AssessmentInfoCard extends StatelessWidget {
         ? '${review.completedAt!.day}/${review.completedAt!.month}/${review.completedAt!.year} ${review.completedAt!.hour}:${review.completedAt!.minute.toString().padLeft(2, '0')}'
         : '—';
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -291,9 +306,12 @@ class _AssessmentInfoCard extends StatelessWidget {
         children: [
           const Text(
             'Evaluación',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              fontSize: AppFontSizes.bodyLarge,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           _row('Nombre', review.assessment?.title ?? '—'),
           _row('Estado', translateAttemptStatus(review.status)),
           _row('Iniciado', startedStr),
@@ -319,7 +337,7 @@ class _AssessmentInfoCard extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -330,72 +348,13 @@ class _AssessmentInfoCard extends StatelessWidget {
 
 class _ResultCard extends StatelessWidget {
   const _ResultCard({required this.result});
-
   final AttemptReviewResult result;
-
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        children: [
-          if (result.finalScore != null) ...[
-            Text(
-              '${result.finalScore!.toStringAsFixed(1)}%',
-              style: const TextStyle(
-                color: AppColors.primaryBlue,
-                fontSize: 32,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Puntaje final',
-              style: TextStyle(color: AppColors.mutedText, fontSize: 13),
-            ),
-          ],
-          if (result.interventionLevel != null) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: _levelColor(
-                  result.interventionLevel,
-                ).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'Nivel: ${translateInterventionLevel(result.interventionLevel)}',
-                style: TextStyle(
-                  color: _levelColor(result.interventionLevel),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Color _levelColor(String? level) {
-    switch (level?.toUpperCase()) {
-      case 'LOW':
-        return AppColors.successGreen;
-      case 'MEDIUM':
-        return AppColors.secondaryOrange;
-      case 'HIGH':
-        return AppColors.errorRed;
-      default:
-        return AppColors.mutedText;
-    }
-  }
+  Widget build(BuildContext context) => AssessmentResultSummary(
+    score: result.finalScore,
+    level: result.interventionLevel,
+    pending: result.pendingExercises,
+  );
 }
 
 class _ExerciseReviewCard extends StatelessWidget {
@@ -407,10 +366,10 @@ class _ExerciseReviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -424,51 +383,53 @@ class _ExerciseReviewCard extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.card),
                 ),
                 child: Text(
                   '${index + 1}',
                   style: const TextStyle(
                     color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    fontSize: AppFontSizes.support,
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       exercise.title,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
-                    const SizedBox(height: 2),
-                    Row(
+                    const SizedBox(height: AppSpacing.xs),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
                       children: [
                         Text(
                           translateExerciseType(exercise.type),
                           style: const TextStyle(
                             color: AppColors.mutedText,
-                            fontSize: 12,
+                            fontSize: AppFontSizes.support,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         Text(
                           translateExerciseStatus(exercise.status),
                           style: const TextStyle(
                             color: AppColors.mutedText,
-                            fontSize: 12,
+                            fontSize: AppFontSizes.support,
                           ),
                         ),
                         if (exercise.score != null) ...[
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Text(
                             '${exercise.score!.toStringAsFixed(1)}%',
                             style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              fontSize: AppFontSizes.support,
                             ),
                           ),
                         ],
@@ -485,21 +446,21 @@ class _ExerciseReviewCard extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.secondaryOrange.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
                   ),
                   child: const Text(
                     'Revisar',
                     style: TextStyle(
                       color: AppColors.secondaryOrange,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                      fontSize: AppFontSizes.support,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
             ],
           ),
           if (exercise.reviewReasons.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             ...exercise.reviewReasons.map(
               (reason) => Padding(
                 padding: const EdgeInsets.only(bottom: 2),
@@ -507,13 +468,13 @@ class _ExerciseReviewCard extends StatelessWidget {
                   '- ${translateReviewReason(reason)}',
                   style: const TextStyle(
                     color: AppColors.secondaryOrange,
-                    fontSize: 12,
+                    fontSize: AppFontSizes.support,
                   ),
                 ),
               ),
             ),
           ],
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.sm),
           _buildTypeSpecificDetails(context),
         ],
       ),
@@ -583,7 +544,11 @@ class _ExerciseReviewCard extends StatelessWidget {
               'Texto reconocido',
               exercise.response!['recognized_text'] as String,
             ),
-          _pronunciationMetrics(exercise.scoringComponents),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Indicadores de lectura'),
+            children: [_pronunciationMetrics(exercise.scoringComponents)],
+          ),
           if (exercise.response?['audio_url'] != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
@@ -613,7 +578,11 @@ class _ExerciseReviewCard extends StatelessWidget {
                 url: exercise.response!['image_url'] as String,
               ),
             ),
-          _ocrMetrics(exercise.scoringComponents),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Indicadores de escritura'),
+            children: [_ocrMetrics(exercise.scoringComponents)],
+          ),
         ],
       );
     }
@@ -646,17 +615,23 @@ class _ExerciseReviewCard extends StatelessWidget {
             width: 130,
             child: Text(
               '$label:',
-              style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+              style: const TextStyle(
+                color: AppColors.mutedText,
+                fontSize: AppFontSizes.support,
+              ),
             ),
           ),
           Expanded(
             child: Row(
               children: [
                 Flexible(
-                  child: Text(value, style: const TextStyle(fontSize: 12)),
+                  child: Text(
+                    value,
+                    style: const TextStyle(fontSize: AppFontSizes.support),
+                  ),
                 ),
                 if (icon != null) ...[
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppSpacing.xs),
                   Icon(icon, color: iconColor, size: 16),
                 ],
               ],
@@ -672,32 +647,38 @@ class _ExerciseReviewCard extends StatelessWidget {
     if (metrics.pronunciationScore != null) {
       chips.add(
         _metricChip(
-          'Pron',
+          'Pronunciación',
           '${metrics.pronunciationScore!.toStringAsFixed(0)}%',
         ),
       );
     }
     if (metrics.accuracyScore != null) {
       chips.add(
-        _metricChip('Prec', '${metrics.accuracyScore!.toStringAsFixed(0)}%'),
+        _metricChip(
+          'Precisión',
+          '${metrics.accuracyScore!.toStringAsFixed(0)}%',
+        ),
       );
     }
     if (metrics.fluencyScore != null) {
       chips.add(
-        _metricChip('Fluid', '${metrics.fluencyScore!.toStringAsFixed(0)}%'),
+        _metricChip('Fluidez', '${metrics.fluencyScore!.toStringAsFixed(0)}%'),
       );
     }
     if (metrics.completenessScore != null) {
       chips.add(
         _metricChip(
-          'Comp',
+          'Lectura completa',
           '${metrics.completenessScore!.toStringAsFixed(0)}%',
         ),
       );
     }
     if (metrics.lexicalMatch != null) {
       chips.add(
-        _metricChip('Lex', '${metrics.lexicalMatch!.toStringAsFixed(0)}%'),
+        _metricChip(
+          'Coincidencia léxica',
+          '${metrics.lexicalMatch!.toStringAsFixed(0)}%',
+        ),
       );
     }
     if (chips.isEmpty) return const SizedBox.shrink();
@@ -710,11 +691,11 @@ class _ExerciseReviewCard extends StatelessWidget {
             'Métricas de pronunciación:',
             style: TextStyle(
               color: AppColors.mutedText,
-              fontSize: 12,
+              fontSize: AppFontSizes.support,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Wrap(spacing: 8, runSpacing: 4, children: chips),
         ],
       ),
@@ -726,24 +707,33 @@ class _ExerciseReviewCard extends StatelessWidget {
     if (metrics.confidenceAvg != null) {
       chips.add(
         _metricChip(
-          'Conf',
+          'Confianza del reconocimiento',
           '${(metrics.confidenceAvg! * 100).toStringAsFixed(0)}%',
         ),
       );
     }
     if (metrics.similarityScore != null) {
       chips.add(
-        _metricChip('Sim', '${metrics.similarityScore!.toStringAsFixed(0)}%'),
+        _metricChip(
+          'Similitud con el texto',
+          '${metrics.similarityScore!.toStringAsFixed(0)}%',
+        ),
       );
     }
     if (metrics.cer != null) {
       chips.add(
-        _metricChip('CER', '${(metrics.cer! * 100).toStringAsFixed(0)}%'),
+        _metricChip(
+          'Error por caracteres (CER)',
+          '${(metrics.cer! * 100).toStringAsFixed(0)}%',
+        ),
       );
     }
     if (metrics.wer != null) {
       chips.add(
-        _metricChip('WER', '${(metrics.wer! * 100).toStringAsFixed(0)}%'),
+        _metricChip(
+          'Error por palabras (WER)',
+          '${(metrics.wer! * 100).toStringAsFixed(0)}%',
+        ),
       );
     }
     if (chips.isEmpty) return const SizedBox.shrink();
@@ -756,11 +746,11 @@ class _ExerciseReviewCard extends StatelessWidget {
             'Métricas de OCR:',
             style: TextStyle(
               color: AppColors.mutedText,
-              fontSize: 12,
+              fontSize: AppFontSizes.support,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Wrap(spacing: 8, runSpacing: 4, children: chips),
         ],
       ),
@@ -772,13 +762,13 @@ class _ExerciseReviewCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.infoBlueLight,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppRadius.control),
       ),
       child: Text(
         '$label: $value',
         style: const TextStyle(
           color: AppColors.primaryBlue,
-          fontSize: 11,
+          fontSize: AppFontSizes.support,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -798,13 +788,13 @@ class _ImagePreview extends StatelessWidget {
       label: 'Ampliar imagen de la prueba de escritura',
       child: InkWell(
         onTap: () => _showExpandedImage(context, url),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         child: Container(
           height: 120,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: AppColors.backgroundLight,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(AppRadius.control),
             border: Border.all(color: AppColors.cardBorder),
           ),
           child: Stack(
@@ -815,7 +805,7 @@ class _ImagePreview extends StatelessWidget {
                 fit: BoxFit.contain,
                 loadingBuilder: (context, child, progress) => progress == null
                     ? child
-                    : const Center(child: CircularProgressIndicator()),
+                    : const AppLoadingState(message: 'Cargando resultados…'),
                 errorBuilder: (context, error, stackTrace) => const Center(
                   child: Icon(
                     Icons.broken_image_outlined,
@@ -833,7 +823,10 @@ class _ImagePreview extends StatelessWidget {
                   child: const Text(
                     'Tocar para ampliar',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 11),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: AppFontSizes.support,
+                    ),
                   ),
                 ),
               ),
@@ -850,7 +843,7 @@ Future<void> _showExpandedImage(BuildContext context, String url) {
     context: context,
     barrierColor: Colors.black87,
     builder: (context) => Dialog(
-      insetPadding: const EdgeInsets.all(16),
+      insetPadding: const EdgeInsets.all(AppSpacing.lg),
       backgroundColor: Colors.black,
       child: SizedBox(
         width: double.infinity,
@@ -859,7 +852,7 @@ Future<void> _showExpandedImage(BuildContext context, String url) {
           children: [
             Positioned.fill(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 child: InteractiveViewer(
                   minScale: 0.8,
                   maxScale: 5,
@@ -882,7 +875,7 @@ Future<void> _showExpandedImage(BuildContext context, String url) {
                                 color: Colors.white70,
                                 size: 52,
                               ),
-                              SizedBox(height: 12),
+                              SizedBox(height: AppSpacing.md),
                               Text(
                                 'No se pudo cargar la imagen.',
                                 style: TextStyle(color: Colors.white),
@@ -1022,10 +1015,15 @@ class _AudioPlayerState extends State<_AudioPlayer> {
     final isPlaying = _state == PlayerState.playing;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 12, 8),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: AppColors.infoBlueLight,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
       ),
       child: Column(
@@ -1050,7 +1048,7 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                       )
                     : Icon(isPlaying ? Icons.pause : Icons.play_arrow),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Slider(
                   value: durationMs > 0 ? positionMs.toDouble() : 0,
@@ -1058,12 +1056,12 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                   onChanged: durationMs > 0 ? _seek : null,
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.xs),
               Text(
                 '${_formatDuration(_position)} / ${_formatDuration(_duration)}',
                 style: const TextStyle(
                   color: AppColors.mutedText,
-                  fontSize: 11,
+                  fontSize: AppFontSizes.support,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1074,7 +1072,10 @@ class _AudioPlayerState extends State<_AudioPlayer> {
               padding: const EdgeInsets.only(left: 6, top: 2),
               child: Text(
                 _errorMessage!,
-                style: const TextStyle(color: AppColors.errorRed, fontSize: 12),
+                style: const TextStyle(
+                  color: AppColors.errorRed,
+                  fontSize: AppFontSizes.support,
+                ),
               ),
             ),
         ],

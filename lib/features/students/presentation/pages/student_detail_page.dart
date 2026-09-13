@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 import 'package:file_picker/file_picker.dart';
 
 import '../../../../core/constants/app_routes.dart';
@@ -65,7 +67,8 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       );
       if (mounted) {
         setState(() {
-          _classroomName = '${classroom.name} - ${classroom.gradeLevel} ${classroom.section}';
+          _classroomName =
+              '${classroom.name} - ${classroom.gradeLevel} ${classroom.section}';
         });
       }
     } catch (_) {
@@ -146,9 +149,9 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     if (confirmed != true) return;
     final revoked = await _viewModel.revokeConsent();
     if (!mounted || !revoked) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Consentimiento revocado.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Consentimiento revocado.')));
   }
 
   Future<void> _uploadConsent() async {
@@ -187,8 +190,12 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     return AnimatedBuilder(
       animation: _viewModel,
       builder: (context, _) {
-        if (_viewModel.student != null && _classroomName == null && !_viewModel.isLoading) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => _onStudentLoaded());
+        if (_viewModel.student != null &&
+            _classroomName == null &&
+            !_viewModel.isLoading) {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _onStudentLoaded(),
+          );
         }
         return Scaffold(
           backgroundColor: AppColors.teacherBackground,
@@ -210,7 +217,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
 
   Widget _buildContent() {
     if (_viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     final student = _viewModel.student;
     if (student == null) {
@@ -231,43 +238,45 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(27, 32, 27, 32),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.xxl,
+        AppSpacing.xl,
+        AppSpacing.xxl,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const CircleAvatar(
             radius: 54,
-            backgroundColor: Color(0xFFD5ECF7),
+            backgroundColor: AppColors.primaryContainer,
             child: Icon(
               Icons.person_outline,
-              color: Color(0xFF44515D),
+              color: AppColors.textSecondary,
               size: 58,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             student.code,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Color(0xFF102532),
-              fontSize: 23,
-              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              fontSize: AppFontSizes.section,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.lg),
           FilledButton.icon(
             onPressed: _editStudent,
             icon: const Icon(Icons.edit_outlined),
             label: const Text('Editar estudiante'),
           ),
-          const SizedBox(height: 22),
-          _StudentDetails(
-            student: student,
-            classroomName: _classroomName,
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
+          _StudentDetails(student: student, classroomName: _classroomName),
+          const SizedBox(height: AppSpacing.xl),
           _HistoryAccess(studentId: student.studentId),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           _ConsentDetails(
             consent: _viewModel.consent,
             isUpdating: _viewModel.isUpdatingConsent,
@@ -275,14 +284,14 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             onUpload: _uploadConsent,
           ),
           if (_viewModel.errorMessage != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(
               _viewModel.errorMessage!,
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.errorRed),
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           TextButton.icon(
             onPressed: _viewModel.isDeleting ? null : _confirmDelete,
             icon: const Icon(Icons.delete_outline),
@@ -306,20 +315,17 @@ class _StudentDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
         children: [
           _DetailRow(label: 'Código', value: student.code),
           _DetailRow(label: 'Edad', value: '${student.age} años'),
-          _DetailRow(
-            label: 'Género',
-            value: translateGender(student.gender),
-          ),
+          _DetailRow(label: 'Género', value: translateGender(student.gender)),
           _DetailRow(
             label: 'Estado',
             value: student.isActive ? 'Activo' : 'Inactivo',
@@ -342,10 +348,10 @@ class _HistoryAccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -353,9 +359,12 @@ class _HistoryAccess extends StatelessWidget {
         children: [
           const Text(
             'Historial de evaluaciones',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontSize: AppFontSizes.bodyLarge,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           FilledButton.icon(
             onPressed: () => Navigator.pushNamed(
               context,
@@ -392,14 +401,17 @@ class _ConsentDetails extends StatelessWidget {
       children: [
         const Text(
           'Consentimiento',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          style: TextStyle(
+            fontSize: AppFontSizes.bodyLarge,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSpacing.sm),
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.control),
             border: Border.all(color: AppColors.cardBorder),
           ),
           child: current == null
@@ -429,7 +441,9 @@ class _ConsentDetails extends StatelessWidget {
         if (current != null && current.status && current.revokedAt == null)
           TextButton(
             onPressed: isUpdating ? null : onRevoke,
-            child: Text(isUpdating ? 'Procesando...' : 'Revocar consentimiento'),
+            child: Text(
+              isUpdating ? 'Procesando...' : 'Revocar consentimiento',
+            ),
           ),
         if (current == null || !current.status || current.revokedAt != null)
           TextButton.icon(
@@ -450,33 +464,9 @@ class _ConsentDetails extends StatelessWidget {
 
 class _DetailRow extends StatelessWidget {
   const _DetailRow({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              label,
-              style: const TextStyle(color: AppColors.neutralGray),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppDetailRow(label: label, value: value);
 }

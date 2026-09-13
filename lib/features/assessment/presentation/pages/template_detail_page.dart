@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -57,11 +59,16 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
       builder: (context, _) {
         final template = _viewModel.template;
         return Scaffold(
-          backgroundColor: const Color(0xFFFAFBFC),
+          backgroundColor: AppColors.background,
           bottomNavigationBar: template == null
               ? null
               : Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 14, 28, 24),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl,
+                    AppSpacing.md,
+                    AppSpacing.xl,
+                    AppSpacing.xl,
+                  ),
                   child: SafeArea(
                     child: PrimaryButton(
                       text: 'Usar plantilla',
@@ -95,12 +102,12 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
 
   Widget _buildContent(AssessmentTemplate? template) {
     if (_viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     if (template == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -108,7 +115,7 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
                 _viewModel.errorMessage ?? 'No se pudo cargar la plantilla.',
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               TextButton(
                 onPressed: _templateId == null
                     ? null
@@ -121,20 +128,25 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
       );
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 30, 16, 120),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.xxl,
+        AppSpacing.lg,
+        120,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             template.name,
             style: const TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
+              color: AppColors.textPrimary,
+              fontSize: AppFontSizes.display,
+              fontWeight: FontWeight.w700,
               height: 1.25,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           _DetailRow(
             label: 'Descripción',
             value: template.description ?? 'No disponible',
@@ -148,26 +160,29 @@ class _TemplateDetailPageState extends State<TemplateDetailPage> {
             value: template.isActive == null
                 ? 'No disponible'
                 : template.isActive!
-                    ? 'Activo'
-                    : 'Inactivo',
+                ? 'Activo'
+                : 'Inactivo',
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
           const Text(
             'Resumen de la plantilla',
-            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              fontSize: AppFontSizes.title,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Text(
             template.summary ??
                 template.description ??
                 'El servidor no devolvió un resumen adicional para esta plantilla.',
             style: const TextStyle(
-              color: Color(0xFF1F2937),
-              fontSize: 16,
+              color: AppColors.textPrimary,
+              fontSize: AppFontSizes.body,
               height: 1.48,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           if (template.exercises.isEmpty)
             const InfoBanner(
               text:
@@ -193,16 +208,19 @@ class _TemplateExercises extends StatelessWidget {
       children: [
         const Text(
           'Ejercicios',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+          style: TextStyle(
+            fontSize: AppFontSizes.bodyLarge,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         ...exercises.map(
           (exercise) => Container(
             margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppRadius.control),
               border: Border.all(color: AppColors.cardBorder),
             ),
             child: Row(
@@ -211,11 +229,11 @@ class _TemplateExercises extends StatelessWidget {
                   Icons.extension_outlined,
                   color: AppColors.primaryBlue,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     exercise.displayName,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
                 if (exercise.type != null)
@@ -234,36 +252,9 @@ class _TemplateExercises extends StatelessWidget {
 
 class _DetailRow extends StatelessWidget {
   const _DetailRow({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFCDD6E0))),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 118,
-            child: Text(
-              label,
-              style: const TextStyle(color: Color(0xFF4C74A0), fontSize: 15),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(color: Color(0xFF111827), fontSize: 14),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppDetailRow(label: label, value: value);
 }

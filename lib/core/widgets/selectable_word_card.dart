@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text_styles.dart';
 
 class SelectableWordCard extends StatelessWidget {
   const SelectableWordCard({
@@ -7,38 +10,47 @@ class SelectableWordCard extends StatelessWidget {
     required this.onTap,
     super.key,
   });
-
   final String text;
   final bool selected;
   final VoidCallback onTap;
-
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        height: 64,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: const Color(0xFFFF640A),
-          borderRadius: BorderRadius.circular(24),
-          border: selected
-              ? Border.all(color: const Color(0xFFB8E4FA), width: 4)
-              : null,
-          boxShadow: const [
-            BoxShadow(color: Color(0xFFE94C00), offset: Offset(0, 6)),
-          ],
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
+  Widget build(BuildContext context) => Semantics(
+    selected: selected,
+    button: true,
+    inMutuallyExclusiveGroup: true,
+    child: Material(
+      color: selected ? AppColors.secondary : AppColors.secondaryContainer,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: AppColors.secondary, width: selected ? 3 : 1.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 80),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Icon(
+                selected
+                    ? Icons.check_circle_outline
+                    : Icons.radio_button_unchecked,
+                color: selected ? AppColors.surface : AppColors.secondary,
+              ),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
+                child: Text(
+                  text,
+                  style: AppTextStyles.studentStimulus.copyWith(
+                    color: selected ? AppColors.surface : AppColors.secondary,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

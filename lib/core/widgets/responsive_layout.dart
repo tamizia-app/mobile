@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 class AppBreakpoints {
   const AppBreakpoints._();
@@ -16,7 +17,7 @@ class ResponsiveAppViewport extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xFFEAF4F8),
+      color: AppColors.primaryContainer,
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(

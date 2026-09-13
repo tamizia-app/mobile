@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -20,7 +22,7 @@ class AssessmentAttemptPreviewPage extends StatelessWidget {
       return const _InvalidPreviewPage();
     }
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFBFC),
+      backgroundColor: AppColors.background,
       body: Column(
         children: [
           AppHeader(
@@ -34,23 +36,28 @@ class AssessmentAttemptPreviewPage extends StatelessWidget {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 22, 16, 28),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.xl,
+                AppSpacing.lg,
+                AppSpacing.xl,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (argument.resumedExistingAttempt) ...[
                     const _ResumeBanner(),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                   ],
                   _IdentitySummary(preview: argument),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.lg),
                   _ConsentSummary(hasValidConsent: argument.hasValidConsent),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.lg),
                   _ExerciseAttemptList(
                     exerciseAttempts: argument.attempt.exerciseAttempts,
                     templateExercises: argument.template.exercises,
                   ),
-                  const SizedBox(height: 34),
+                  const SizedBox(height: AppSpacing.xxl),
                   PrimaryButton(
                     text: 'Comenzar',
                     icon: Icons.play_arrow_rounded,
@@ -102,16 +109,14 @@ class _ConsentSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: hasValidConsent
-            ? const Color(0xFFEFF6FF)
-            : const Color(0xFFFFF1F2),
-        borderRadius: BorderRadius.circular(8),
+            ? AppColors.primaryContainer
+            : AppColors.errorContainer,
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(
-          color: hasValidConsent
-              ? const Color(0xFF93C5FD)
-              : const Color(0xFFFCA5A5),
+          color: hasValidConsent ? AppColors.border : AppColors.errorContainer,
         ),
       ),
       child: Row(
@@ -122,17 +127,15 @@ class _ConsentSummary extends StatelessWidget {
                 : Icons.block_outlined,
             color: hasValidConsent ? AppColors.primaryBlue : AppColors.errorRed,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               hasValidConsent
                   ? 'Consentimiento validado para iniciar el intento.'
                   : 'No hay un consentimiento válido para continuar.',
               style: TextStyle(
-                color: hasValidConsent
-                    ? const Color(0xFF1E3A8A)
-                    : AppColors.errorRed,
-                fontWeight: FontWeight.w800,
+                color: hasValidConsent ? AppColors.primary : AppColors.errorRed,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -181,44 +184,44 @@ class _ExerciseAttemptList extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadius.card),
                     ),
                     child: Text(
                       '${index + 1}',
                       style: const TextStyle(
                         color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        fontSize: AppFontSizes.support,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           displayTitle,
-                          style: const TextStyle(fontWeight: FontWeight.w900),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         if (displayType != null) ...[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xs),
                           Row(
                             children: [
                               Text(
                                 translateExerciseType(displayType),
                                 style: const TextStyle(
                                   color: AppColors.mutedText,
-                                  fontSize: 13,
+                                  fontSize: AppFontSizes.support,
                                 ),
                               ),
                               if (item.status != null) ...[
-                                const SizedBox(width: 8),
+                                const SizedBox(width: AppSpacing.sm),
                                 Text(
                                   translateExerciseStatus(item.status),
                                   style: const TextStyle(
                                     color: AppColors.mutedText,
-                                    fontSize: 13,
+                                    fontSize: AppFontSizes.support,
                                   ),
                                 ),
                               ],
@@ -278,9 +281,9 @@ class _ResumeBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return const InfoBanner(
       text:
-          'Hay un intento pendiente. Puedes continuar desde donde lo dejaste sin crear otro flujo paralelo.',
-      backgroundColor: Color(0xFFEFF6FF),
-      borderColor: Color(0xFF93C5FD),
+          'Hay un intento pendiente. Puedes continuar desde donde lo dejaste.',
+      backgroundColor: AppColors.primaryContainer,
+      borderColor: AppColors.border,
     );
   }
 }
@@ -294,10 +297,10 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -305,9 +308,12 @@ class _SectionCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            style: const TextStyle(
+              fontSize: AppFontSizes.bodyLarge,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           ...children,
         ],
       ),
@@ -317,35 +323,11 @@ class _SectionCard extends StatelessWidget {
 
 class _SummaryRow extends StatelessWidget {
   const _SummaryRow({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 112,
-            child: Text(
-              label,
-              style: const TextStyle(color: AppColors.mutedText),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppDetailRow(label: label, value: value);
 }
 
 class _InvalidPreviewPage extends StatelessWidget {

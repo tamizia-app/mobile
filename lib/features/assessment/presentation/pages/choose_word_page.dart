@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/student_activity_layout.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_header.dart';
+
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/selectable_word_card.dart';
 import '../../domain/models/attempt_exercise_args.dart';
@@ -63,33 +66,18 @@ class _ChooseWordPageState extends State<ChooseWordPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _viewModel,
-      builder: (context, _) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: Column(
-              children: [
-                AppHeader(
-                  title: 'Elige la palabra',
-                  showBack: true,
-                  centerTitle: true,
-                  onBack: () => Navigator.pop(context, false),
-                ),
-                Expanded(child: _buildContent()),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _viewModel,
+    builder: (context, _) => StudentActivityLayout(
+      title: 'Elige la palabra',
+      onBack: () => Navigator.pop(context, false),
+      child: _buildContent(),
+    ),
+  );
 
   Widget _buildContent() {
     if (_viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Preparando la actividad…');
     }
     if (_viewModel.options.isEmpty) {
       return _StateMessage(
@@ -97,36 +85,27 @@ class _ChooseWordPageState extends State<ChooseWordPage> {
       );
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 22, 16, 24),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xl,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            _viewModel.progressText,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            _viewModel.prompt,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF102532),
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-            ),
+          StudentTaskHeading(
+            progress: _viewModel.progressText,
+            instruction: _viewModel.prompt,
           ),
           if (_viewModel.exerciseAttempt?.imageUrl != null) ...[
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
             _ImageHint(url: _viewModel.exerciseAttempt!.imageUrl!),
           ],
-          const SizedBox(height: 26),
+          const SizedBox(height: AppSpacing.xl),
           ..._viewModel.options.map(
             (option) => Padding(
-              padding: const EdgeInsets.only(bottom: 14),
+              padding: const EdgeInsets.only(bottom: AppSpacing.lg),
               child: SelectableWordCard(
                 text: option.text,
                 selected: _viewModel.selectedOptionId == option.optionId,
@@ -135,19 +114,20 @@ class _ChooseWordPageState extends State<ChooseWordPage> {
             ),
           ),
           if (_viewModel.errorMessage != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               _viewModel.errorMessage!,
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
               style: const TextStyle(
                 color: AppColors.errorRed,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
-          const SizedBox(height: 22),
+          const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
             text: 'Guardar respuesta',
+            student: true,
             icon: Icons.arrow_forward,
             isLoading: _viewModel.isSubmitting,
             onPressed: _submit,
@@ -168,13 +148,13 @@ class _ImageHint extends StatelessWidget {
     final uri = Uri.tryParse(url);
     if (uri != null && uri.hasScheme) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         child: Image.network(url, height: 180, fit: BoxFit.contain),
       );
     }
     return Text(
       'Imagen: $url',
-      textAlign: TextAlign.center,
+      textAlign: TextAlign.left,
       style: const TextStyle(color: AppColors.mutedText),
     );
   }
@@ -189,8 +169,8 @@ class _StateMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Text(text, textAlign: TextAlign.center),
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Text(text, textAlign: TextAlign.left),
       ),
     );
   }

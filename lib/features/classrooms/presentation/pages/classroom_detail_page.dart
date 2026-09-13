@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -194,7 +196,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
 
   Widget _buildContent(Classroom? classroom) {
     if (_classroomViewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     if (classroom == null) {
       return Center(
@@ -219,18 +221,47 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
       onRefresh: _studentsViewModel.refreshStudents,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 34),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xxl,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _ClassroomSummary(classroom: classroom),
-            const SizedBox(height: 18),
-            FilledButton.icon(
+            const SizedBox(height: AppSpacing.lg),
+            OutlinedButton.icon(
               onPressed: _editClassroom,
               icon: const Icon(Icons.edit_outlined),
               label: const Text('Editar aula'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
+
+            const SizedBox(height: AppSpacing.xl),
+            Wrap(
+              spacing: AppSpacing.lg,
+              runSpacing: AppSpacing.sm,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  'Estudiantes (${_studentsViewModel.students.length})',
+                  style: TextStyle(
+                    fontSize: AppFontSizes.bodyLarge,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _registerStudent,
+                  icon: const Icon(Icons.person_add_alt_1),
+                  label: const Text('Registrar'),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ..._buildStudents(),
+            const SizedBox(height: AppSpacing.xl),
             TextButton.icon(
               onPressed: _classroomViewModel.isDeleting ? null : _confirmDelete,
               icon: const Icon(Icons.delete_outline),
@@ -241,24 +272,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
               ),
               style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
             ),
-            const SizedBox(height: 22),
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Estudiantes',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: _registerStudent,
-                  icon: const Icon(Icons.person_add_alt_1),
-                  label: const Text('Registrar'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ..._buildStudents(),
           ],
         ),
       ),
@@ -269,8 +282,8 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
     if (_studentsViewModel.isLoading) {
       return const [
         Padding(
-          padding: EdgeInsets.all(24),
-          child: Center(child: CircularProgressIndicator()),
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: AppLoadingState(message: 'Cargando estudiantes…'),
         ),
       ];
     }
@@ -290,24 +303,19 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
     }
     if (_studentsViewModel.students.isEmpty) {
       return [
-        const Text(
-          'Aún no hay estudiantes registrados en esta aula.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.neutralGray),
-        ),
-        const SizedBox(height: 8),
-        Center(
-          child: FilledButton(
-            onPressed: _registerStudent,
-            child: const Text('Registrar estudiante'),
-          ),
+        AppEmptyState(
+          title: 'Aún no hay estudiantes',
+          message: 'Registra al primer estudiante para comenzar.',
+          icon: Icons.people_outline,
+          actionLabel: 'Registrar estudiante',
+          onAction: _registerStudent,
         ),
       ];
     }
     return _studentsViewModel.filteredStudents
         .map(
           (student) => Padding(
-            padding: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
             child: StudentCard(
               student: student,
               onTap: () => _openStudent(student),
@@ -326,19 +334,19 @@ class _ClassroomSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: AppColors.cardBorder),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _DetailRow(label: 'Grado', value: _capitalize(classroom.gradeLevel)),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
           _DetailRow(label: 'Sección', value: classroom.section),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
           _DetailRow(
             label: 'Año escolar',
             value: '${classroom.schoolYear.year}',
@@ -355,31 +363,9 @@ class _ClassroomSummary extends StatelessWidget {
 
 class _DetailRow extends StatelessWidget {
   const _DetailRow({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 110,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.neutralGray,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppDetailRow(label: label, value: value);
 }

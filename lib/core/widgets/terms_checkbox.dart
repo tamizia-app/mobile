@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
 import '../constants/app_strings.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import 'error_message.dart';
 
 class TermsCheckbox extends StatelessWidget {
   const TermsCheckbox({
@@ -10,69 +10,24 @@ class TermsCheckbox extends StatelessWidget {
     this.errorText,
     super.key,
   });
-
   final bool value;
   final String? errorText;
   final ValueChanged<bool?> onChanged;
-
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 22,
-              height: 22,
-              child: Checkbox(
-                value: value,
-                onChanged: onChanged,
-                activeColor: AppColors.primaryBlue,
-                side: const BorderSide(color: AppColors.borderGray),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: RichText(
-                text: const TextSpan(
-                  style: TextStyle(
-                    color: AppColors.neutralGray,
-                    fontSize: 12,
-                    height: 1.35,
-                  ),
-                  children: [
-                    TextSpan(text: AppStrings.acceptTermsStart),
-                    TextSpan(
-                      text: AppStrings.termsAndConditions,
-                      style: TextStyle(
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    TextSpan(text: AppStrings.andPrivacy),
-                    TextSpan(
-                      text: AppStrings.privacyPolicy,
-                      style: TextStyle(
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      CheckboxListTile(
+        contentPadding: EdgeInsets.zero,
+        controlAffinity: ListTileControlAffinity.leading,
+        value: value,
+        onChanged: onChanged,
+        title: const Text(
+          '${AppStrings.acceptTermsStart}${AppStrings.termsAndConditions}${AppStrings.andPrivacy}${AppStrings.privacyPolicy}',
+          style: AppTextStyles.bodySmall,
         ),
-        if (errorText != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            errorText!,
-            style: const TextStyle(color: AppColors.errorRed, fontSize: 11),
-          ),
-        ],
-      ],
-    );
-  }
+      ),
+      if (errorText != null) ErrorMessage(text: errorText!),
+    ],
+  );
 }

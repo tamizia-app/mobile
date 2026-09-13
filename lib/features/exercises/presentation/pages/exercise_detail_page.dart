@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../core/theme/app_colors.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/widgets/app_header.dart';
@@ -48,9 +51,14 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
       builder: (context, _) {
         final exercise = _viewModel.exercise;
         return Scaffold(
-          backgroundColor: const Color(0xFFFAFBFC),
+          backgroundColor: AppColors.background,
           bottomNavigationBar: Padding(
-            padding: const EdgeInsets.fromLTRB(28, 14, 28, 24),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.md,
+              AppSpacing.xl,
+              AppSpacing.xl,
+            ),
             child: SafeArea(
               child: PrimaryButton(
                 text: 'Ver plantillas',
@@ -72,7 +80,12 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
               ),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 32, 16, 30),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.xxl,
+                    AppSpacing.lg,
+                    AppSpacing.xxl,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -80,41 +93,43 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                         exercise?.detailTitle ??
                             'Análisis de comprensión lectora',
                         style: const TextStyle(
-                          color: Color(0xFF111827),
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
+                          color: AppColors.textPrimary,
+                          fontSize: AppFontSizes.display,
+                          fontWeight: FontWeight.w700,
                           height: 1.25,
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: AppSpacing.xl),
                       _InfoRow(
                         label: 'Tipo de\nejercicio',
                         value: exercise?.typeLabel ?? 'Lectura y escritura',
                       ),
                       _InfoRow(
                         label: 'Grado\nrecomendado',
-                        value: exercise?.recommendedGrade ?? '3.er grado de primaria',
+                        value:
+                            exercise?.recommendedGrade ??
+                            '3.er grado de primaria',
                       ),
                       _InfoRow(
                         label: 'Duración\nestimada',
                         value:
                             '${exercise?.estimatedDurationMinutes ?? 45} minutos',
                       ),
-                      const SizedBox(height: 38),
+                      const SizedBox(height: AppSpacing.xxxl),
                       const Text(
                         'Instrucciones para el docente',
                         style: TextStyle(
-                          color: Color(0xFF111827),
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          fontSize: AppFontSizes.title,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: AppSpacing.md),
                       Text(
                         exercise?.instructionsForTeacher ?? '',
                         style: const TextStyle(
-                          color: Color(0xFF1F2937),
-                          fontSize: 16,
+                          color: AppColors.textPrimary,
+                          fontSize: AppFontSizes.body,
                           height: 1.48,
                         ),
                       ),
@@ -132,38 +147,9 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
 
 class _InfoRow extends StatelessWidget {
   const _InfoRow({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFCDD6E0))),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF4C74A0),
-                fontSize: 15,
-                height: 1.45,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(color: Color(0xFF111827), fontSize: 14),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppDetailRow(label: label, value: value);
 }

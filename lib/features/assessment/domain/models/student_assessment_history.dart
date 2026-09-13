@@ -18,6 +18,43 @@ class StudentAssessmentHistory {
   final int total;
   final int limit;
   final int offset;
+
+  // The API summary assumes a different order from its item list.
+  // Use completion dates for the summary displayed with the loaded attempts.
+  StudentHistorySummary get summaryForLoadedAttempts {
+    final scored =
+        items
+            .where(
+              (item) => item.status == 'COMPLETED' && item.finalScore != null,
+            )
+            .toList()
+          ..sort(
+            (a, b) => (a.completedAt ?? a.startedAt ?? DateTime(1970))
+                .compareTo(b.completedAt ?? b.startedAt ?? DateTime(1970)),
+          );
+    if (scored.isEmpty) {
+      return StudentHistorySummary(
+        attemptsCount: items.length,
+        completedAttemptsCount: 0,
+      );
+    }
+    final scores = scored.map((item) => item.finalScore!).toList();
+    final latest = scored.last;
+    final previous = scores.length >= 2 ? scores[scores.length - 2] : null;
+    return StudentHistorySummary(
+      attemptsCount: items.length,
+      completedAttemptsCount: scored.length,
+      latestScore: latest.finalScore,
+      averageScore: scores.reduce((a, b) => a + b) / scores.length,
+      bestScore: scores.reduce((a, b) => a > b ? a : b),
+      lowestScore: scores.reduce((a, b) => a < b ? a : b),
+      trendPercentage: previous != null && previous > 0
+          ? (latest.finalScore! - previous) / previous * 100
+          : null,
+      latestInterventionLevel: latest.interventionLevel,
+      latestCompletedAt: latest.completedAt,
+    );
+  }
 }
 
 class StudentBrief {

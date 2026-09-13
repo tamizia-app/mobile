@@ -1,9 +1,11 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/assessment/domain/models/writing_stroke.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
 
-class DrawingCanvasPlaceholder extends StatelessWidget {
+class DrawingCanvasPlaceholder extends StatefulWidget {
   const DrawingCanvasPlaceholder({
     required this.strokes,
     required this.onPanStart,
@@ -19,55 +21,86 @@ class DrawingCanvasPlaceholder extends StatelessWidget {
   final VoidCallback onPanEnd;
   final bool enabled;
 
-  bool get _hasDrawing => strokes.any((stroke) => stroke.points.isNotEmpty);
+  @override
+  State<DrawingCanvasPlaceholder> createState() =>
+      _DrawingCanvasPlaceholderState();
+}
+
+class _DrawingCanvasPlaceholderState extends State<DrawingCanvasPlaceholder> {
+  final _paintKey = GlobalKey();
+  int? _activePointer;
+
+  Offset _toLocal(Offset globalPosition) {
+    final box = _paintKey.currentContext!.findRenderObject()! as RenderBox;
+    final point = box.globalToLocal(globalPosition);
+    return Offset(
+      point.dx.clamp(0.0, box.size.width),
+      point.dy.clamp(0.0, box.size.height),
+    );
+  }
+
+  void _endPointer(PointerEvent event) {
+    if (event.pointer != _activePointer) return;
+    _activePointer = null;
+    widget.onPanEnd();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final canvasKey = GlobalKey();
-
-    Offset toLocal(Offset globalPosition) {
-      final renderBox =
-          canvasKey.currentContext!.findRenderObject()! as RenderBox;
-      return renderBox.globalToLocal(globalPosition);
-    }
-
-    return GestureDetector(
+    // Claim contacts immediately so a vertical stroke cannot become a scroll.
+    return RawGestureDetector(
       behavior: HitTestBehavior.opaque,
-      onPanStart: enabled
-          ? (details) => onPanStart(toLocal(details.globalPosition))
-          : null,
-      onPanUpdate: enabled
-          ? (details) => onPanUpdate(toLocal(details.globalPosition))
-          : null,
-      onPanEnd: enabled ? (_) => onPanEnd() : null,
-      child: Container(
-        key: canvasKey,
-        height: 392,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE8E1EA), width: 4),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: CustomPaint(
-            painter: _DrawingPainter(strokes),
-            child: !_hasDrawing
-                ? const Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text(
-                        'Escribe aquí...',
-                        style: TextStyle(
-                          color: Color(0xFFD5D5D5),
-                          fontSize: 19,
+      gestures: widget.enabled
+          ? {
+              EagerGestureRecognizer:
+                  GestureRecognizerFactoryWithHandlers<EagerGestureRecognizer>(
+                    EagerGestureRecognizer.new,
+                    (_) {},
+                  ),
+            }
+          : {},
+      child: Listener(
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: (event) {
+          if (!widget.enabled || _activePointer != null) return;
+          _activePointer = event.pointer;
+          widget.onPanStart(_toLocal(event.position));
+        },
+        onPointerMove: (event) {
+          if (!widget.enabled || event.pointer != _activePointer) return;
+          widget.onPanUpdate(_toLocal(event.position));
+        },
+        onPointerUp: _endPointer,
+        onPointerCancel: _endPointer,
+        child: Container(
+          height: 480,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            border: Border.all(color: AppColors.border, width: 4),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.control),
+            child: CustomPaint(
+              key: _paintKey,
+              painter: _DrawingPainter(widget.strokes),
+              child: !widget.strokes.any((stroke) => stroke.points.isNotEmpty)
+                  ? const Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          'Escribe aquí...',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: AppFontSizes.bodyLarge,
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                : const SizedBox.expand(),
+                    )
+                  : const SizedBox.expand(),
+            ),
           ),
         ),
       ),

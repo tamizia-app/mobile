@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -77,7 +79,7 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
       animation: _viewModel,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: const Color(0xFFFAFBFC),
+          backgroundColor: AppColors.background,
           body: Column(
             children: [
               AppHeader(
@@ -99,7 +101,7 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
 
   Widget _buildContent() {
     if (_viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     if (_viewModel.errorMessage != null && _viewModel.templates.isEmpty) {
       return _ErrorState(
@@ -109,7 +111,12 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.xl,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -131,7 +138,7 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
               }
             },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           _ConfigDropdown(
             label: 'Estudiante (seudónimo)',
             hint: 'Seleccionar estudiante',
@@ -149,10 +156,10 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
             },
           ),
           if (_viewModel.isLoadingConsent) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             const LinearProgressIndicator(minHeight: 2),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           _ConfigDropdown(
             label: 'Plantilla',
             hint: 'Seleccionar plantilla',
@@ -170,15 +177,15 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
             },
           ),
           if (_viewModel.missingConsent) ...[
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
             const _ConsentBlockedBanner(),
           ],
           if (_viewModel.pendingAttempt != null) ...[
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
             const _PendingAttemptBanner(),
           ],
           if (_viewModel.errorMessage != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(
               _viewModel.errorMessage!,
               style: const TextStyle(
@@ -187,31 +194,31 @@ class _AssessmentConfigPageState extends State<AssessmentConfigPage> {
               ),
             ),
           ],
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
           const Text(
             'Resumen de la sesión',
             style: TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 19,
-              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              fontSize: AppFontSizes.title,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.lg),
           _SelectedSummary(
             classroom: _viewModel.selectedClassroom?.name,
             student: _viewModel.selectedStudent?.alias,
             template: _viewModel.selectedTemplate?.name,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.lg),
           const AssessmentSummaryCard(durationText: '15–20 min'),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           const InfoBanner(
             text:
                 'Se requiere consentimiento previo\nAsegúrate de contar con la autorización de los tutores legales antes de iniciar la evaluación con el estudiante.',
-            backgroundColor: Color(0xFFD1EAF6),
-            borderColor: Color(0xFFABCEDF),
+            backgroundColor: AppColors.primaryContainer,
+            borderColor: AppColors.border,
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: AppSpacing.huge),
           PrimaryButton(
             text: 'Crear evaluación e iniciar intento',
             icon: Icons.arrow_forward,
@@ -238,10 +245,10 @@ class _SelectedSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -257,35 +264,11 @@ class _SelectedSummary extends StatelessWidget {
 
 class _SummaryRow extends StatelessWidget {
   const _SummaryRow({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(color: AppColors.mutedText),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppDetailRow(label: label, value: value);
 }
 
 class _ConsentBlockedBanner extends StatelessWidget {
@@ -294,23 +277,23 @@ class _ConsentBlockedBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F2),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFFCA5A5)),
+        color: AppColors.errorContainer,
+        borderRadius: BorderRadius.circular(AppRadius.control),
+        border: Border.all(color: AppColors.errorContainer),
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.block_outlined, color: AppColors.errorRed),
-          SizedBox(width: 10),
+          SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               'No se puede iniciar la evaluación sin un consentimiento válido.',
               style: TextStyle(
                 color: AppColors.errorRed,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 height: 1.35,
               ),
             ),
@@ -327,23 +310,23 @@ class _PendingAttemptBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF93C5FD)),
+        color: AppColors.primaryContainer,
+        borderRadius: BorderRadius.circular(AppRadius.control),
+        border: Border.all(color: AppColors.border),
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.play_circle_outline, color: AppColors.primaryBlue),
-          SizedBox(width: 10),
+          SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               'Se encontró un intento pendiente. Puedes continuar desde donde lo dejaste.',
               style: TextStyle(
-                color: Color(0xFF1E3A8A),
-                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
                 height: 1.35,
               ),
             ),
@@ -377,13 +360,14 @@ class _ConfigDropdown extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 16,
+            color: AppColors.textPrimary,
+            fontSize: AppFontSizes.body,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSpacing.sm),
         DropdownButtonFormField<String>(
+          itemHeight: null,
           key: ValueKey('$label-${value ?? 'empty'}-${items.length}'),
           initialValue: value,
           hint: Text(hint),
@@ -398,11 +382,11 @@ class _ConfigDropdown extends StatelessWidget {
               vertical: 18,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: const BorderSide(color: Color(0xFFCED8E3)),
+              borderRadius: BorderRadius.circular(AppRadius.control),
+              borderSide: const BorderSide(color: AppColors.divider),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: BorderRadius.circular(AppRadius.control),
               borderSide: const BorderSide(color: AppColors.primaryBlue),
             ),
           ),
@@ -422,12 +406,12 @@ class _ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             TextButton(onPressed: onRetry, child: const Text('Reintentar')),
           ],
         ),

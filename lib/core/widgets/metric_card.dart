@@ -1,63 +1,40 @@
 import 'package:flutter/material.dart';
-
 import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text_styles.dart';
 
 class MetricCard extends StatelessWidget {
   const MetricCard({
     required this.title,
     required this.value,
     required this.icon,
+    required this.description,
     super.key,
   });
-
   final String title;
   final String value;
   final IconData icon;
-
+  final String description;
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.neutralGray,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              Icon(icon, color: const Color(0xFF2F7EDB), size: 24),
-            ],
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.neutralDark,
-              fontSize: 30,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: AppColors.divider)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 20, color: AppColors.primary),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(child: Text(title, style: AppTextStyles.labelMedium)),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(value, style: AppTextStyles.headingLarge),
+        Text(description, style: AppTextStyles.bodySmall),
+      ],
+    ),
+  );
 }

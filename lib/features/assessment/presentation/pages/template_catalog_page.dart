@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -51,10 +53,13 @@ class _TemplateCatalogPageState extends State<TemplateCatalogPage> {
                 title: 'Plantillas',
                 trailing: CircleAvatar(
                   radius: 20,
-                  backgroundColor: const Color(0xFFD5ECF7),
+                  backgroundColor: AppColors.primaryContainer,
                   child: IconButton(
                     tooltip: 'Actualizar',
-                    icon: const Icon(Icons.refresh, color: Color(0xFF102532)),
+                    icon: const Icon(
+                      Icons.refresh,
+                      color: AppColors.textPrimary,
+                    ),
                     onPressed: _viewModel.load,
                   ),
                 ),
@@ -69,7 +74,7 @@ class _TemplateCatalogPageState extends State<TemplateCatalogPage> {
 
   Widget _buildContent() {
     if (_viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     if (_viewModel.errorMessage != null && _viewModel.templates.isEmpty) {
       return _TemplatesState(
@@ -90,7 +95,12 @@ class _TemplateCatalogPageState extends State<TemplateCatalogPage> {
           final cardWidth = (availableWidth - 16) / 2;
           return ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.xl,
+              AppSpacing.xl,
+              110,
+            ),
             children: [
               if (isTablet)
                 Wrap(
@@ -148,18 +158,11 @@ class _TemplateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,9 +174,9 @@ class _TemplateCard extends StatelessWidget {
                 child: Text(
                   template.name,
                   style: const TextStyle(
-                    color: Color(0xFF102532),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                    fontSize: AppFontSizes.bodyLarge,
+                    fontWeight: FontWeight.w700,
                     height: 1.25,
                   ),
                 ),
@@ -183,43 +186,38 @@ class _TemplateCard extends StatelessWidget {
             ],
           ),
           if (template.description != null) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               template.description!,
               style: const TextStyle(
                 color: AppColors.neutralGray,
-                fontSize: 15,
+                fontSize: AppFontSizes.body,
                 height: 1.45,
               ),
             ),
           ],
           if (template.version != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(
               'Versión ${template.version}',
               style: const TextStyle(
                 color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
-          const SizedBox(height: 16),
-          Row(
+          const SizedBox(height: AppSpacing.lg),
+          AppActionGroup(
             children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onDetail,
-                  icon: const Icon(Icons.visibility_outlined),
-                  label: const Text('Ver detalle'),
-                ),
+              OutlinedButton.icon(
+                onPressed: onDetail,
+                icon: const Icon(Icons.visibility_outlined),
+                label: const Text('Ver detalle'),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: onSelect,
-                  icon: const Icon(Icons.check),
-                  label: const Text('Seleccionar'),
-                ),
+              FilledButton.icon(
+                onPressed: onSelect,
+                icon: const Icon(Icons.check),
+                label: const Text('Seleccionar'),
               ),
             ],
           ),
@@ -239,16 +237,16 @@ class _MetaPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        color: AppColors.primaryContainer,
+        borderRadius: BorderRadius.circular(AppRadius.panel),
+        border: Border.all(color: AppColors.border),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: Color(0xFF1E40AF),
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
+          color: AppColors.primary,
+          fontSize: AppFontSizes.support,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -267,31 +265,15 @@ class _TemplatesState extends StatelessWidget {
   final VoidCallback? onAction;
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.assignment_outlined,
-              color: AppColors.mutedText,
-              size: 54,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 12),
-              TextButton(onPressed: onAction, child: Text(actionLabel!)),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => AppEmptyState(
+    title: onAction == null
+        ? 'No hay plantillas disponibles'
+        : 'No pudimos cargar las plantillas',
+    message: onAction == null
+        ? 'Las plantillas aparecerán aquí cuando estén disponibles. Vuelve a consultar más tarde.'
+        : message,
+    icon: Icons.assignment_outlined,
+    actionLabel: actionLabel,
+    onAction: onAction,
+  );
 }

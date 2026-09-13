@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/session/auth_session_manager.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/validators/auth_validators.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_card.dart';
-import '../../../../core/widgets/circle_icon.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../../../core/widgets/error_message.dart';
 import '../../../../core/widgets/password_field.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -75,13 +75,18 @@ class _LoginPageState extends State<LoginPage> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 32),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 390),
+              constraints: const BoxConstraints(maxWidth: AppSizes.formWidth),
               child: AuthCard(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(26, 34, 26, 32),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.xl,
+                        AppSpacing.xxl,
+                        AppSpacing.xl,
+                        AppSpacing.xxl,
+                      ),
                       child: Form(
                         key: _formKey,
                         child: AnimatedBuilder(
@@ -89,25 +94,16 @@ class _LoginPageState extends State<LoginPage> {
                           builder: (context, _) {
                             return Column(
                               children: [
-                                const CircleIcon(
-                                  icon: Icons.school_rounded,
-                                  size: 66,
-                                  iconSize: 34,
-                                ),
-                                const SizedBox(height: 18),
-                                const Text(
-                                  AppStrings.loginTitle,
-                                  style: AppTextStyles.appTitle,
-                                ),
-                                const SizedBox(height: 6),
+                                const AppLogo(),
+                                const SizedBox(height: AppSpacing.xs),
                                 const Text(
                                   AppStrings.loginSubtitle,
                                   style: TextStyle(
                                     color: AppColors.mutedText,
-                                    fontSize: 16,
+                                    fontSize: AppFontSizes.body,
                                   ),
                                 ),
-                                const SizedBox(height: 22),
+                                const SizedBox(height: AppSpacing.xl),
                                 AppTextField(
                                   controller: _emailController,
                                   label: AppStrings.emailLabel,
@@ -116,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                                   validator: AuthValidators.validateEmail,
                                   onChanged: _viewModel.setEmail,
                                 ),
-                                const SizedBox(height: 18),
+                                const SizedBox(height: AppSpacing.lg),
                                 PasswordField(
                                   controller: _passwordController,
                                   label: AppStrings.passwordLabel,
@@ -126,16 +122,16 @@ class _LoginPageState extends State<LoginPage> {
                                   onChanged: _viewModel.setPassword,
                                 ),
                                 if (_viewModel.errorMessage != null) ...[
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: AppSpacing.md),
                                   ErrorMessage(text: _viewModel.errorMessage!),
                                 ],
-                                const SizedBox(height: 28),
+                                const SizedBox(height: AppSpacing.xl),
                                 PrimaryButton(
                                   text: AppStrings.loginButton,
                                   isLoading: _viewModel.isLoading,
                                   onPressed: _submit,
                                 ),
-                                const SizedBox(height: 22),
+                                const SizedBox(height: AppSpacing.xl),
                                 TextButton(
                                   onPressed: () => Navigator.pushNamed(
                                     context,
@@ -145,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                                     AppStrings.forgotPasswordLink,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: AppSpacing.sm),
                                 Wrap(
                                   alignment: WrapAlignment.center,
                                   crossAxisAlignment: WrapCrossAlignment.center,
@@ -154,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                                       AppStrings.noAccount,
                                       style: TextStyle(
                                         color: AppColors.neutralGray,
-                                        fontSize: 14,
+                                        fontSize: AppFontSizes.support,
                                       ),
                                     ),
                                     TextLink(
@@ -179,9 +175,9 @@ class _LoginPageState extends State<LoginPage> {
                         vertical: 14,
                       ),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFBFCFE),
+                        color: AppColors.background,
                         border: Border(
-                          top: BorderSide(color: Color(0xFFE5E7EB)),
+                          top: BorderSide(color: AppColors.divider),
                         ),
                         borderRadius: BorderRadius.vertical(
                           bottom: Radius.circular(10),
@@ -192,17 +188,17 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           Icon(
                             Icons.shield_outlined,
-                            color: Color(0xFF94A3B8),
+                            color: AppColors.textSecondary,
                             size: 18,
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: AppSpacing.sm),
                           Flexible(
                             child: Text(
                               AppStrings.loginPrivacy,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: AppColors.mutedText,
-                                fontSize: 12,
+                                fontSize: AppFontSizes.support,
                               ),
                             ),
                           ),

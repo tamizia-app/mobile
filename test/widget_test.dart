@@ -5,6 +5,7 @@ import 'package:tamizai_app/core/constants/app_strings.dart';
 import 'package:tamizai_app/core/session/auth_session_manager.dart';
 import 'package:tamizai_app/core/storage/auth_session_storage.dart';
 import 'package:tamizai_app/core/widgets/app_header.dart';
+import 'package:tamizai_app/core/widgets/metric_card.dart';
 import 'package:tamizai_app/core/widgets/responsive_layout.dart';
 import 'package:tamizai_app/features/auth/domain/entities/auth_session.dart';
 import 'package:tamizai_app/features/auth/domain/models/login_request.dart';
@@ -33,7 +34,10 @@ void main() {
     );
 
     expect(find.text('Hola, Sandro'), findsOneWidget);
-    expect(tester.getSize(find.byType(TeacherGreetingHeader)).height, 104);
+    expect(
+      tester.getTopLeft(find.text('Hola, Sandro')).dy,
+      greaterThanOrEqualTo(40),
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -42,7 +46,7 @@ void main() {
     await tester.pumpWidget(_app());
     await tester.pumpAndSettle();
 
-    expect(find.text('TamizIA'), findsOneWidget);
+    expect(find.bySemanticsLabel('Logo de TamizIA'), findsOneWidget);
     await tester.tap(find.text('Comenzar'));
     await tester.pumpAndSettle();
 
@@ -51,7 +55,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(AppStrings.registerTitle), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.tap(find.byTooltip('Volver'));
     await tester.pumpAndSettle();
     await tester.tap(find.text(AppStrings.forgotPasswordLink));
     await tester.pumpAndSettle();
@@ -92,7 +96,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hola, Ada'), findsOneWidget);
-    expect(find.textContaining('Accesos'), findsOneWidget);
+    expect(find.text('Tu espacio de trabajo'), findsOneWidget);
+    _expectEqualMetricSizes(tester);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('adapts the dashboard to a tablet viewport', (tester) async {
@@ -119,16 +125,44 @@ void main() {
       tester.getSize(find.byType(Scaffold).first).width,
       AppBreakpoints.maxAppWidth,
     );
-    final tabletGrids = tester
-        .widgetList<GridView>(find.byType(GridView))
-        .where((grid) {
-          final delegate = grid.gridDelegate;
-          return delegate is SliverGridDelegateWithFixedCrossAxisCount &&
-              delegate.crossAxisCount == 4;
-        });
-    expect(tabletGrids.length, 2);
+    _expectEqualMetricSizes(tester);
+    final metricPositions =
+        [
+              'A tu cargo',
+              'Activos en tus aulas',
+              'Creadas por ti',
+              'Intentos sin finalizar',
+            ]
+            .map(
+              (label) => tester.getTopLeft(
+                find.ancestor(
+                  of: find.text(label),
+                  matching: find.byWidgetPredicate(
+                    (widget) => widget is MetricCard,
+                  ),
+                ),
+              ),
+            )
+            .toList();
+    expect(metricPositions.map((position) => position.dy).toSet().length, 1);
+    for (var index = 1; index < metricPositions.length; index++) {
+      expect(
+        metricPositions[index].dx,
+        greaterThan(metricPositions[index - 1].dx),
+      );
+    }
     expect(tester.takeException(), isNull);
   });
+}
+
+void _expectEqualMetricSizes(WidgetTester tester) {
+  final cards = find.byWidgetPredicate((widget) => widget is MetricCard);
+  expect(cards, findsNWidgets(4));
+  final expectedSize = tester.getSize(cards.first);
+  expect(expectedSize.width, greaterThan(100));
+  for (var index = 1; index < 4; index++) {
+    expect(tester.getSize(cards.at(index)).width, expectedSize.width);
+  }
 }
 
 Widget _app() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_header.dart';
@@ -28,10 +29,15 @@ class TextComparisonPage extends StatelessWidget {
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(18, 24, 18, 32),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.xl,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
               children: [
                 _TextPanel(label: 'Texto esperado', text: args.expectedText),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 _TextPanel(
                   label: 'Texto reconocido',
                   text: args.recognizedText,
@@ -60,10 +66,10 @@ class _TextPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -73,16 +79,16 @@ class _TextPanel extends StatelessWidget {
             label,
             style: TextStyle(
               color: accent,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
+              fontSize: AppFontSizes.body,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Text(
             text,
             style: const TextStyle(
-              color: Color(0xFF102532),
-              fontSize: 18,
+              color: AppColors.textPrimary,
+              fontSize: AppFontSizes.bodyLarge,
               height: 1.45,
               fontWeight: FontWeight.w700,
             ),

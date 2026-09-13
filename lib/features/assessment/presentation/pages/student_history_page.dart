@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/info_banner.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -74,19 +77,23 @@ class _StudentHistoryPageState extends State<StudentHistoryPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando historial…');
     }
     if (_errorMessage != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, color: AppColors.errorRed, size: 48),
-              const SizedBox(height: 16),
+              const Icon(
+                Icons.error_outline,
+                color: AppColors.errorRed,
+                size: 48,
+              ),
+              const SizedBox(height: AppSpacing.lg),
               ErrorMessage(text: _errorMessage!),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.lg),
               PrimaryButton(
                 text: 'Reintentar',
                 icon: Icons.refresh,
@@ -99,19 +106,31 @@ class _StudentHistoryPageState extends State<StudentHistoryPage> {
     }
     final history = _history!;
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 22, 18, 32),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xxl,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (history.student != null) ...[
             _StudentHeader(student: history.student!),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
           ],
-          _SummaryCards(summary: history.summary),
-          const SizedBox(height: 22),
-          if (history.chartPoints.isNotEmpty) _ChartSection(points: history.chartPoints),
-          if (history.chartPoints.isNotEmpty) const SizedBox(height: 22),
+          _SummaryCards(summary: history.summaryForLoadedAttempts),
+          const SizedBox(height: AppSpacing.xl),
+          if (history.chartPoints.isNotEmpty)
+            _ChartSection(points: history.chartPoints),
+          if (history.chartPoints.isNotEmpty)
+            const SizedBox(height: AppSpacing.xl),
           _HistorySection(items: history.items),
+          const SizedBox(height: AppSpacing.xl),
+          const InfoBanner(
+            text:
+                'Los resultados orientan el seguimiento pedagógico y no constituyen un diagnóstico clínico.',
+          ),
         ],
       ),
     );
@@ -129,10 +148,10 @@ class _StudentHeader extends StatelessWidget {
         ? '${student.classroom!.name} - ${student.classroom!.gradeLevel} ${student.classroom!.section}'
         : null;
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Row(
@@ -140,26 +159,38 @@ class _StudentHeader extends StatelessWidget {
           CircleAvatar(
             radius: 24,
             backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
-            child: const Icon(Icons.person_outline, color: AppColors.primaryBlue),
+            child: const Icon(
+              Icons.person_outline,
+              color: AppColors.primaryBlue,
+            ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   student.code,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: AppFontSizes.body,
+                  ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   '${student.age} años · ${translateGender(student.gender)}',
-                  style: const TextStyle(color: AppColors.mutedText, fontSize: 13),
+                  style: const TextStyle(
+                    color: AppColors.mutedText,
+                    fontSize: AppFontSizes.support,
+                  ),
                 ),
                 if (classroomStr != null)
                   Text(
                     'Aula: $classroomStr',
-                    style: const TextStyle(color: AppColors.mutedText, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppColors.mutedText,
+                      fontSize: AppFontSizes.support,
+                    ),
                   ),
               ],
             ),
@@ -178,10 +209,10 @@ class _SummaryCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -189,31 +220,73 @@ class _SummaryCards extends StatelessWidget {
         children: [
           const Text(
             'Resumen',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              fontSize: AppFontSizes.bodyLarge,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
+          const Text(
+            'Los puntajes se expresan como porcentajes sobre un máximo de 100 puntos. '
+            'Por ejemplo, 80% equivale a 80 de 100 puntos. '
+            'Un puntaje mayor indica un mejor resultado en los ejercicios.',
+            style: TextStyle(
+              color: AppColors.mutedText,
+              fontSize: AppFontSizes.support,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Resumen de ${summary.completedAttemptsCount} intentos completados '
+            'con puntaje en este historial.',
+            style: const TextStyle(
+              color: AppColors.mutedText,
+              fontSize: AppFontSizes.support,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
               _chip('Último puntaje', _fmt(summary.latestScore)),
-              _chip('Promedio', _fmt(summary.averageScore)),
-              _chip('Mejor', _fmt(summary.bestScore)),
-              _chip('Menor', _fmt(summary.lowestScore)),
-              if (summary.trendPercentage != null)
-                _chip(
-                  'Tendencia',
-                  '${summary.trendPercentage! >= 0 ? '+' : ''}${summary.trendPercentage!.toStringAsFixed(1)}%',
-                  color: summary.trendPercentage! >= 0
-                      ? AppColors.successGreen
-                      : AppColors.errorRed,
-                ),
+              _chip('Puntaje promedio', _fmt(summary.averageScore)),
+              _chip('Puntaje más alto', _fmt(summary.bestScore)),
+              _chip('Puntaje más bajo', _fmt(summary.lowestScore)),
               if (summary.latestInterventionLevel != null)
                 _chip(
-                  'Nivel',
+                  'Último nivel de intervención',
                   translateInterventionLevel(summary.latestInterventionLevel),
                 ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _chip(
+            'Variación respecto al intento anterior',
+            summary.trendPercentage == null
+                ? 'No disponible'
+                : '${summary.trendPercentage! > 0 ? '+' : ''}'
+                      '${summary.trendPercentage!.toStringAsFixed(1)}%',
+            color:
+                summary.trendPercentage == null || summary.trendPercentage == 0
+                ? AppColors.mutedText
+                : summary.trendPercentage! > 0
+                ? AppColors.successGreen
+                : AppColors.errorRed,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            summary.trendPercentage == null
+                ? 'La variación necesita dos intentos completados con puntaje '
+                      'y que el puntaje anterior sea mayor que 0.'
+                : 'Compara los dos últimos intentos completados con puntaje: '
+                      '+ indica aumento, âˆ’ indica disminución y 0% indica que no hubo cambio. '
+                      'Pasar de 50% a 60% equivale a un aumento relativo de 20% '
+                      '(10 puntos porcentuales).',
+            style: const TextStyle(
+              color: AppColors.mutedText,
+              fontSize: AppFontSizes.support,
+            ),
           ),
         ],
       ),
@@ -226,18 +299,24 @@ class _SummaryCards extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: (color ?? AppColors.primaryBlue).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
       ),
       child: Column(
         children: [
-          Text(label, style: const TextStyle(color: AppColors.mutedText, fontSize: 11)),
-          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.mutedText,
+              fontSize: AppFontSizes.support,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             value,
             style: TextStyle(
               color: color ?? AppColors.primaryBlue,
-              fontWeight: FontWeight.w800,
-              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              fontSize: AppFontSizes.support,
             ),
           ),
         ],
@@ -246,7 +325,7 @@ class _SummaryCards extends StatelessWidget {
   }
 
   String _fmt(double? value) =>
-      value == null ? '—' : '${value.toStringAsFixed(1)}%';
+      value == null ? 'Sin puntaje' : '${value.toStringAsFixed(1)}%';
 }
 
 class _ChartSection extends StatelessWidget {
@@ -257,34 +336,37 @@ class _ChartSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Puntajes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 60,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: points.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final point = points[index];
+          const Text(
+            'Puntajes por intento (%)',
+            style: TextStyle(
+              fontSize: AppFontSizes.bodyLarge,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: points.map((point) {
                 final dateStr = point.completedAt != null
-                    ? '${point.completedAt!.day}/${point.completedAt!.month}'
+                    ? '${point.completedAt!.day}/${point.completedAt!.month}/${point.completedAt!.year}'
                     : '';
                 return Container(
-                  width: 70,
-                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(minWidth: 90),
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: AppColors.primaryBlue.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(AppRadius.control),
                     border: Border.all(
                       color: AppColors.primaryBlue.withValues(alpha: 0.2),
                     ),
@@ -294,16 +376,25 @@ class _ChartSection extends StatelessWidget {
                     children: [
                       Text(
                         point.finalScore != null
-                            ? '${point.finalScore!.toStringAsFixed(0)}%'
-                            : '—',
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                            ? '${point.finalScore!.toStringAsFixed(1)}%'
+                            : 'Sin puntaje',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: AppFontSizes.support,
+                        ),
                       ),
                       if (dateStr.isNotEmpty)
-                        Text(dateStr, style: const TextStyle(color: AppColors.mutedText, fontSize: 10)),
+                        Text(
+                          dateStr,
+                          style: const TextStyle(
+                            color: AppColors.mutedText,
+                            fontSize: AppFontSizes.support,
+                          ),
+                        ),
                     ],
                   ),
                 );
-              },
+              }).toList(),
             ),
           ),
         ],
@@ -320,21 +411,30 @@ class _HistorySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Historial', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 12),
+          const Text(
+            'Historial',
+            style: TextStyle(
+              fontSize: AppFontSizes.bodyLarge,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
           if (items.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('No hay historial disponible.', style: TextStyle(color: AppColors.mutedText)),
+              child: Text(
+                'No hay historial disponible.',
+                style: TextStyle(color: AppColors.mutedText),
+              ),
             )
           else
             ...items.map((item) => _HistoryItemTile(item: item)),
@@ -361,49 +461,55 @@ class _HistoryItemTile extends StatelessWidget {
         arguments: item.attemptId,
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
                     item.assessmentName ?? 'Evaluación',
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 2),
-                  Text(dateStr, style: const TextStyle(color: AppColors.mutedText, fontSize: 12)),
-                ],
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                const Icon(Icons.chevron_right, color: AppColors.mutedText),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              dateStr,
+              style: const TextStyle(
+                color: AppColors.mutedText,
+                fontSize: AppFontSizes.support,
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            AppDetailRow(
+              label: 'Puntaje final',
+              value: item.finalScore == null
+                  ? 'Sin puntaje'
+                  : '${item.finalScore!.toStringAsFixed(1)}%',
+            ),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: [
-                if (item.finalScore != null)
-                  Text(
-                    '${item.finalScore!.toStringAsFixed(1)}%',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                  ),
-                Text(
-                  translateAttemptStatus(item.status),
-                  style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                AppStatusBadge(
+                  label: translateAttemptStatus(item.status),
+                  icon: Icons.assignment_outlined,
                 ),
                 if (item.interventionLevel != null)
-                  Text(
-                    translateInterventionLevel(item.interventionLevel),
-                    style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
+                  AppStatusBadge(
+                    label:
+                        'Intervención: ${translateInterventionLevel(item.interventionLevel)}',
+                    icon: Icons.info_outline,
                   ),
               ],
             ),
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, color: AppColors.mutedText, size: 20),
           ],
         ),
       ),
     );
   }
 }
-
-

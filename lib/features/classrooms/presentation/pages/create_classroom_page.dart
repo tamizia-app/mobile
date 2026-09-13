@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_header.dart';
@@ -91,7 +93,7 @@ class ClassroomFormFields extends StatelessWidget {
               },
               onChanged: viewModel.setName,
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: AppSpacing.xl),
             _DropdownField(
               label: 'Grado',
               hint: 'Seleccionar grado',
@@ -105,7 +107,7 @@ class ClassroomFormFields extends StatelessWidget {
                       : null),
               onChanged: (value) => viewModel.setGradeLevel(value ?? ''),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: AppSpacing.xl),
             _DropdownField(
               label: 'Sección',
               hint: 'Seleccionar sección',
@@ -118,7 +120,7 @@ class ClassroomFormFields extends StatelessWidget {
                       : null),
               onChanged: (value) => viewModel.setSection(value ?? ''),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: AppSpacing.xl),
             _YearField(
               value: viewModel.schoolYear?.year,
               years: viewModel.availableSchoolYears,
@@ -126,12 +128,12 @@ class ClassroomFormFields extends StatelessWidget {
               onChanged: viewModel.setSchoolYear,
             ),
             if (viewModel.generalError != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 viewModel.generalError!,
                 style: const TextStyle(
                   color: AppColors.errorRed,
-                  fontSize: 12,
+                  fontSize: AppFontSizes.support,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -181,35 +183,37 @@ class ClassroomFormScaffold extends StatelessWidget {
           backgroundColor: Colors.white,
           bottomNavigationBar: viewModel.isInitialized
               ? Container(
-                  padding: const EdgeInsets.fromLTRB(26, 16, 26, 26),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl,
+                    AppSpacing.lg,
+                    AppSpacing.xl,
+                    AppSpacing.xl,
+                  ),
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    border: Border(top: BorderSide(color: Color(0xFFD9E2EA))),
+                    border: Border(top: BorderSide(color: AppColors.divider)),
                   ),
                   child: SafeArea(
-                    child: Row(
+                    child: AppActionGroup(
                       children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: viewModel.isLoading ? null : onCancel,
-                            style: OutlinedButton.styleFrom(
-                              fixedSize: const Size.fromHeight(48),
-                              foregroundColor: const Color(0xFF102532),
-                              side: const BorderSide(color: Color(0xFF697789)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(7),
+                        OutlinedButton(
+                          onPressed: viewModel.isLoading ? null : onCancel,
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(AppSizes.button),
+                            foregroundColor: AppColors.textPrimary,
+                            side: const BorderSide(color: AppColors.border),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.control,
                               ),
                             ),
-                            child: const Text('Cancelar'),
                           ),
+                          child: const Text('Cancelar'),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: PrimaryButton(
-                            text: buttonText,
-                            isLoading: viewModel.isLoading,
-                            onPressed: saveAction,
-                          ),
+                        PrimaryButton(
+                          text: buttonText,
+                          isLoading: viewModel.isLoading,
+                          onPressed: saveAction,
                         ),
                       ],
                     ),
@@ -222,7 +226,12 @@ class ClassroomFormScaffold extends StatelessWidget {
               Expanded(
                 child: viewModel.isInitialized
                     ? SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(26, 26, 26, 40),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.xl,
+                          AppSpacing.xl,
+                          AppSpacing.xl,
+                          AppSpacing.xxxl,
+                        ),
                         child: Form(
                           key: formKey,
                           child: ClassroomFormFields(
@@ -272,13 +281,14 @@ class _DropdownField extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFF102532),
-            fontSize: 13,
+            color: AppColors.textPrimary,
+            fontSize: AppFontSizes.support,
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         DropdownButtonFormField<String>(
+          itemHeight: null,
           key: ValueKey('$label-${value ?? 'empty'}'),
           initialValue: value,
           hint: Text(hint),
@@ -301,11 +311,11 @@ class _DropdownField extends StatelessWidget {
               vertical: 17,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: const BorderSide(color: Color(0xFF697789)),
+              borderRadius: BorderRadius.circular(AppRadius.control),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: BorderRadius.circular(AppRadius.control),
               borderSide: const BorderSide(color: AppColors.primaryBlue),
             ),
           ),
@@ -364,7 +374,7 @@ class _ClassroomFormLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     return Center(
       child: Column(

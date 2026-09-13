@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/widgets/assessment_result_summary.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -7,9 +10,15 @@ import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/assessment_result.dart';
 
-class AssessmentResultPage extends StatelessWidget {
+class AssessmentResultPage extends StatefulWidget {
   const AssessmentResultPage({super.key});
 
+  @override
+  State<AssessmentResultPage> createState() => _AssessmentResultPageState();
+}
+
+class _AssessmentResultPageState extends State<AssessmentResultPage> {
+  bool _showTeacherResult = false;
   @override
   Widget build(BuildContext context) {
     final argument = ModalRoute.of(context)?.settings.arguments;
@@ -17,12 +26,27 @@ class AssessmentResultPage extends StatelessWidget {
       return const _MissingResultPage();
     }
     final result = argument;
+    if (!_showTeacherResult) {
+      return Scaffold(
+        backgroundColor: AppColors.studentBackground,
+        body: SafeArea(
+          child: AppEmptyState(
+            title: '¡Terminaste las actividades!',
+            message:
+                'Gracias por participar. Ahora entrega el dispositivo a tu docente.',
+            icon: Icons.check_circle_outline,
+            actionLabel: 'Docente: ver resultados',
+            onAction: () => setState(() => _showTeacherResult = true),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: AppColors.teacherBackground,
       body: Column(
         children: [
           AppHeader(
-            title: 'Evaluación completada',
+            title: 'Resultados de la evaluación',
             showBack: true,
             centerTitle: true,
             onBack: () => Navigator.pushNamedAndRemoveUntil(
@@ -33,21 +57,27 @@ class AssessmentResultPage extends StatelessWidget {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(18, 28, 18, 32),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.xl,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _ScoreCard(
+                  AssessmentResultSummary(
                     score: result.finalScore,
-                    interventionLevel: result.interventionLevel,
+                    level: result.interventionLevel,
+                    pending: result.pendingExercises,
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.lg),
                   _SummaryCard(result: result),
                   if (result.exerciseSummaries.isNotEmpty) ...[
-                    const SizedBox(height: 18),
+                    const SizedBox(height: AppSpacing.lg),
                     _ExerciseSummariesCard(summaries: result.exerciseSummaries),
                   ],
-                  const SizedBox(height: 26),
+                  const SizedBox(height: AppSpacing.xl),
                   PrimaryButton(
                     text: 'Ver detalle del intento',
                     icon: Icons.visibility_outlined,
@@ -57,9 +87,10 @@ class AssessmentResultPage extends StatelessWidget {
                       arguments: result.attemptId,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   PrimaryButton(
                     text: 'Volver a evaluaciones',
+                    variant: AppButtonVariant.secondary,
                     icon: Icons.assignment_outlined,
                     onPressed: () => Navigator.pushNamedAndRemoveUntil(
                       context,
@@ -71,68 +102,6 @@ class AssessmentResultPage extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ScoreCard extends StatelessWidget {
-  const _ScoreCard({required this.score, required this.interventionLevel});
-
-  final double? score;
-  final String? interventionLevel;
-
-  @override
-  Widget build(BuildContext context) {
-    final scoreText = score != null ? '${score!.toStringAsFixed(1)}%' : '—';
-    final levelLabel = translateInterventionLevel(interventionLevel);
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.stars_rounded,
-            color: AppColors.secondaryOrange,
-            size: 52,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Sesión finalizada',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            scoreText,
-            style: const TextStyle(
-              color: AppColors.primaryBlue,
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          if (interventionLevel != null) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: _levelColor(interventionLevel).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                levelLabel,
-                style: TextStyle(
-                  color: _levelColor(interventionLevel),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -153,10 +122,10 @@ class _SummaryCard extends StatelessWidget {
     final hasWriting =
         _hasType('READING_WRITING') || _hasType('LISTENING_WRITING');
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -211,10 +180,10 @@ class _ExerciseSummariesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.control),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
@@ -222,9 +191,12 @@ class _ExerciseSummariesCard extends StatelessWidget {
         children: [
           const Text(
             'Resumen por ejercicio',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              fontSize: AppFontSizes.bodyLarge,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
           ...summaries.asMap().entries.map((entry) {
             final index = entry.key;
             final summary = entry.value;
@@ -239,18 +211,18 @@ class _ExerciseSummariesCard extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadius.card),
                     ),
                     child: Text(
                       '${index + 1}',
                       style: const TextStyle(
                         color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        fontSize: AppFontSizes.support,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +233,7 @@ class _ExerciseSummariesCard extends StatelessWidget {
                               child: Text(
                                 summary.title,
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
@@ -275,55 +247,59 @@ class _ExerciseSummariesCard extends StatelessWidget {
                                   color: AppColors.secondaryOrange.withValues(
                                     alpha: 0.15,
                                   ),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.card,
+                                  ),
                                 ),
                                 child: const Text(
                                   'Revisar',
                                   style: TextStyle(
                                     color: AppColors.secondaryOrange,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
+                                    fontSize: AppFontSizes.support,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
                           ],
                         ),
-                        const SizedBox(height: 2),
-                        Row(
+                        const SizedBox(height: AppSpacing.xs),
+                        Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
                           children: [
                             Text(
                               translateExerciseType(summary.type),
                               style: const TextStyle(
                                 color: AppColors.mutedText,
-                                fontSize: 13,
+                                fontSize: AppFontSizes.support,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.md),
                             Text(
                               translateExerciseStatus(summary.status),
                               style: const TextStyle(
                                 color: AppColors.mutedText,
-                                fontSize: 13,
+                                fontSize: AppFontSizes.support,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.md),
                             Text(
-                              summary.technicalStatus.apiValue,
+                              'Calidad: ${summary.technicalStatus.apiValue}',
                               style: TextStyle(
                                 color: summary.scoreEligible
                                     ? AppColors.successGreen
                                     : AppColors.secondaryOrange,
-                                fontSize: 12,
+                                fontSize: AppFontSizes.support,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             if (summary.score != null) ...[
-                              const SizedBox(width: 12),
+                              const SizedBox(width: AppSpacing.md),
                               Text(
                                 '${summary.score!.toStringAsFixed(1)}%',
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: AppFontSizes.support,
                                 ),
                               ),
                             ],
@@ -366,7 +342,7 @@ class _Row extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -377,24 +353,17 @@ class _Row extends StatelessWidget {
 
 class _MissingResultPage extends StatelessWidget {
   const _MissingResultPage();
-
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('No se recibió el resultado.')),
-    );
-  }
-}
-
-Color _levelColor(String? level) {
-  switch (level?.toUpperCase()) {
-    case 'LOW':
-      return const Color(0xFF16A34A);
-    case 'MEDIUM':
-      return AppColors.secondaryOrange;
-    case 'HIGH':
-      return AppColors.errorRed;
-    default:
-      return AppColors.mutedText;
-  }
+  Widget build(BuildContext context) => Scaffold(
+    body: SafeArea(
+      child: AppEmptyState(
+        title: 'No hay un resultado disponible',
+        message: 'Vuelve a las evaluaciones para consultar el intento.',
+        icon: Icons.assignment_outlined,
+        actionLabel: 'Ver evaluaciones',
+        onAction: () =>
+            Navigator.pushReplacementNamed(context, AppRoutes.templateCatalog),
+      ),
+    ),
+  );
 }

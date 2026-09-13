@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -60,12 +61,12 @@ class _ExerciseCatalogPageState extends State<ExerciseCatalogPage> {
                       title: 'Catálogo de ejercicios',
                       trailing: CircleAvatar(
                         radius: 20,
-                        backgroundColor: const Color(0xFFD5ECF7),
+                        backgroundColor: AppColors.primaryContainer,
                         child: IconButton(
                           tooltip: 'Buscar',
                           icon: const Icon(
                             Icons.search,
-                            color: Color(0xFF102532),
+                            color: AppColors.textPrimary,
                           ),
                           onPressed: _viewModel.toggleSearch,
                         ),
@@ -79,7 +80,12 @@ class _ExerciseCatalogPageState extends State<ExerciseCatalogPage> {
                     final availableWidth = constraints.maxWidth - 48;
                     final cardWidth = (availableWidth - 16) / 2;
                     return ListView(
-                      padding: const EdgeInsets.fromLTRB(24, 18, 24, 28),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.xl,
+                        AppSpacing.lg,
+                        AppSpacing.xl,
+                        AppSpacing.xl,
+                      ),
                       children: [
                         Wrap(
                           spacing: 8,
@@ -94,7 +100,7 @@ class _ExerciseCatalogPageState extends State<ExerciseCatalogPage> {
                             );
                           }).toList(),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: AppSpacing.lg),
                         if (_viewModel.filteredExercises.isEmpty)
                           const Padding(
                             padding: EdgeInsets.only(top: 80),
@@ -103,7 +109,7 @@ class _ExerciseCatalogPageState extends State<ExerciseCatalogPage> {
                                 'No se encontraron ejercicios.',
                                 style: TextStyle(
                                   color: AppColors.neutralGray,
-                                  fontSize: 16,
+                                  fontSize: AppFontSizes.body,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -169,7 +175,7 @@ class _SearchHeader extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFD9E2EA))),
+        border: Border(bottom: BorderSide(color: AppColors.divider)),
       ),
       child: SafeArea(
         bottom: false,

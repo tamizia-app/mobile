@@ -1,4 +1,6 @@
+import '../theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 class AssessmentPauseOverlay extends StatelessWidget {
   const AssessmentPauseOverlay({required this.visible, super.key});
@@ -14,17 +16,20 @@ class AssessmentPauseOverlay extends StatelessWidget {
           alignment: Alignment.center,
           color: Colors.white.withValues(alpha: 0.58),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xl,
+              vertical: 16,
+            ),
             decoration: BoxDecoration(
-              color: const Color(0xFF111827),
-              borderRadius: BorderRadius.circular(16),
+              color: AppColors.textPrimary,
+              borderRadius: BorderRadius.circular(AppRadius.panel),
             ),
             child: const Text(
               'Evaluación pausada',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),

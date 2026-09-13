@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -152,35 +154,37 @@ class StudentFormScaffold extends StatelessWidget {
           backgroundColor: AppColors.teacherBackground,
           bottomNavigationBar: viewModel.isInitialized
               ? Container(
-                  padding: const EdgeInsets.fromLTRB(10, 16, 10, 24),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.xl,
+                  ),
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    border: Border(top: BorderSide(color: Color(0xFFD9E2EA))),
+                    border: Border(top: BorderSide(color: AppColors.divider)),
                   ),
                   child: SafeArea(
-                    child: Row(
+                    child: AppActionGroup(
                       children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: isBusy ? null : onCancel,
-                            style: OutlinedButton.styleFrom(
-                              fixedSize: const Size.fromHeight(48),
-                              foregroundColor: const Color(0xFF102532),
-                              side: const BorderSide(color: Color(0xFF697789)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(7),
+                        OutlinedButton(
+                          onPressed: isBusy ? null : onCancel,
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(AppSizes.button),
+                            foregroundColor: AppColors.textPrimary,
+                            side: const BorderSide(color: AppColors.border),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.control,
                               ),
                             ),
-                            child: const Text('Cancelar'),
                           ),
+                          child: const Text('Cancelar'),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: PrimaryButton(
-                            text: buttonText,
-                            isLoading: isBusy,
-                            onPressed: saveAction,
-                          ),
+                        PrimaryButton(
+                          text: buttonText,
+                          isLoading: isBusy,
+                          onPressed: saveAction,
                         ),
                       ],
                     ),
@@ -193,7 +197,12 @@ class StudentFormScaffold extends StatelessWidget {
               Expanded(
                 child: viewModel.isInitialized
                     ? SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(24, 28, 24, 110),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.xl,
+                          AppSpacing.xl,
+                          AppSpacing.xl,
+                          110,
+                        ),
                         child: Form(
                           key: formKey,
                           child: Column(
@@ -204,11 +213,11 @@ class StudentFormScaffold extends StatelessWidget {
                                   subtitle!,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    color: Color(0xFF102532),
-                                    fontSize: 16,
+                                    color: AppColors.textPrimary,
+                                    fontSize: AppFontSizes.body,
                                   ),
                                 ),
-                                const SizedBox(height: 34),
+                                const SizedBox(height: AppSpacing.xxl),
                               ],
                               AppTextField(
                                 controller: codeController,
@@ -226,7 +235,7 @@ class StudentFormScaffold extends StatelessWidget {
                                 },
                                 onChanged: viewModel.setCode,
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: AppSpacing.lg),
                               AppTextField(
                                 controller: ageController,
                                 label: 'Edad',
@@ -244,31 +253,31 @@ class StudentFormScaffold extends StatelessWidget {
                                 },
                                 onChanged: viewModel.setAge,
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: AppSpacing.lg),
                               _GenderField(viewModel: viewModel),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: AppSpacing.xl),
                               if (onPickConsent != null) ...[
                                 _OptionalConsentSection(
                                   file: viewModel.selectedConsentFile,
                                   onSelect: onPickConsent!,
                                   onRemove: viewModel.removeConsentFile,
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: AppSpacing.xl),
                               ],
                               const InfoBanner(
                                 text:
                                     'Usa un código para proteger la identidad '
                                     'del estudiante.',
-                                backgroundColor: Color(0xFFD6EEF9),
-                                borderColor: Color(0xFFB4D7E5),
+                                backgroundColor: AppColors.primaryContainer,
+                                borderColor: AppColors.border,
                               ),
                               if (viewModel.generalError != null) ...[
-                                const SizedBox(height: 12),
+                                const SizedBox(height: AppSpacing.md),
                                 Text(
                                   viewModel.generalError!,
                                   style: const TextStyle(
                                     color: AppColors.errorRed,
-                                    fontSize: 12,
+                                    fontSize: AppFontSizes.support,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -310,26 +319,30 @@ class _OptionalConsentSection extends StatelessWidget {
       children: [
         const Text(
           'Consentimiento',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+          style: TextStyle(
+            fontSize: AppFontSizes.bodyLarge,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppSpacing.xs),
         const Text(
           'Puedes adjuntar ahora el documento de consentimiento o hacerlo '
           'más adelante desde el detalle del estudiante.',
           style: TextStyle(color: AppColors.neutralGray, height: 1.4),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(color: AppColors.cardBorder),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.control),
           ),
           child: selected == null
-              ? Row(
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Expanded(child: Text('Sin consentimiento adjunto')),
+                    const Text('Sin consentimiento adjunto'),
                     TextButton.icon(
                       onPressed: onSelect,
                       icon: const Icon(Icons.attach_file),
@@ -340,7 +353,7 @@ class _OptionalConsentSection extends StatelessWidget {
               : Row(
                   children: [
                     const Icon(Icons.description_outlined),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,7 +368,7 @@ class _OptionalConsentSection extends StatelessWidget {
                             _formatSize(selected.size),
                             style: const TextStyle(
                               color: AppColors.neutralGray,
-                              fontSize: 12,
+                              fontSize: AppFontSizes.support,
                             ),
                           ),
                         ],
@@ -394,6 +407,7 @@ class _GenderField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
+      itemHeight: null,
       key: ValueKey('gender-${viewModel.gender}'),
       initialValue: viewModel.gender.isEmpty ? null : viewModel.gender,
       hint: const Text('Seleccionar género'),
@@ -425,7 +439,7 @@ class _StudentFormLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     return Center(
       child: Column(

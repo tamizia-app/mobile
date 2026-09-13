@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-
 import '../../features/classrooms/domain/models/classroom.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text_styles.dart';
 
 class ClassroomCard extends StatelessWidget {
   const ClassroomCard({
@@ -9,82 +10,52 @@ class ClassroomCard extends StatelessWidget {
     required this.onTap,
     super.key,
   });
-
   final Classroom classroom;
   final VoidCallback onTap;
-
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
+  Widget build(BuildContext context) => Material(
+    color: AppColors.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      side: const BorderSide(color: AppColors.divider),
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 16, 16, 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.cardBorder),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Icon(
+              Icons.meeting_room_outlined,
+              color: AppColors.primary,
+              size: 28,
+            ),
+            const SizedBox(width: AppSpacing.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(classroom.name, style: AppTextStyles.headingSmall),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
-                    classroom.name,
-                    style: const TextStyle(
-                      color: Color(0xFF102532),
-                      fontSize: 21,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    'Grado: ${classroom.gradeLevel} · Sección: ${classroom.section}',
+                    style: AppTextStyles.bodyMedium,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Grado: ${_capitalize(classroom.gradeLevel)}  '
-                    '•  Sección: ${classroom.section}',
-                    style: const TextStyle(
-                      color: AppColors.neutralGray,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Año escolar: ${classroom.schoolYear.year}',
-                    style: const TextStyle(
-                      color: Color(0xFF4A5A5A),
-                      fontSize: 13,
-                    ),
+                    'Año escolar ${classroom.schoolYear.year}',
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
               ),
             ),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: const Color(0xFFDDF2FF),
-              child: const Icon(
-                Icons.chevron_right,
-                color: Color(0xFF102532),
-                size: 28,
-              ),
-            ),
+            const SizedBox(width: AppSpacing.sm),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.primary),
           ],
         ),
       ),
-    );
-  }
-
-  String _capitalize(String value) {
-    if (value.isEmpty) {
-      return value;
-    }
-    return '${value[0].toUpperCase()}${value.substring(1)}';
-  }
+    ),
+  );
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/constants/app_routes.dart';
@@ -32,9 +34,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
   @override
   void initState() {
     super.initState();
-    _viewModel = TeacherProfileViewModel(
-      sessionManager: widget.sessionManager,
-    );
+    _viewModel = TeacherProfileViewModel(sessionManager: widget.sessionManager);
     _viewModel.addListener(_syncControllers);
     _viewModel.load();
   }
@@ -133,68 +133,59 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                         onRetry: _viewModel.load,
                       )
                     : SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(26, 32, 26, 28),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.xl,
+                          AppSpacing.xxl,
+                          AppSpacing.xl,
+                          AppSpacing.xl,
+                        ),
                         child: Form(
                           key: _formKey,
                           child: Column(
                             children: [
-                              Stack(
-                                alignment: Alignment.bottomRight,
-                                children: [
-                                  Container(
-                                    width: 128,
-                                    height: 128,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: const Color(0xFFD6F1FF),
-                                        width: 4,
-                                      ),
-                                    ),
-                                    child: const Icon(
-                                      Icons.person,
-                                      color: Color(0xFF35424F),
-                                      size: 78,
-                                    ),
+                              Container(
+                                width: 72,
+                                height: 72,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.primaryContainer,
+                                    width: 4,
                                   ),
-                                  CircleAvatar(
-                                    radius: 16,
-                                    backgroundColor: AppColors.primaryBlue,
-                                    child: const Icon(
-                                      Icons.edit,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ),
-                                ],
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: AppColors.textSecondary,
+                                  size: 40,
+                                ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: AppSpacing.lg),
                               Text(
                                 _viewModel.currentProfile?.fullName ?? '',
                                 style: const TextStyle(
-                                  color: Color(0xFF102532),
-                                  fontSize: 17,
+                                  color: AppColors.textPrimary,
+                                  fontSize: AppFontSizes.bodyLarge,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AppSpacing.sm),
                               Text(
                                 _viewModel.currentProfile?.email ?? '',
                                 style: const TextStyle(
                                   color: AppColors.neutralGray,
-                                  fontSize: 16,
+                                  fontSize: AppFontSizes.body,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: AppSpacing.xs),
                               Text(
                                 _viewModel.currentProfile?.instituteName ?? '',
                                 style: const TextStyle(
                                   color: AppColors.neutralGray,
-                                  fontSize: 16,
+                                  fontSize: AppFontSizes.body,
                                 ),
                               ),
-                              const SizedBox(height: 70),
+                              const SizedBox(height: AppSpacing.xxl),
                               AppTextField(
                                 controller: _firstNameController,
                                 label: 'Nombres',
@@ -206,7 +197,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                                     ),
                                 onChanged: _viewModel.setFirstName,
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: AppSpacing.lg),
                               AppTextField(
                                 controller: _lastNameController,
                                 label: 'Apellidos',
@@ -218,7 +209,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                                     ),
                                 onChanged: _viewModel.setLastName,
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: AppSpacing.lg),
                               AppTextField(
                                 controller: _emailController,
                                 label: 'Correo electrónico',
@@ -227,7 +218,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                                 validator: AuthValidators.validateEmail,
                                 onChanged: _viewModel.setEmail,
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: AppSpacing.lg),
                               AppTextField(
                                 controller: _institutionController,
                                 label: 'Institución educativa',
@@ -239,7 +230,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                                     ),
                                 onChanged: _viewModel.setInstitution,
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: AppSpacing.lg),
                               AppTextField(
                                 controller: _phoneController,
                                 label: 'Teléfono',
@@ -254,7 +245,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                                 onChanged: _viewModel.setPhone,
                               ),
                               if (_viewModel.errorMessage != null) ...[
-                                const SizedBox(height: 12),
+                                const SizedBox(height: AppSpacing.md),
                                 Text(
                                   _viewModel.errorMessage!,
                                   style: const TextStyle(
@@ -262,44 +253,39 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                                   ),
                                 ),
                               ],
-                              const SizedBox(height: 24),
-                              Row(
+                              const SizedBox(height: AppSpacing.xl),
+                              AppActionGroup(
                                 children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: _viewModel.isLoading
-                                          ? null
-                                          : _cancel,
-                                      style: OutlinedButton.styleFrom(
-                                        fixedSize: const Size.fromHeight(48),
-                                        foregroundColor: const Color(
-                                          0xFF102532,
-                                        ),
-                                        side: const BorderSide(
-                                          color: Color(0xFF697789),
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            7,
-                                          ),
+                                  OutlinedButton(
+                                    onPressed: _viewModel.isLoading
+                                        ? null
+                                        : _cancel,
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size.fromHeight(
+                                        AppSizes.button,
+                                      ),
+                                      foregroundColor: AppColors.textPrimary,
+                                      side: const BorderSide(
+                                        color: AppColors.border,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          AppRadius.control,
                                         ),
                                       ),
-                                      child: const Text('Cancelar'),
                                     ),
+                                    child: const Text('Cancelar'),
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: PrimaryButton(
-                                      text: 'Guardar cambios',
-                                      isLoading: _viewModel.isLoading,
-                                      onPressed: _viewModel.canSave
-                                          ? _save
-                                          : null,
-                                    ),
+                                  PrimaryButton(
+                                    text: 'Guardar cambios',
+                                    isLoading: _viewModel.isLoading,
+                                    onPressed: _viewModel.canSave
+                                        ? _save
+                                        : null,
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 26),
+                              const SizedBox(height: AppSpacing.xl),
                               TextButton.icon(
                                 onPressed: _viewModel.isSigningOut
                                     ? null
@@ -308,7 +294,9 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
                                 label: const Text('Cerrar sesión'),
                                 style: TextButton.styleFrom(
                                   foregroundColor: AppColors.errorRed,
-                                  textStyle: const TextStyle(fontSize: 16),
+                                  textStyle: const TextStyle(
+                                    fontSize: AppFontSizes.body,
+                                  ),
                                 ),
                               ),
                             ],
@@ -338,11 +326,11 @@ class _ProfileLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -351,7 +339,7 @@ class _ProfileLoadingState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.errorRed),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             TextButton(onPressed: onRetry, child: const Text('Reintentar')),
           ],
         ),

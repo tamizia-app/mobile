@@ -2,11 +2,15 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/error_message.dart';
+import '../../../../core/widgets/student_activity_layout.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/drawing_canvas_placeholder.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/student_action_button.dart';
@@ -98,127 +102,110 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _viewModel,
-      builder: (context, _) {
-        return Scaffold(
-          backgroundColor: const Color(0xFFFCFAFB),
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AppHeader(
-                    title: 'Escritura digital',
-                    showBack: true,
-                    centerTitle: true,
-                    onBack: () => Navigator.pop(context, false),
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _viewModel,
+    builder: (context, _) => StudentActivityLayout(
+      title: 'Escritura digital',
+      onBack: () => Navigator.pop(context, false),
+      child: _viewModel.isLoading
+          ? const AppLoadingState(message: 'Preparando la escritura…')
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final canvasHeight = (constraints.maxHeight * 0.75).clamp(
+                  480.0,
+                  800.0,
+                );
+                return SingleChildScrollView(
+                  padding: AppSpacing.page,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      StudentTaskHeading(
+                        progress: _viewModel.progressText,
+                        instruction: _viewModel.prompt,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondaryContainer,
+                          borderRadius: BorderRadius.circular(20),
+                          border: const Border(
+                            left: BorderSide(
+                              color: AppColors.brandOrange,
+                              width: 5,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          _viewModel.textToWrite,
+                          style: AppTextStyles.studentStimulus.copyWith(
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.draw_rounded,
+                            color: AppColors.secondary,
+                            size: 22,
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              'Escribe aquí',
+                              style: AppTextStyles.studentTitle,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        height: canvasHeight,
+                        child: Semantics(
+                          label: 'Área de escritura. Dibuja con el dedo.',
+                          child: RepaintBoundary(
+                            key: _canvasKey,
+                            child: DrawingCanvasPlaceholder(
+                              strokes: _viewModel.strokes,
+                              enabled: true,
+                              onPanStart: _viewModel.startStroke,
+                              onPanUpdate: _viewModel.appendStroke,
+                              onPanEnd: _viewModel.endStroke,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_viewModel.errorMessage != null) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        ErrorMessage(text: _viewModel.errorMessage!),
+                      ],
+                      const SizedBox(height: AppSpacing.xl),
+                      AppActionGroup(
+                        children: [
+                          StudentActionButton(
+                            text: 'Borrar',
+                            icon: Icons.cleaning_services_outlined,
+                            onPressed: _viewModel.clear,
+                          ),
+                          PrimaryButton(
+                            text: 'Guardar escritura',
+                            icon: Icons.check_rounded,
+                            student: true,
+                            isLoading: _viewModel.isUploading,
+                            onPressed: _upload,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Expanded(child: _buildContent()),
-                ],
-              ),
+                );
+              },
             ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildContent() {
-    if (_viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: 10),
-        Text(
-          _viewModel.progressText,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE8EDF2)),
-          ),
-          child: Column(
-            children: [
-              Text(_viewModel.prompt, textAlign: TextAlign.center),
-              const SizedBox(height: 4),
-              Text(
-                _viewModel.textToWrite,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFFFF5B0A),
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Escribe aquí',
-          style: TextStyle(color: Color(0xFF8A8F98), fontSize: 16),
-        ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: RepaintBoundary(
-            key: _canvasKey,
-            child: DrawingCanvasPlaceholder(
-              strokes: _viewModel.strokes,
-              enabled: true,
-              onPanStart: _viewModel.startStroke,
-              onPanUpdate: _viewModel.appendStroke,
-              onPanEnd: _viewModel.endStroke,
-            ),
-          ),
-        ),
-        if (_viewModel.errorMessage != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            _viewModel.errorMessage!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.errorRed,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: StudentActionButton(
-                text: 'Limpiar',
-                icon: Icons.cleaning_services_outlined,
-                onPressed: _viewModel.clear,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: PrimaryButton(
-                text: 'Subir',
-                icon: Icons.cloud_upload_outlined,
-                isLoading: _viewModel.isUploading,
-                onPressed: _upload,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+    ),
+  );
 }
 
 class _CanvasCapture {

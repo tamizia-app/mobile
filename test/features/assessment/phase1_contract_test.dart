@@ -73,9 +73,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.text('82.5%'), findsNothing);
+      await tester.tap(find.text('Docente: ver resultados'));
+      await tester.pumpAndSettle();
       expect(find.text('82.5%'), findsWidgets);
-      expect(find.text('Bajo'), findsOneWidget);
-      expect(find.text('VALID'), findsOneWidget);
+      expect(find.text('Intervención: Bajo'), findsOneWidget);
+      expect(find.text('Calidad: VALID'), findsOneWidget);
     },
   );
 
@@ -250,16 +253,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Casa'), findsNWidgets(2));
+    for (final title in [
+      'Indicadores de lectura',
+      'Indicadores de escritura',
+    ]) {
+      await tester.ensureVisible(find.text(title));
+      await tester.tap(find.text(title));
+      await tester.pumpAndSettle();
+    }
     expect(find.text('Métricas de pronunciación:'), findsOneWidget);
-    expect(find.text('Pron: 85%'), findsOneWidget);
-    expect(find.text('Prec: 80%'), findsOneWidget);
-    expect(find.text('Fluid: 90%'), findsOneWidget);
-    expect(find.text('Comp: 95%'), findsOneWidget);
-    expect(find.text('Lex: 100%'), findsOneWidget);
+    expect(find.text('Pronunciación: 85%'), findsOneWidget);
+    expect(find.text('Precisión: 80%'), findsOneWidget);
+    expect(find.text('Fluidez: 90%'), findsOneWidget);
+    expect(find.text('Lectura completa: 95%'), findsOneWidget);
+    expect(find.text('Coincidencia léxica: 100%'), findsOneWidget);
     expect(find.text('Métricas de OCR:'), findsOneWidget);
-    expect(find.text('Conf: 95%'), findsOneWidget);
-    expect(find.text('CER: 7%'), findsOneWidget);
-    expect(find.text('WER: 33%'), findsOneWidget);
+    expect(find.text('Confianza del reconocimiento: 95%'), findsOneWidget);
+    expect(find.text('Error por caracteres (CER): 7%'), findsOneWidget);
+    expect(find.text('Error por palabras (WER): 33%'), findsOneWidget);
     expect(find.byTooltip('Reproducir audio'), findsOneWidget);
 
     final imagePreview = find.text('Tocar para ampliar');

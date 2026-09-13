@@ -1,3 +1,4 @@
+import '../theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -18,12 +19,16 @@ class CategoryChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChoiceChip(
       label: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 8,
+        ),
         child: Text(label),
       ),
       selected: selected,
       onSelected: (_) => onTap(),
-      showCheckmark: false,
+      showCheckmark: true,
+      checkmarkColor: Colors.white,
       selectedColor: AppColors.primaryBlue,
       backgroundColor: Colors.white,
       labelStyle: TextStyle(
@@ -32,7 +37,9 @@ class CategoryChip extends StatelessWidget {
         fontWeight: FontWeight.w600,
       ),
       side: const BorderSide(color: AppColors.cardBorder),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.control),
+      ),
     );
   }
 }

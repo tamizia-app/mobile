@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -125,7 +127,7 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
           body: Column(
             children: [
               AppHeader(
-                title: 'Sesión del intento',
+                title: 'Preparar actividad',
                 showBack: true,
                 centerTitle: true,
                 onBack: () => Navigator.pushReplacementNamed(
@@ -142,8 +144,13 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
   }
 
   Widget _buildContent() {
+    if (_viewModel.isFinishing) {
+      return const AppLoadingState(
+        message: 'Estamos procesando la evaluación…',
+      );
+    }
     if (_viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState(message: 'Cargando información…');
     }
     if (_viewModel.errorMessage != null || _viewModel.attempt == null) {
       return _ErrorState(
@@ -159,15 +166,20 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
       );
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 24, 18, 32),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xxl,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppRadius.control),
               border: Border.all(color: AppColors.cardBorder),
             ),
             child: Column(
@@ -177,36 +189,39 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
                   'Progreso ${_viewModel.progressText}',
                   style: const TextStyle(
                     color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   exercise.displayName,
                   style: const TextStyle(
-                    color: Color(0xFF102532),
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                    fontSize: AppFontSizes.section,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   exercise.instructions ??
                       exercise.prompt ??
                       'Sin instrucciones.',
                   style: const TextStyle(
                     color: AppColors.neutralGray,
-                    fontSize: 15,
+                    fontSize: AppFontSizes.body,
                     height: 1.45,
                   ),
                 ),
-                const SizedBox(height: 14),
-                _InfoRow(label: 'Tipo', value: translateExerciseType(exercise.type)),
+                const SizedBox(height: AppSpacing.md),
+                _InfoRow(
+                  label: 'Tipo',
+                  value: translateExerciseType(exercise.type),
+                ),
               ],
             ),
           ),
           if (_viewModel.errorMessage != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(
               _viewModel.errorMessage!,
               style: const TextStyle(
@@ -216,13 +231,13 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
               textAlign: TextAlign.center,
             ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
             text: 'Abrir ejercicio',
             icon: Icons.play_arrow_rounded,
             onPressed: _openCurrentExercise,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           OutlinedButton.icon(
             onPressed: _viewModel.isFinishing ? null : _finishNow,
             icon: const Icon(Icons.flag_outlined),
@@ -238,35 +253,11 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
 
 class _InfoRow extends StatelessWidget {
   const _InfoRow({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 136,
-            child: Text(
-              label,
-              style: const TextStyle(color: AppColors.mutedText),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppDetailRow(label: label, value: value);
 }
 
 class _ErrorState extends StatelessWidget {
@@ -276,21 +267,11 @@ class _ErrorState extends StatelessWidget {
   final VoidCallback? onRetry;
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-            if (onRetry != null) ...[
-              const SizedBox(height: 12),
-              TextButton(onPressed: onRetry, child: const Text('Reintentar')),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => AppEmptyState(
+    title: 'No pudimos preparar la actividad',
+    message: message,
+    icon: Icons.error_outline,
+    actionLabel: 'Reintentar',
+    onAction: onRetry,
+  );
 }

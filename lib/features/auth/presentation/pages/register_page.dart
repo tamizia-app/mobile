@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_tokens.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/constants/app_routes.dart';
@@ -92,7 +93,7 @@ class _RegisterPageState extends State<RegisterPage> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 390),
+              constraints: const BoxConstraints(maxWidth: AppSizes.formWidth),
               child: AuthCard(
                 borderRadius: 8,
                 shadowOpacity: 0.12,
@@ -100,9 +101,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const BackHeader(title: AppStrings.registerTitle),
-                    const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                    const Divider(height: 1, color: AppColors.divider),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                        AppSpacing.xl,
+                      ),
                       child: Form(
                         key: _formKey,
                         child: AnimatedBuilder(
@@ -115,11 +121,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: AppColors.neutralGray,
-                                    fontSize: 13,
+                                    fontSize: AppFontSizes.support,
                                     height: 1.45,
                                   ),
                                 ),
-                                const SizedBox(height: 18),
+                                const SizedBox(height: AppSpacing.lg),
                                 AppTextField(
                                   controller: _namesController,
                                   label: AppStrings.namesLabel,
@@ -131,7 +137,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ),
                                   onChanged: _viewModel.setNames,
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: AppSpacing.md),
                                 AppTextField(
                                   controller: _lastNamesController,
                                   label: AppStrings.lastNamesLabel,
@@ -143,7 +149,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ),
                                   onChanged: _viewModel.setLastNames,
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: AppSpacing.md),
                                 AppTextField(
                                   controller: _emailController,
                                   label: AppStrings.institutionalEmailLabel,
@@ -154,7 +160,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       _viewModel.fieldErrors['email'],
                                   onChanged: _viewModel.setEmail,
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: AppSpacing.md),
                                 AppTextField(
                                   controller: _phoneController,
                                   label: AppStrings.phoneLabel,
@@ -170,7 +176,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       _viewModel.fieldErrors['phone'],
                                   onChanged: _viewModel.setPhone,
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: AppSpacing.md),
                                 PasswordField(
                                   controller: _passwordController,
                                   label: AppStrings.passwordRequiredLabel,
@@ -182,7 +188,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       _viewModel.fieldErrors['password'],
                                   onChanged: _viewModel.setPassword,
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: AppSpacing.md),
                                 PasswordField(
                                   controller: _confirmPasswordController,
                                   label: AppStrings.confirmPasswordLabel,
@@ -194,7 +200,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ),
                                   onChanged: _viewModel.setConfirmPassword,
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: AppSpacing.md),
                                 AppTextField(
                                   controller: _institutionController,
                                   label: AppStrings.institutionLabel,
@@ -208,25 +214,25 @@ class _RegisterPageState extends State<RegisterPage> {
                                   onChanged: _viewModel.setInstitution,
                                 ),
                                 if (_viewModel.generalError != null) ...[
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: AppSpacing.md),
                                   ErrorMessage(text: _viewModel.generalError!),
                                 ],
-                                const SizedBox(height: 16),
+                                const SizedBox(height: AppSpacing.lg),
                                 TermsCheckbox(
                                   value: _viewModel.acceptedTerms,
                                   errorText: _viewModel.termsError,
                                   onChanged: (value) => _viewModel
                                       .setAcceptedTerms(value ?? false),
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: AppSpacing.md),
                                 const PrivacyNotice(),
-                                const SizedBox(height: 28),
+                                const SizedBox(height: AppSpacing.xl),
                                 PrimaryButton(
                                   text: AppStrings.registerButton,
                                   isLoading: _viewModel.isLoading,
                                   onPressed: _submit,
                                 ),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: AppSpacing.lg),
                                 Wrap(
                                   alignment: WrapAlignment.center,
                                   crossAxisAlignment: WrapCrossAlignment.center,
@@ -235,12 +241,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                       AppStrings.alreadyHaveAccount,
                                       style: TextStyle(
                                         color: AppColors.neutralGray,
-                                        fontSize: 12,
+                                        fontSize: AppFontSizes.support,
                                       ),
                                     ),
                                     TextLink(
                                       text: AppStrings.loginHere,
-                                      fontSize: 12,
+                                      fontSize: AppFontSizes.support,
                                       onTap: () =>
                                           Navigator.pushReplacementNamed(
                                             context,

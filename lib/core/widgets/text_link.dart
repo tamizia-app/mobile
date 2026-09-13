@@ -16,9 +16,8 @@ class TextLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(4),
-      onTap: onTap,
+    return TextButton(
+      onPressed: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Text(

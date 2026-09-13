@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 import 'app_text_field.dart';
 
@@ -39,7 +40,7 @@ class _PasswordFieldState extends State<PasswordField> {
         onPressed: () => setState(() => _obscured = !_obscured),
         icon: Icon(
           _obscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-          color: const Color(0xFF9CA3AF),
+          color: AppColors.textSecondary,
           size: 20,
         ),
       ),

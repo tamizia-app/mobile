@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -59,9 +60,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.xl,
+              AppSpacing.lg,
+              AppSpacing.xxl,
+            ),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 390),
+              constraints: const BoxConstraints(maxWidth: AppSizes.formWidth),
               child: Form(
                 key: _formKey,
                 child: AnimatedBuilder(
@@ -74,29 +80,29 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           title: AppStrings.forgotPasswordTitle,
                           outsideCard: true,
                         ),
-                        const SizedBox(height: 78),
+                        const SizedBox(height: AppSpacing.xxl),
                         const _MailIllustration(),
-                        const SizedBox(height: 44),
+                        const SizedBox(height: AppSpacing.xxxl),
                         const Text(
                           AppStrings.checkEmail,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF102532),
-                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                            fontSize: AppFontSizes.bodyLarge,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.md),
                         const Text(
                           AppStrings.forgotPasswordDescription,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColors.neutralGray,
-                            fontSize: 17,
+                            fontSize: AppFontSizes.bodyLarge,
                             height: 1.45,
                           ),
                         ),
-                        const SizedBox(height: 52),
+                        const SizedBox(height: AppSpacing.xxl),
                         AppTextField(
                           controller: _emailController,
                           label: AppStrings.recoveryEmailLabel,
@@ -106,16 +112,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           onChanged: _viewModel.setEmail,
                         ),
                         if (_viewModel.errorMessage != null) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.md),
                           ErrorMessage(text: _viewModel.errorMessage!),
                         ],
-                        const SizedBox(height: 54),
+                        const SizedBox(height: AppSpacing.xxl),
                         PrimaryButton(
                           text: AppStrings.sendRecoveryLink,
                           isLoading: _viewModel.isLoading,
                           onPressed: _submit,
                         ),
-                        const SizedBox(height: 26),
+                        const SizedBox(height: AppSpacing.xl),
                         TextButton(
                           onPressed: () => Navigator.pushReplacementNamed(
                             context,
@@ -124,7 +130,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           child: const Text(
                             AppStrings.backToLogin,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: AppFontSizes.body,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -144,63 +150,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
 class _MailIllustration extends StatelessWidget {
   const _MailIllustration();
-
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 192,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF45BBDD), Color(0xFF17657D)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0E7490).withValues(alpha: 0.22),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 132,
-              height: 90,
-              decoration: BoxDecoration(
-                color: const Color(0xFF67D3F3),
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.28),
-                    blurRadius: 14,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-            ),
-            Transform.translate(
-              offset: const Offset(0, -30),
-              child: Transform.rotate(
-                angle: 0.78,
-                child: Container(
-                  width: 82,
-                  height: 82,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-            ),
-            const Icon(Icons.mail_rounded, color: Color(0xFF37AED0), size: 148),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const Padding(
+    padding: EdgeInsets.all(AppSpacing.xl),
+    child: Icon(
+      Icons.mark_email_unread_outlined,
+      size: 64,
+      color: AppColors.primary,
+    ),
+  );
 }

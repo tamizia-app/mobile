@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../core/widgets/student_activity_layout.dart';
+import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/app_states.dart';
+import '../../../../core/widgets/info_banner.dart';
 
 import '../../../../core/constants/app_routes.dart';
-import '../../../../core/widgets/app_header.dart';
-import '../../../../core/widgets/student_instruction_card.dart';
 import '../../data/services/assessment_service.dart';
 import '../../domain/models/assessment_session.dart';
 import '../../domain/models/assessment_type.dart';
@@ -80,135 +83,50 @@ class _StudentInstructionsPageState extends State<StudentInstructionsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _viewModel,
-      builder: (context, _) {
-        return Scaffold(
-          backgroundColor: const Color(0xFFFCFAFB),
-          body: Column(
-            children: [
-              AppHeader(
-                title: 'Instrucciones',
-                showBack: true,
-                centerTitle: true,
-                onBack: () => Navigator.pushReplacementNamed(
-                  context,
-                  AppRoutes.assessmentConfigure,
-                  arguments: _session?.exerciseId,
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 42, 16, 30),
-                  child: Column(
-                    children: [
-                      const StudentInstructionCard(),
-                      const SizedBox(height: 28),
-                      const Text(
-                        '¡Antes de empezar!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF111827),
-                          fontSize: 30,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        _viewModel.instructionText,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color(0xFF334155),
-                          fontSize: 20,
-                          height: 1.45,
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F7FF),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.mood, color: Color(0xFF245FE5)),
-                            SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                'Hazlo con calma, no es un examen',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Color(0xFF245FE5),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 42),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 60,
-                        child: FilledButton(
-                          onPressed: _start,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF5B0A),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: const Text(
-                            '¡Comenzar! ▶',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pushReplacementNamed(
-                            context,
-                            AppRoutes.assessmentConfigure,
-                            arguments: _session?.exerciseId,
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF4B5563),
-                            side: const BorderSide(color: Color(0xFFDDE6EF)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(27),
-                            ),
-                          ),
-                          child: const Text(
-                            'Volver',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _viewModel,
+    builder: (context, _) => StudentActivityLayout(
+      title: 'Antes de empezar',
+      onBack: () => Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.assessmentConfigure,
+        arguments: _session?.exerciseId,
+      ),
+      child: _viewModel.isLoading
+          ? const AppLoadingState(message: 'Preparando la actividad…')
+          : SingleChildScrollView(
+              padding: AppSpacing.page,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  StudentInstructionBubble(
+                    instruction: _viewModel.instructionText,
                   ),
-                ),
+                  const SizedBox(height: AppSpacing.xl),
+                  const InfoBanner(
+                    text: 'Hazlo con calma. Tu docente te acompañará.',
+                  ),
+                  const SizedBox(height: AppSpacing.xxl),
+                  PrimaryButton(
+                    text: 'Comenzar actividad',
+                    icon: Icons.play_arrow_rounded,
+                    student: true,
+                    onPressed: _start,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  PrimaryButton(
+                    text: 'Volver',
+                    student: true,
+                    variant: AppButtonVariant.secondary,
+                    onPressed: () => Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.assessmentConfigure,
+                      arguments: _session?.exerciseId,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+            ),
+    ),
+  );
 }

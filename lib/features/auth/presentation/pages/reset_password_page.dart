@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -75,7 +76,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 390),
+              constraints: const BoxConstraints(maxWidth: AppSizes.formWidth),
               child: Form(
                 key: _formKey,
                 child: AnimatedBuilder(
@@ -88,13 +89,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           title: 'Restablecer contraseña',
                           outsideCard: true,
                         ),
-                        const SizedBox(height: 64),
+                        const SizedBox(height: AppSpacing.xxl),
                         const Icon(
                           Icons.lock_reset_rounded,
                           size: 92,
                           color: AppColors.primaryBlue,
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: AppSpacing.xxl),
                         PasswordField(
                           controller: _passwordController,
                           label: 'Nueva contraseña',
@@ -102,7 +103,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           validator: AuthValidators.validateMinimumPassword,
                           onChanged: _viewModel.setNewPassword,
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: AppSpacing.lg),
                         PasswordField(
                           controller: _confirmationController,
                           label: 'Confirmar nueva contraseña',
@@ -115,10 +116,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           onChanged: _viewModel.setConfirmPassword,
                         ),
                         if (_viewModel.errorMessage != null) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.md),
                           ErrorMessage(text: _viewModel.errorMessage!),
                         ],
-                        const SizedBox(height: 32),
+                        const SizedBox(height: AppSpacing.xxl),
                         PrimaryButton(
                           text: 'Restablecer contraseña',
                           isLoading: _viewModel.isLoading,

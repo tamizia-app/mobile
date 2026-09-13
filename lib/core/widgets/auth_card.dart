@@ -1,34 +1,25 @@
 import 'package:flutter/material.dart';
-
 import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
 
 class AuthCard extends StatelessWidget {
   const AuthCard({
     required this.child,
-    this.borderRadius = 10,
-    this.shadowOpacity = 0.06,
+    this.borderRadius = AppRadius.card,
+    this.shadowOpacity = 0,
     super.key,
   });
-
   final Widget child;
   final double borderRadius;
   final double shadowOpacity;
-
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: shadowOpacity),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
+  Widget build(BuildContext context) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(color: AppColors.divider),
+    ),
+    child: child,
+  );
 }
