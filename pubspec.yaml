@@ -1,5 +1,5 @@
-name: tamizia_app
-description: "A new Flutter project."
+name: tamizai_app
+description: "Aplicación móvil de apoyo al tamizaje temprano de dificultades de lectoescritura."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -34,6 +34,13 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  dio: ^5.9.2
+  flutter_secure_storage: ^10.3.1
+  file_picker: 11.0.2
+  record: ^6.2.1
+  permission_handler: ^12.0.3
+  path_provider: 2.1.5
+  audioplayers: ^6.7.1
 
 dev_dependencies:
   flutter_test:

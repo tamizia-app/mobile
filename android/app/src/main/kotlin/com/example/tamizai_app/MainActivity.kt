@@ -1,4 +1,4 @@
-package com.example.tamizia_app
+package com.example.tamizai_app
 
 import io.flutter.embedding.android.FlutterActivity
 

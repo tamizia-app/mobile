@@ -1,4 +1,4 @@
-# TamizIA / LectorRisk - UI Spec inicial
+# TamizAI - UI Spec inicial
 
 ## 1. Alcance de esta primera implementación
 
@@ -17,16 +17,16 @@ No implementar dashboard, aulas, estudiantes, ejercicios, perfil, backend, Fireb
 
 En estas pantallas el diseño muestra el nombre:
 
-**LectorRisk**
+**TamizAI**
 
 Sin embargo, en la pantalla de login también aparece el nombre:
 
-**TamizIA**
+**TamizAI**
 
-Para evitar inconsistencias, usar por ahora el nombre que aparece en cada pantalla del Figma:
+Para evitar inconsistencias, usar el nombre oficial de la aplicación:
 
-- Splash: `LectorRisk`
-- Login: `TamizIA`
+- Splash: `TamizAI`
+- Login: `TamizAI`
 - Registro: `Crear cuenta docente`
 - Recuperar contraseña: `Recuperar contraseña`
 
@@ -75,7 +75,7 @@ Usar `Inter` si está disponible. Si no, usar la fuente por defecto de Flutter.
 
 | Estilo | Tamaño aprox. | Peso | Uso |
 |---|---:|---|---|
-| App Title | 24px | Bold | LectorRisk / TamizIA |
+| App Title | 24px | Bold | TamizAI |
 | Page Title | 18px | Bold | Crear cuenta docente, Recuperar contraseña |
 | Body | 14px - 16px | Regular | Descripciones |
 | Label | 12px - 14px | Medium | Labels de inputs |
@@ -163,7 +163,7 @@ Estilo:
 - Padding: 12px
 
 Texto:
-`Tus datos y los de tus estudiantes son tratados de manera confidencial y se utilizan exclusivamente para fines de gestión pedagógica dentro de LectorRisk.`
+`Tus datos y los de tus estudiantes son tratados de manera confidencial y se utilizan exclusivamente para fines de gestión pedagógica dentro de TamizAI.`
 
 ---
 
@@ -198,7 +198,7 @@ Presentar la app y permitir continuar al login.
 - Icono circular superior con borde naranja claro.
 - Dentro del círculo, icono de libro con lupa.
 - Título:
-  `LectorRisk`
+  `TamizAI`
 - Descripción:
   `Apoyo al tamizaje temprano de dificultades de lectoescritura`
 - Botón principal:
@@ -227,7 +227,7 @@ Permitir que el docente ingrese al sistema.
 - Card blanca centrada.
 - Icono circular superior azul claro con icono académico.
 - Título:
-  `TamizIA`
+  `TamizAI`
 - Subtítulo:
   `Iniciar sesión`
 - Campo:
@@ -278,7 +278,7 @@ Permitir que el docente cree una cuenta.
 - Título:
   `Crear cuenta docente`
 - Texto:
-  `Únete a TamizIA para gestionar la evaluación y progreso de tus estudiantes.`
+  `Únete a TamizAI para gestionar la evaluación y progreso de tus estudiantes.`
 - Campos:
     - `Nombres *`
         - Placeholder: `Ingresa tus nombres`
