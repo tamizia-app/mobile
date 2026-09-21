@@ -14,9 +14,20 @@ import '../../domain/repositories/assessment_repository.dart';
 import '../viewmodels/reading_assessment_viewmodel.dart';
 
 class ReadingAssessmentPage extends StatefulWidget {
-  const ReadingAssessmentPage({required this.assessmentRepository, super.key});
+  const ReadingAssessmentPage({
+    required this.assessmentRepository,
+    this.args,
+    this.onCompleted,
+    this.onBack,
+    this.onBusyChanged,
+    super.key,
+  });
 
   final AssessmentRepository assessmentRepository;
+  final AttemptExerciseArgs? args;
+  final VoidCallback? onCompleted;
+  final VoidCallback? onBack;
+  final ValueChanged<bool>? onBusyChanged;
 
   @override
   State<ReadingAssessmentPage> createState() => _ReadingAssessmentPageState();
@@ -32,12 +43,17 @@ class _ReadingAssessmentPageState extends State<ReadingAssessmentPage> {
     _viewModel = ReadingAssessmentViewModel(
       assessmentRepository: widget.assessmentRepository,
     );
+    _viewModel.addListener(
+      () => widget.onBusyChanged?.call(
+        _viewModel.isLoading || _viewModel.isUploading,
+      ),
+    );
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final argument = ModalRoute.of(context)?.settings.arguments;
+    final argument = widget.args ?? ModalRoute.of(context)?.settings.arguments;
     if (!_requestedLoad && argument is AttemptExerciseArgs) {
       _requestedLoad = true;
       _viewModel.load(argument);
@@ -56,7 +72,11 @@ class _ReadingAssessmentPageState extends State<ReadingAssessmentPage> {
       return;
     }
     if (uploaded) {
-      Navigator.pop(context, true);
+      if (widget.onCompleted != null) {
+        widget.onCompleted!();
+      } else {
+        Navigator.pop(context, true);
+      }
       return;
     }
     if (_viewModel.errorMessage != null) {
@@ -71,7 +91,7 @@ class _ReadingAssessmentPageState extends State<ReadingAssessmentPage> {
     animation: _viewModel,
     builder: (context, _) => StudentActivityLayout(
       title: 'Lectura en voz alta',
-      onBack: () => Navigator.pop(context, false),
+      onBack: widget.onBack ?? () => Navigator.pop(context, false),
       child: _viewModel.isLoading
           ? const AppLoadingState(message: 'Preparando la lectura…')
           : SingleChildScrollView(
@@ -119,7 +139,8 @@ class _ReadingAssessmentPageState extends State<ReadingAssessmentPage> {
                         ? Icons.stop_circle_outlined
                         : Icons.mic_none_outlined,
                     student: true,
-                    onPressed: _viewModel.isUploading
+                    onPressed:
+                        _viewModel.isUploading || _viewModel.isEvidenceLocked
                         ? null
                         : _viewModel.toggleRecording,
                   ),
@@ -162,7 +183,7 @@ class _ReadingAssessmentPageState extends State<ReadingAssessmentPage> {
                     student: true,
                     variant: AppButtonVariant.secondary,
                     isLoading: _viewModel.isUploading,
-                    onPressed: _upload,
+                    onPressed: _viewModel.isEvidenceLocked ? null : _upload,
                   ),
                 ],
               ),

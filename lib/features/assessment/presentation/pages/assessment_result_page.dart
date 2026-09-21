@@ -9,9 +9,11 @@ import '../../../../core/utils/assessment_labels.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/assessment_result.dart';
+import '../../domain/repositories/assessment_repository.dart';
 
 class AssessmentResultPage extends StatefulWidget {
-  const AssessmentResultPage({super.key});
+  const AssessmentResultPage({this.assessmentRepository, super.key});
+  final AssessmentRepository? assessmentRepository;
 
   @override
   State<AssessmentResultPage> createState() => _AssessmentResultPageState();
@@ -19,13 +21,48 @@ class AssessmentResultPage extends StatefulWidget {
 
 class _AssessmentResultPageState extends State<AssessmentResultPage> {
   bool _showTeacherResult = false;
+  AssessmentResult? _currentResult;
+  bool _refreshing = false;
+  String? _refreshError;
+
+  Future<void> _refreshResult(String attemptId) async {
+    final repository = widget.assessmentRepository;
+    if (repository == null) return;
+    setState(() {
+      _refreshing = true;
+      _refreshError = null;
+    });
+    try {
+      final result = await repository.getResult(attemptId);
+      if (mounted) setState(() => _currentResult = result);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _refreshError =
+              'No se pudo actualizar el resultado de la evaluación.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _refreshing = false);
+    }
+  }
+
+  Future<void> _openReview(String attemptId) async {
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.attemptReview,
+      arguments: attemptId,
+    );
+    if (mounted) await _refreshResult(attemptId);
+  }
+
   @override
   Widget build(BuildContext context) {
     final argument = ModalRoute.of(context)?.settings.arguments;
     if (argument is! AssessmentResult) {
       return const _MissingResultPage();
     }
-    final result = argument;
+    final result = _currentResult ?? argument;
     if (!_showTeacherResult) {
       return Scaffold(
         backgroundColor: AppColors.studentBackground,
@@ -56,51 +93,59 @@ class _AssessmentResultPageState extends State<AssessmentResultPage> {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xxl,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AssessmentResultSummary(
-                    score: result.finalScore,
-                    level: result.interventionLevel,
-                    pending: result.pendingExercises,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  _SummaryCard(result: result),
-                  if (result.exerciseSummaries.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.lg),
-                    _ExerciseSummariesCard(summaries: result.exerciseSummaries),
-                  ],
-                  const SizedBox(height: AppSpacing.xl),
-                  PrimaryButton(
-                    text: 'Ver detalle del intento',
-                    icon: Icons.visibility_outlined,
-                    onPressed: () => Navigator.pushNamed(
-                      context,
-                      AppRoutes.attemptReview,
-                      arguments: result.attemptId,
+            child: _refreshing
+                ? const AppLoadingState(message: 'Actualizando resultados…')
+                : _refreshError != null
+                ? AppEmptyState(
+                    title: 'Resultado pendiente de actualizar',
+                    message: _refreshError!,
+                    icon: Icons.sync_problem,
+                    actionLabel: 'Reintentar',
+                    onAction: () => _refreshResult(result.attemptId),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.xl,
+                      AppSpacing.lg,
+                      AppSpacing.xxl,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AssessmentResultSummary(
+                          score: result.finalScore,
+                          level: result.interventionLevel,
+                          pending: result.pendingExercises,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        _SummaryCard(result: result),
+                        if (result.exerciseSummaries.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.lg),
+                          _ExerciseSummariesCard(
+                            summaries: result.exerciseSummaries,
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.xl),
+                        PrimaryButton(
+                          text: 'Ver detalle del intento',
+                          icon: Icons.visibility_outlined,
+                          onPressed: () => _openReview(result.attemptId),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        PrimaryButton(
+                          text: 'Volver a evaluaciones',
+                          variant: AppButtonVariant.secondary,
+                          icon: Icons.assignment_outlined,
+                          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            AppRoutes.templateCatalog,
+                            (route) => false,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  PrimaryButton(
-                    text: 'Volver a evaluaciones',
-                    variant: AppButtonVariant.secondary,
-                    icon: Icons.assignment_outlined,
-                    onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.templateCatalog,
-                      (route) => false,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

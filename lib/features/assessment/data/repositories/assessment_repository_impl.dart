@@ -4,6 +4,8 @@ import '../../domain/models/assessment_response.dart';
 import '../../domain/models/assessment_result.dart';
 import '../../domain/models/assessment_template.dart';
 import '../../domain/models/attempt_review.dart';
+import '../../domain/models/manual_review.dart';
+import '../models/manual_review_dto.dart';
 import '../../domain/models/repeat_attempt_response.dart';
 import '../../domain/models/student_assessment_history.dart';
 import '../../domain/models/student_attempt_list.dart';
@@ -231,6 +233,18 @@ class AssessmentRepositoryImpl implements AssessmentRepository {
     final response = await _remoteDataSource.repeatAttempt(
       attemptId,
       reason: reason,
+    );
+    return response.toDomain();
+  }
+
+  @override
+  Future<ManualReviewResponse> manualReviewExercise(
+    String exerciseAttemptId,
+    ManualReviewRequest request,
+  ) async {
+    final response = await _remoteDataSource.manualReviewExercise(
+      exerciseAttemptId,
+      ManualReviewRequestDto(request),
     );
     return response.toDomain();
   }

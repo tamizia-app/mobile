@@ -34,7 +34,9 @@ class ValidationException extends ApiException {
 }
 
 class ConflictException extends ApiException {
-  const ConflictException(super.message);
+  const ConflictException(super.message, {this.code});
+
+  final String? code;
 }
 
 class ServerException extends ApiException {

@@ -16,6 +16,8 @@ import 'features/assessment/presentation/pages/assessment_config_page.dart';
 import 'features/assessment/presentation/pages/assessment_attempt_preview_page.dart';
 import 'features/assessment/presentation/pages/assessment_error_page.dart';
 import 'features/assessment/presentation/pages/attempt_review_page.dart';
+import 'features/assessment/presentation/pages/manual_review_page.dart';
+import 'features/assessment/domain/models/manual_review.dart';
 import 'features/assessment/presentation/pages/attempt_session_page.dart';
 import 'features/assessment/presentation/pages/build_word_page.dart';
 import 'features/assessment/presentation/pages/choose_word_page.dart';
@@ -237,7 +239,9 @@ class _TamiziaAppState extends State<TamiziaApp> {
       case AppRoutes.assessmentChooseWord:
         return ChooseWordPage(assessmentRepository: _assessmentRepository);
       case AppRoutes.assessmentResult:
-        return const AssessmentResultPage();
+        return AssessmentResultPage(
+          assessmentRepository: _assessmentRepository,
+        );
       case AppRoutes.assessmentTextComparison:
         return const TextComparisonPage();
       case AppRoutes.assessmentError:
@@ -259,6 +263,13 @@ class _TamiziaAppState extends State<TamiziaApp> {
         return AttemptReviewPage(
           assessmentRepository: _assessmentRepository,
           attemptId: attemptId,
+        );
+      case AppRoutes.manualReview:
+        final args = settings.arguments;
+        if (args is! ManualReviewArgs) return const AssessmentErrorPage();
+        return ManualReviewPage(
+          assessmentRepository: _assessmentRepository,
+          args: args,
         );
       default:
         return LoginPage(sessionManager: _sessionManager);

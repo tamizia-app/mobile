@@ -21,6 +21,7 @@ class WritingAssessmentViewModel extends ChangeNotifier {
   List<WritingStroke> _strokes = const [];
   bool isLoading = false;
   bool isUploading = false;
+  bool isEvidenceLocked = false;
   String? errorMessage;
   DateTime? _startedAt;
   DateTime? _endedAt;
@@ -46,6 +47,9 @@ class WritingAssessmentViewModel extends ChangeNotifier {
       prompt;
 
   Future<void> load(AttemptExerciseArgs value) async {
+    if (args?.exerciseAttempt.id != value.exerciseAttempt.id) {
+      isEvidenceLocked = false;
+    }
     args = value;
     isLoading = true;
     errorMessage = null;
@@ -104,6 +108,7 @@ class WritingAssessmentViewModel extends ChangeNotifier {
     required String imagePath,
     required Size canvasSize,
   }) async {
+    if (isEvidenceLocked || isUploading) return false;
     final exerciseAttemptId = args?.exerciseAttempt.id;
     if (exerciseAttemptId == null) {
       return false;
@@ -124,6 +129,10 @@ class WritingAssessmentViewModel extends ChangeNotifier {
       );
       return true;
     } catch (error) {
+      if (error is ConflictException &&
+          error.code == 'ASSESSMENT_EVIDENCE_LOCKED') {
+        isEvidenceLocked = true;
+      }
       errorMessage = _messageFor(error);
       return false;
     } finally {

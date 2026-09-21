@@ -6,6 +6,7 @@ import '../models/assessment_template.dart';
 import '../models/student_assessment_history.dart';
 import '../models/student_attempt_list.dart';
 import '../models/attempt_review.dart';
+import '../models/manual_review.dart';
 import '../models/repeat_attempt_response.dart';
 
 abstract interface class AssessmentRepository {
@@ -82,6 +83,11 @@ abstract interface class AssessmentRepository {
   });
 
   Future<AttemptReview> getAttemptReview(String attemptId);
+
+  Future<ManualReviewResponse> manualReviewExercise(
+    String exerciseAttemptId,
+    ManualReviewRequest request,
+  );
 
   Future<RepeatAttemptResponse> repeatAttempt(
     String attemptId, {

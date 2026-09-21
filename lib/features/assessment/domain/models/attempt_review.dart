@@ -1,5 +1,6 @@
 import 'assessment_result.dart';
 import 'exercise_integrity.dart';
+import 'manual_review.dart';
 
 class AttemptReview {
   const AttemptReview({
@@ -126,6 +127,7 @@ class ExerciseReview {
     this.scoreEligible = false,
     this.qualityReasons = const [],
     this.scoringComponents = const ScoringComponents(),
+    this.manualReview = const ManualReviewDetails(),
   });
 
   final String exerciseAttemptId;
@@ -148,4 +150,8 @@ class ExerciseReview {
   final bool scoreEligible;
   final List<String> qualityReasons;
   final ScoringComponents scoringComponents;
+  final ManualReviewDetails manualReview;
+
+  bool get supportsManualReview =>
+      type == 'READING_WRITING' || type == 'READING_SPEAKING';
 }

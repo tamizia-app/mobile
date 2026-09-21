@@ -145,13 +145,16 @@ class AppDetailRow extends StatelessWidget {
         final valueWidget = Text(value, style: AppTextStyles.labelLarge);
         if (constraints.maxWidth < 360 ||
             MediaQuery.textScalerOf(context).scale(16) > 22) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              labelWidget,
-              const SizedBox(height: AppSpacing.xs),
-              valueWidget,
-            ],
+          return SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                labelWidget,
+                const SizedBox(height: AppSpacing.xs),
+                valueWidget,
+              ],
+            ),
           );
         }
         return Row(

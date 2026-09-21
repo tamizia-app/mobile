@@ -12,9 +12,20 @@ import '../../domain/repositories/assessment_repository.dart';
 import '../viewmodels/choose_word_viewmodel.dart';
 
 class ChooseWordPage extends StatefulWidget {
-  const ChooseWordPage({required this.assessmentRepository, super.key});
+  const ChooseWordPage({
+    required this.assessmentRepository,
+    this.args,
+    this.onCompleted,
+    this.onBack,
+    this.onBusyChanged,
+    super.key,
+  });
 
   final AssessmentRepository assessmentRepository;
+  final AttemptExerciseArgs? args;
+  final VoidCallback? onCompleted;
+  final VoidCallback? onBack;
+  final ValueChanged<bool>? onBusyChanged;
 
   @override
   State<ChooseWordPage> createState() => _ChooseWordPageState();
@@ -30,12 +41,17 @@ class _ChooseWordPageState extends State<ChooseWordPage> {
     _viewModel = ChooseWordViewModel(
       assessmentRepository: widget.assessmentRepository,
     );
+    _viewModel.addListener(
+      () => widget.onBusyChanged?.call(
+        _viewModel.isLoading || _viewModel.isSubmitting,
+      ),
+    );
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final argument = ModalRoute.of(context)?.settings.arguments;
+    final argument = widget.args ?? ModalRoute.of(context)?.settings.arguments;
     if (!_requestedLoad && argument is AttemptExerciseArgs) {
       _requestedLoad = true;
       _viewModel.load(argument);
@@ -54,7 +70,11 @@ class _ChooseWordPageState extends State<ChooseWordPage> {
       return;
     }
     if (saved) {
-      Navigator.pop(context, true);
+      if (widget.onCompleted != null) {
+        widget.onCompleted!();
+      } else {
+        Navigator.pop(context, true);
+      }
       return;
     }
     final message = _viewModel.validationMessage ?? _viewModel.errorMessage;
@@ -70,7 +90,7 @@ class _ChooseWordPageState extends State<ChooseWordPage> {
     animation: _viewModel,
     builder: (context, _) => StudentActivityLayout(
       title: 'Elige la palabra',
-      onBack: () => Navigator.pop(context, false),
+      onBack: widget.onBack ?? () => Navigator.pop(context, false),
       child: _buildContent(),
     ),
   );

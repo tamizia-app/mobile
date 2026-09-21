@@ -17,6 +17,18 @@ class AttemptSessionViewModel extends ChangeNotifier {
   bool isLoading = false;
   bool isFinishing = false;
   String? errorMessage;
+  bool _disposed = false;
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   List<ExerciseAttempt> get exerciseAttempts =>
       attempt?.exerciseAttempts ?? const [];
@@ -92,7 +104,7 @@ class AttemptSessionViewModel extends ChangeNotifier {
         return index;
       }
     }
-    return 0;
+    return items.length;
   }
 
   String _messageFor(Object error) {

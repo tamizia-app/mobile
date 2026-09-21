@@ -653,6 +653,7 @@ void main() {
           isNull,
           reason: '$name scrolled layout at $size / $scale',
         );
+        if (size.width == 390) await _capture(tester, '${name}_bottom');
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpAndSettle();
       }

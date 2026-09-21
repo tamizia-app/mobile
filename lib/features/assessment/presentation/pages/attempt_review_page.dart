@@ -1,12 +1,12 @@
-import 'dart:async';
-
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/assessment_result_summary.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../widgets/exercise_metrics_panel.dart';
+import '../widgets/review_evidence_media.dart';
+import '../widgets/manual_review_status_badge.dart';
+import '../../domain/models/manual_review.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -198,6 +198,21 @@ class _AttemptReviewPageState extends State<AttemptReviewPage> {
                 child: _ExerciseReviewCard(
                   index: entry.key,
                   exercise: entry.value,
+                  onReview:
+                      review.status.trim().toUpperCase() == 'COMPLETED' &&
+                          entry.value.supportsManualReview
+                      ? () async {
+                          await Navigator.pushNamed(
+                            context,
+                            AppRoutes.manualReview,
+                            arguments: ManualReviewArgs(
+                              attemptId: widget.attemptId,
+                              exerciseAttemptId: entry.value.exerciseAttemptId,
+                            ),
+                          );
+                          if (mounted) await _loadReview();
+                        }
+                      : null,
                 ),
               ),
             ),
@@ -368,9 +383,14 @@ class _ResultCard extends StatelessWidget {
 }
 
 class _ExerciseReviewCard extends StatelessWidget {
-  const _ExerciseReviewCard({required this.index, required this.exercise});
+  const _ExerciseReviewCard({
+    required this.index,
+    required this.exercise,
+    this.onReview,
+  });
   final int index;
   final ExerciseReview exercise;
+  final VoidCallback? onReview;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -390,7 +410,15 @@ class _ExerciseReviewCard extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            AppStatusBadge(label: translateExerciseStatus(exercise.status), icon: Icons.assignment_outlined),
+            AppStatusBadge(
+              label: translateExerciseStatus(exercise.status),
+              icon: Icons.assignment_outlined,
+            ),
+            if (exercise.supportsManualReview)
+              ManualReviewStatusBadge(
+                status: exercise.manualReview.status,
+                requiredReview: exercise.reviewRequired,
+              ),
             if (exercise.reviewRequired)
               const AppStatusBadge(
                 label: 'Requiere revisión docente',
@@ -445,6 +473,16 @@ class _ExerciseReviewCard extends StatelessWidget {
         ],
         const Divider(),
         _buildTypeSpecificDetails(context),
+        if (onReview != null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          PrimaryButton(
+            text: exercise.manualReview.hasReview
+                ? 'Ver revisión manual'
+                : 'Revisar manualmente',
+            icon: Icons.fact_check_outlined,
+            onPressed: onReview,
+          ),
+        ],
       ],
     ),
   );
@@ -494,6 +532,24 @@ class _ExerciseReviewCard extends StatelessWidget {
     if (!writing && !speaking) {
       return const Text('No hay detalles disponibles para este ejercicio.');
     }
+    final evidence = exercise.manualReview.evidence;
+    final reviewedText = writing
+        ? evidence.reviewedRecognizedText
+        : evidence.reviewedFreeTranscriptionText;
+    final automaticTextBlocks = <Widget>[
+      if (response?['free_transcription_text'] != null)
+        _textBlock(
+          'Transcripción del audio',
+          response!['free_transcription_text'].toString(),
+        ),
+      if (response?['recognized_text'] != null)
+        _textBlock(
+          writing
+              ? 'Texto reconocido de la escritura (OCR)'
+              : 'Texto reconocido',
+          response!['recognized_text'].toString(),
+        ),
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -506,22 +562,25 @@ class _ExerciseReviewCard extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         if (exercise.referenceText != null)
           _textBlock('Texto de referencia', exercise.referenceText!),
-        if (response?['free_transcription_text'] != null)
-          _textBlock(
-            'Transcripción del audio',
-            response!['free_transcription_text'].toString(),
-          ),
-        if (response?['recognized_text'] != null)
+        if (reviewedText != null) ...[
           _textBlock(
             writing
-                ? 'Texto reconocido de la escritura (OCR)'
-                : 'Texto reconocido',
-            response!['recognized_text'].toString(),
+                ? 'Texto corregido por el profesor'
+                : 'Transcripción corregida por el profesor',
+            reviewedText,
           ),
+          if (automaticTextBlocks.isNotEmpty)
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: const Text('Ver reconocimiento automático original'),
+              children: automaticTextBlocks,
+            ),
+        ] else
+          ...automaticTextBlocks,
         if (writing && response?['image_url'] != null)
-          _ImagePreview(url: response!['image_url'].toString()),
+          ReviewImagePreview(url: response!['image_url'].toString()),
         if (speaking && response?['audio_url'] != null)
-          _AudioPlayer(url: response!['audio_url'].toString()),
+          ReviewAudioPlayer(url: response!['audio_url'].toString()),
         if (response == null || response.isEmpty)
           const Text(
             'No hay una respuesta disponible.',
@@ -552,318 +611,4 @@ class _ExerciseReviewCard extends StatelessWidget {
       ],
     ),
   );
-}
-
-class _ImagePreview extends StatelessWidget {
-  const _ImagePreview({required this.url});
-
-  final String url;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Ampliar imagen de la prueba de escritura',
-      child: InkWell(
-        onTap: () => _showExpandedImage(context, url),
-        borderRadius: BorderRadius.circular(AppRadius.control),
-        child: Container(
-          height: 120,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: AppColors.backgroundLight,
-            borderRadius: BorderRadius.circular(AppRadius.control),
-            border: Border.all(color: AppColors.cardBorder),
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.network(
-                url,
-                fit: BoxFit.contain,
-                loadingBuilder: (context, child, progress) => progress == null
-                    ? child
-                    : const AppLoadingState(message: 'Cargando resultados…'),
-                errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Icon(
-                    Icons.broken_image_outlined,
-                    color: AppColors.mutedText,
-                    size: 36,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  color: Colors.black54,
-                  child: const Text(
-                    'Tocar para ampliar',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: AppFontSizes.support,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-Future<void> _showExpandedImage(BuildContext context, String url) {
-  return showDialog<void>(
-    context: context,
-    barrierColor: Colors.black87,
-    builder: (context) => Dialog(
-      insetPadding: const EdgeInsets.all(AppSpacing.lg),
-      backgroundColor: Colors.black,
-      child: SizedBox(
-        width: double.infinity,
-        height: MediaQuery.sizeOf(context).height * 0.8,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: InteractiveViewer(
-                  minScale: 0.8,
-                  maxScale: 5,
-                  child: Center(
-                    child: Image.network(
-                      url,
-                      fit: BoxFit.contain,
-                      loadingBuilder: (context, child, progress) =>
-                          progress == null
-                          ? child
-                          : const CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.broken_image_outlined,
-                                color: Colors.white70,
-                                size: 52,
-                              ),
-                              SizedBox(height: AppSpacing.md),
-                              Text(
-                                'No se pudo cargar la imagen.',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: IconButton.filled(
-                tooltip: 'Cerrar imagen',
-                onPressed: () => Navigator.pop(context),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black54,
-                  foregroundColor: Colors.white,
-                ),
-                icon: const Icon(Icons.close),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-class _AudioPlayer extends StatefulWidget {
-  const _AudioPlayer({required this.url});
-
-  final String url;
-
-  @override
-  State<_AudioPlayer> createState() => _AudioPlayerState();
-}
-
-class _AudioPlayerState extends State<_AudioPlayer> {
-  late final AudioPlayer _player;
-  late final StreamSubscription<Duration> _durationSubscription;
-  late final StreamSubscription<Duration> _positionSubscription;
-  late final StreamSubscription<PlayerState> _stateSubscription;
-  late final StreamSubscription<void> _completeSubscription;
-
-  Duration _duration = Duration.zero;
-  Duration _position = Duration.zero;
-  PlayerState _state = PlayerState.stopped;
-  bool _isLoading = false;
-  String? _errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _player = AudioPlayer();
-    _durationSubscription = _player.onDurationChanged.listen((duration) {
-      if (mounted) setState(() => _duration = duration);
-    });
-    _positionSubscription = _player.onPositionChanged.listen((position) {
-      if (mounted) setState(() => _position = position);
-    });
-    _stateSubscription = _player.onPlayerStateChanged.listen((state) {
-      if (mounted) {
-        setState(() {
-          _state = state;
-          _isLoading = false;
-        });
-      }
-    });
-    _completeSubscription = _player.onPlayerComplete.listen((_) {
-      if (mounted) setState(() => _position = Duration.zero);
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant _AudioPlayer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url) {
-      _player.stop();
-      setState(() {
-        _duration = Duration.zero;
-        _position = Duration.zero;
-        _state = PlayerState.stopped;
-        _errorMessage = null;
-      });
-    }
-  }
-
-  Future<void> _togglePlayback() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      if (_state == PlayerState.playing) {
-        await _player.pause();
-      } else if (_state == PlayerState.paused) {
-        await _player.resume();
-      } else {
-        await _player.play(UrlSource(widget.url));
-      }
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'No se pudo reproducir el audio.';
-      });
-    }
-  }
-
-  Future<void> _seek(double milliseconds) async {
-    try {
-      await _player.seek(Duration(milliseconds: milliseconds.round()));
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _errorMessage = 'No se pudo cambiar la posición.');
-    }
-  }
-
-  @override
-  void dispose() {
-    _durationSubscription.cancel();
-    _positionSubscription.cancel();
-    _stateSubscription.cancel();
-    _completeSubscription.cancel();
-    _player.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final durationMs = _duration.inMilliseconds;
-    final positionMs = _position.inMilliseconds.clamp(0, durationMs);
-    final isPlaying = _state == PlayerState.playing;
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.infoBlueLight,
-        borderRadius: BorderRadius.circular(AppRadius.control),
-        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              IconButton.filled(
-                tooltip: isPlaying ? 'Pausar audio' : 'Reproducir audio',
-                onPressed: _isLoading ? null : _togglePlayback,
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  foregroundColor: Colors.white,
-                ),
-                icon: _isLoading
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Slider(
-                  value: durationMs > 0 ? positionMs.toDouble() : 0,
-                  max: durationMs > 0 ? durationMs.toDouble() : 1,
-                  onChanged: durationMs > 0 ? _seek : null,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                '${_formatDuration(_position)} / ${_formatDuration(_duration)}',
-                style: const TextStyle(
-                  color: AppColors.mutedText,
-                  fontSize: AppFontSizes.support,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 6, top: 2),
-              child: Text(
-                _errorMessage!,
-                style: const TextStyle(
-                  color: AppColors.errorRed,
-                  fontSize: AppFontSizes.support,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-String _formatDuration(Duration duration) {
-  final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-  final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-  return '$minutes:$seconds';
 }

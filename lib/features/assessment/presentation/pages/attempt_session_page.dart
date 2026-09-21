@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/app_states.dart';
-import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/constants/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/assessment_labels.dart';
 import '../../../../core/widgets/app_header.dart';
-import '../../../../core/widgets/primary_button.dart';
-import '../../domain/models/assessment_result.dart';
+import '../../../../core/widgets/app_states.dart';
 import '../../domain/models/attempt_exercise_args.dart';
 import '../../domain/repositories/assessment_repository.dart';
 import '../viewmodels/attempt_session_viewmodel.dart';
+import 'build_word_page.dart';
+import 'choose_word_page.dart';
+import 'reading_assessment_page.dart';
+import 'writing_assessment_page.dart';
 
 class AttemptSessionPage extends StatefulWidget {
   const AttemptSessionPage({required this.assessmentRepository, super.key});
-
   final AssessmentRepository assessmentRepository;
-
   @override
   State<AttemptSessionPage> createState() => _AttemptSessionPageState();
 }
@@ -25,6 +22,10 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
   late final AttemptSessionViewModel _viewModel;
   String? _attemptId;
   bool _requestedLoad = false;
+  bool _dialogOpen = false;
+  bool _activityBusy = false;
+  bool _completedAll = false;
+  bool _openingResult = false;
 
   @override
   void initState() {
@@ -38,12 +39,91 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final argument = ModalRoute.of(context)?.settings.arguments;
-    if (argument is String && argument.isNotEmpty) {
-      _attemptId = argument;
-    }
-    if (!_requestedLoad && _attemptId != null) {
+    if (!_requestedLoad && argument is String && argument.isNotEmpty) {
       _requestedLoad = true;
-      _viewModel.load(_attemptId!);
+      _attemptId = argument;
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    await _viewModel.load(_attemptId!);
+    if (!mounted) return;
+    if (_viewModel.attempt != null &&
+        _viewModel.exerciseAttempts.isNotEmpty &&
+        _viewModel.currentExercise == null) {
+      _completedAll = true;
+      await _finish();
+    }
+  }
+
+  void _completed() {
+    if (_viewModel.isFinishing || _openingResult || _dialogOpen) return;
+    _activityBusy = false;
+    if (_viewModel.isLastExercise) {
+      setState(() => _completedAll = true);
+      _finish();
+    } else {
+      _viewModel.markCurrentCompleted();
+    }
+  }
+
+  Future<void> _requestFinish() async {
+    if (_dialogOpen ||
+        _activityBusy ||
+        _viewModel.isLoading ||
+        _viewModel.isFinishing ||
+        _openingResult) {
+      return;
+    }
+    if (_viewModel.attempt == null) {
+      Navigator.maybePop(context);
+      return;
+    }
+    _dialogOpen = true;
+    final finish = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Desea finalizar la prueba?'),
+        content: const Text(
+          'Se conservarán las respuestas guardadas. La respuesta en curso no se guardará.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No, continuar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sí, finalizar'),
+          ),
+        ],
+      ),
+    );
+    _dialogOpen = false;
+    if (mounted && finish == true) await _finish();
+  }
+
+  Future<void> _finish() async {
+    if (_viewModel.isFinishing || _openingResult) return;
+    final result = await _viewModel.finish();
+    if (!mounted) return;
+    if (result != null) {
+      _openingResult = true;
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.assessmentResult,
+        arguments: result,
+      );
+    } else if (!_completedAll) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _viewModel.errorMessage ??
+                'No se pudo finalizar. Inténtalo nuevamente.',
+          ),
+        ),
+      );
     }
   }
 
@@ -53,225 +133,122 @@ class _AttemptSessionPageState extends State<AttemptSessionPage> {
     super.dispose();
   }
 
-  Future<void> _openCurrentExercise() async {
-    final exercise = _viewModel.currentExercise;
-    final attempt = _viewModel.attempt;
-    if (exercise == null || attempt == null) {
-      return;
-    }
-    final route = _routeForType(exercise.type);
-    if (route == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tipo no soportado: ${exercise.type ?? 'N/D'}')),
-      );
-      return;
-    }
-    final completed = await Navigator.pushNamed(
-      context,
-      route,
-      arguments: AttemptExerciseArgs(
-        attemptId: attempt.id,
-        exerciseAttempt: exercise,
-        exerciseIndex: _viewModel.currentIndex,
-        totalExercises: _viewModel.exerciseAttempts.length,
-      ),
-    );
-    if (!mounted || completed != true) {
-      return;
-    }
-    if (_viewModel.isLastExercise) {
-      final result = await _viewModel.finish();
-      if (!mounted || result == null) {
-        return;
-      }
-      _openResult(result);
-    } else {
-      _viewModel.markCurrentCompleted();
-    }
-  }
-
-  Future<void> _finishNow() async {
-    final result = await _viewModel.finish();
-    if (!mounted || result == null) {
-      return;
-    }
-    _openResult(result);
-  }
-
-  void _openResult(AssessmentResult result) {
-    Navigator.pushReplacementNamed(
-      context,
-      AppRoutes.assessmentResult,
-      arguments: result,
-    );
-  }
-
-  String? _routeForType(String? rawType) {
-    final type = rawType?.trim().toUpperCase();
-    return switch (type) {
-      'MULTIPLE_CHOICE' => AppRoutes.assessmentChooseWord,
-      'ORDER_SYLLABLES' => AppRoutes.assessmentBuildWord,
-      'READING_SPEAKING' || 'LISTENING_SPEAKING' => AppRoutes.assessmentReading,
-      'READING_WRITING' || 'LISTENING_WRITING' => AppRoutes.assessmentWriting,
-      _ => null,
-    };
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _viewModel,
-      builder: (context, _) {
-        return Scaffold(
-          backgroundColor: AppColors.teacherBackground,
-          body: Column(
-            children: [
-              AppHeader(
-                title: 'Preparar actividad',
-                showBack: true,
-                centerTitle: true,
-                onBack: () => Navigator.pushReplacementNamed(
-                  context,
-                  AppRoutes.templateCatalog,
-                ),
-              ),
-              Expanded(child: _buildContent()),
-            ],
-          ),
-        );
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _viewModel,
+    builder: (context, _) => PopScope<Object?>(
+      canPop: _viewModel.attempt == null && !_viewModel.isLoading,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _requestFinish();
       },
-    );
-  }
+      child: Stack(
+        children: [
+          AbsorbPointer(absorbing: _viewModel.isFinishing, child: _content()),
+          if (_viewModel.isFinishing && !_completedAll)
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Colors.white70,
+                child: AppLoadingState(message: 'Finalizando la prueba…'),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
 
-  Widget _buildContent() {
-    if (_viewModel.isFinishing) {
-      return const AppLoadingState(
-        message: 'Estamos procesando la evaluación…',
+  Widget _content() {
+    if (_completedAll) {
+      return _shell(
+        _viewModel.isFinishing || _openingResult
+            ? const AppLoadingState(
+                message: 'Estamos procesando la evaluación…',
+              )
+            : AppEmptyState(
+                title: 'No pudimos finalizar la prueba',
+                message: _viewModel.errorMessage ?? 'Inténtalo nuevamente.',
+                icon: Icons.sync_problem,
+                actionLabel: 'Reintentar',
+                onAction: _finish,
+              ),
       );
     }
     if (_viewModel.isLoading) {
-      return const AppLoadingState(message: 'Cargando información…');
-    }
-    if (_viewModel.errorMessage != null || _viewModel.attempt == null) {
-      return _ErrorState(
-        message: _viewModel.errorMessage ?? 'No se pudo cargar el intento.',
-        onRetry: _attemptId == null ? null : () => _viewModel.load(_attemptId!),
-      );
+      return _shell(const AppLoadingState(message: 'Cargando actividad…'));
     }
     final exercise = _viewModel.currentExercise;
     if (exercise == null) {
-      return _ErrorState(
-        message: 'El intento no contiene ejercicios.',
-        onRetry: _attemptId == null ? null : () => _viewModel.load(_attemptId!),
+      return _shell(
+        AppEmptyState(
+          title: 'No pudimos cargar la actividad',
+          message:
+              _viewModel.errorMessage ?? 'El intento no contiene ejercicios.',
+          icon: Icons.error_outline,
+          actionLabel: 'Reintentar',
+          onAction: _attemptId == null ? null : _load,
+        ),
       );
     }
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.xl,
-        AppSpacing.lg,
-        AppSpacing.xxl,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.control),
-              border: Border.all(color: AppColors.cardBorder),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Progreso ${_viewModel.progressText}',
-                  style: const TextStyle(
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  exercise.displayName,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: AppFontSizes.section,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  exercise.instructions ??
-                      exercise.prompt ??
-                      'Sin instrucciones.',
-                  style: const TextStyle(
-                    color: AppColors.neutralGray,
-                    fontSize: AppFontSizes.body,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _InfoRow(
-                  label: 'Tipo',
-                  value: translateExerciseType(exercise.type),
-                ),
-              ],
-            ),
-          ),
-          if (_viewModel.errorMessage != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              _viewModel.errorMessage!,
-              style: const TextStyle(
-                color: AppColors.errorRed,
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-          const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: 'Abrir ejercicio',
-            icon: Icons.play_arrow_rounded,
-            onPressed: _openCurrentExercise,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          OutlinedButton.icon(
-            onPressed: _viewModel.isFinishing ? null : _finishNow,
-            icon: const Icon(Icons.flag_outlined),
-            label: Text(
-              _viewModel.isFinishing ? 'Finalizando...' : 'Finalizar intento',
-            ),
-          ),
-        ],
-      ),
+    final args = AttemptExerciseArgs(
+      attemptId: _viewModel.attempt!.id,
+      exerciseAttempt: exercise,
+      exerciseIndex: _viewModel.currentIndex,
+      totalExercises: _viewModel.exerciseAttempts.length,
     );
+    // A new exercise gets a fresh state; cancelling the finish dialog keeps it.
+    final key = ValueKey(exercise.id);
+    void busy(bool value) {
+      _activityBusy = value;
+    }
+
+    return switch (exercise.type?.trim().toUpperCase()) {
+      'MULTIPLE_CHOICE' => ChooseWordPage(
+        key: key,
+        assessmentRepository: widget.assessmentRepository,
+        args: args,
+        onCompleted: _completed,
+        onBack: _requestFinish,
+        onBusyChanged: busy,
+      ),
+      'ORDER_SYLLABLES' => BuildWordPage(
+        key: key,
+        assessmentRepository: widget.assessmentRepository,
+        args: args,
+        onCompleted: _completed,
+        onBack: _requestFinish,
+        onBusyChanged: busy,
+      ),
+      'READING_SPEAKING' || 'LISTENING_SPEAKING' => ReadingAssessmentPage(
+        key: key,
+        assessmentRepository: widget.assessmentRepository,
+        args: args,
+        onCompleted: _completed,
+        onBack: _requestFinish,
+        onBusyChanged: busy,
+      ),
+      'READING_WRITING' || 'LISTENING_WRITING' => WritingAssessmentPage(
+        key: key,
+        assessmentRepository: widget.assessmentRepository,
+        args: args,
+        onCompleted: _completed,
+        onBack: _requestFinish,
+        onBusyChanged: busy,
+      ),
+      _ => _shell(
+        const AppEmptyState(
+          title: 'Actividad no disponible',
+          message: 'Este tipo de ejercicio no está disponible en esta versión.',
+          icon: Icons.info_outline,
+        ),
+      ),
+    };
   }
-}
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
-  final String label;
-  final String value;
-  @override
-  Widget build(BuildContext context) =>
-      AppDetailRow(label: label, value: value);
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback? onRetry;
-
-  @override
-  Widget build(BuildContext context) => AppEmptyState(
-    title: 'No pudimos preparar la actividad',
-    message: message,
-    icon: Icons.error_outline,
-    actionLabel: 'Reintentar',
-    onAction: onRetry,
+  Widget _shell(Widget child) => Scaffold(
+    body: Column(
+      children: [
+        AppHeader(title: 'Evaluación', showBack: true, onBack: _requestFinish),
+        Expanded(child: child),
+      ],
+    ),
   );
 }

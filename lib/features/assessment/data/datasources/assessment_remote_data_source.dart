@@ -6,6 +6,7 @@ import '../models/assessment_template_dto.dart';
 import '../models/student_assessment_history_dto.dart';
 import '../models/student_attempt_list_dto.dart';
 import '../models/attempt_review_dto.dart';
+import '../models/manual_review_dto.dart';
 import '../models/repeat_attempt_response_dto.dart';
 
 abstract interface class AssessmentRemoteDataSource {
@@ -82,6 +83,11 @@ abstract interface class AssessmentRemoteDataSource {
   });
 
   Future<AttemptReviewDto> getAttemptReview(String attemptId);
+
+  Future<ManualReviewResponseDto> manualReviewExercise(
+    String exerciseAttemptId,
+    ManualReviewRequestDto request,
+  );
 
   Future<RepeatAttemptResponseDto> repeatAttempt(
     String attemptId, {

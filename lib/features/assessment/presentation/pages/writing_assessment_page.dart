@@ -19,9 +19,20 @@ import '../../domain/repositories/assessment_repository.dart';
 import '../viewmodels/writing_assessment_viewmodel.dart';
 
 class WritingAssessmentPage extends StatefulWidget {
-  const WritingAssessmentPage({required this.assessmentRepository, super.key});
+  const WritingAssessmentPage({
+    required this.assessmentRepository,
+    this.args,
+    this.onCompleted,
+    this.onBack,
+    this.onBusyChanged,
+    super.key,
+  });
 
   final AssessmentRepository assessmentRepository;
+  final AttemptExerciseArgs? args;
+  final VoidCallback? onCompleted;
+  final VoidCallback? onBack;
+  final ValueChanged<bool>? onBusyChanged;
 
   @override
   State<WritingAssessmentPage> createState() => _WritingAssessmentPageState();
@@ -38,12 +49,17 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
     _viewModel = WritingAssessmentViewModel(
       assessmentRepository: widget.assessmentRepository,
     );
+    _viewModel.addListener(
+      () => widget.onBusyChanged?.call(
+        _viewModel.isLoading || _viewModel.isUploading,
+      ),
+    );
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final argument = ModalRoute.of(context)?.settings.arguments;
+    final argument = widget.args ?? ModalRoute.of(context)?.settings.arguments;
     if (!_requestedLoad && argument is AttemptExerciseArgs) {
       _requestedLoad = true;
       _viewModel.load(argument);
@@ -69,7 +85,11 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
       return;
     }
     if (uploaded) {
-      Navigator.pop(context, true);
+      if (widget.onCompleted != null) {
+        widget.onCompleted!();
+      } else {
+        Navigator.pop(context, true);
+      }
       return;
     }
     if (_viewModel.errorMessage != null) {
@@ -106,7 +126,7 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
     animation: _viewModel,
     builder: (context, _) => StudentActivityLayout(
       title: 'Escritura digital',
-      onBack: () => Navigator.pop(context, false),
+      onBack: widget.onBack ?? () => Navigator.pop(context, false),
       child: _viewModel.isLoading
           ? const AppLoadingState(message: 'Preparando la escritura…')
           : LayoutBuilder(
@@ -195,7 +215,9 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
                             icon: Icons.check_rounded,
                             student: true,
                             isLoading: _viewModel.isUploading,
-                            onPressed: _upload,
+                            onPressed: _viewModel.isEvidenceLocked
+                                ? null
+                                : _upload,
                           ),
                         ],
                       ),

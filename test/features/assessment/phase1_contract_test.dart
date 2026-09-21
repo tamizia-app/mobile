@@ -8,6 +8,7 @@ import 'package:tamizai_app/features/assessment/domain/models/exercise_integrity
 import 'package:tamizai_app/features/assessment/domain/repositories/assessment_repository.dart';
 import 'package:tamizai_app/features/assessment/presentation/pages/assessment_result_page.dart';
 import 'package:tamizai_app/features/assessment/presentation/pages/attempt_review_page.dart';
+import 'package:tamizai_app/features/assessment/presentation/widgets/exercise_metrics_panel.dart';
 
 void main() {
   testWidgets(
@@ -263,7 +264,16 @@ void main() {
     expect(find.text('Pronunciación'), findsOneWidget);
     expect(find.text('85.0 / 100'), findsOneWidget);
     expect(find.text('80.0 / 100'), findsOneWidget);
-    expect(find.text('90.0 / 100'), findsOneWidget);
+    // The exercise score and fluency can both be 90; assert the metric panel.
+    expect(
+      find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget is ExerciseMetricsPanel && !widget.writing,
+        ),
+        matching: find.text('90.0 / 100'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('95.0 / 100'), findsOneWidget);
     expect(find.text('Coincidencia de palabras'), findsOneWidget);
     expect(find.text('100.0%'), findsOneWidget);

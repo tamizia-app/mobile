@@ -42,10 +42,14 @@ abstract final class ApiErrorMapper {
         path.contains('/classrooms') && !path.contains('/students');
     final isStudentRequest =
         path.contains('/students') && !path.contains('/consent');
+    final isAssessmentRequest = path.contains('/assessments/');
+    final isManualReview = path.endsWith('/manual-review');
 
     if (statusCode == 400) {
       return ValidationException(
-        backendMessage ?? 'Revisa los datos ingresados.',
+        isManualReview
+            ? 'No se pudo guardar la revisión. Revisa el texto, las métricas y el motivo.'
+            : backendMessage ?? 'Revisa los datos ingresados.',
         fieldErrors: _extractFieldErrors(data),
       );
     }
@@ -63,11 +67,21 @@ abstract final class ApiErrorMapper {
       );
     }
     if (statusCode == 403) {
+      if (isAssessmentRequest) {
+        return const ForbiddenException(
+          'No tienes permiso para acceder a esta evaluación.',
+        );
+      }
       return const ForbiddenException(
         'La sesión expiró. Inicia sesión nuevamente.',
       );
     }
     if (statusCode == 404) {
+      if (isAssessmentRequest) {
+        return const NotFoundException(
+          'La evaluación o el ejercicio no están disponibles para tu cuenta.',
+        );
+      }
       if (isClassroomRequest) {
         return const NotFoundException('El aula no fue encontrada.');
       }
@@ -79,6 +93,30 @@ abstract final class ApiErrorMapper {
       );
     }
     if (statusCode == 409) {
+      final detail = data is Map<String, dynamic> ? data['detail'] : null;
+      final code = detail is Map<String, dynamic>
+          ? detail['code']
+          : data is Map<String, dynamic>
+          ? data['code']
+          : null;
+      if (code == 'MANUAL_REVIEW_VERSION_CONFLICT') {
+        return const ConflictException(
+          'Esta revisión fue actualizada. Recargaremos los datos.',
+          code: 'MANUAL_REVIEW_VERSION_CONFLICT',
+        );
+      }
+      if (code == 'ASSESSMENT_EVIDENCE_LOCKED') {
+        return const ConflictException(
+          'La evidencia está bloqueada. No se puede reemplazar después de completar o revisar la evaluación.',
+          code: 'ASSESSMENT_EVIDENCE_LOCKED',
+        );
+      }
+      if (isAssessmentRequest) {
+        return ConflictException(
+          'El estado de la evaluación cambió. Recarga los datos antes de continuar.',
+          code: code is String ? code : null,
+        );
+      }
       if (isClassroomRequest) {
         return const ConflictException('Ya existe un aula con esos datos.');
       }
@@ -91,7 +129,9 @@ abstract final class ApiErrorMapper {
     }
     if (statusCode == 422) {
       return ValidationException(
-        backendMessage ?? 'Revisa los datos ingresados.',
+        isManualReview
+            ? 'Revisa el texto, los valores de 0 a 100 y el motivo de la revisión.'
+            : backendMessage ?? 'Revisa los datos ingresados.',
         fieldErrors: _extractFieldErrors(data),
       );
     }

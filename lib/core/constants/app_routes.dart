@@ -32,5 +32,6 @@ class AppRoutes {
   static const assessmentError = '/assessment/error';
   static const studentHistory = '/assessment/student-history';
   static const attemptReview = '/assessment/attempt-review';
+  static const manualReview = '/assessment/manual-review';
   static const studentsList = '/students';
 }

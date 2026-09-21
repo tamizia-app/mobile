@@ -7,6 +7,7 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/assessment_labels.dart';
 import '../../../../core/widgets/app_header.dart';
+import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/student.dart';
 import '../../domain/models/student_consent.dart';
 import '../../domain/repositories/student_repository.dart';
@@ -292,13 +293,12 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
-          TextButton.icon(
-            onPressed: _viewModel.isDeleting ? null : _confirmDelete,
-            icon: const Icon(Icons.delete_outline),
-            label: Text(
-              _viewModel.isDeleting ? 'Eliminando...' : 'Eliminar estudiante',
-            ),
-            style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
+          PrimaryButton(
+            text: 'Eliminar estudiante',
+            onPressed: _confirmDelete,
+            icon: Icons.delete_outline,
+            variant: AppButtonVariant.danger,
+            isLoading: _viewModel.isDeleting,
           ),
         ],
       ),
@@ -438,13 +438,16 @@ class _ConsentDetails extends StatelessWidget {
                   ],
                 ),
         ),
-        if (current != null && current.status && current.revokedAt == null)
-          TextButton(
-            onPressed: isUpdating ? null : onRevoke,
-            child: Text(
-              isUpdating ? 'Procesando...' : 'Revocar consentimiento',
-            ),
+        if (current != null && current.status && current.revokedAt == null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          PrimaryButton(
+            text: 'Revocar consentimiento',
+            onPressed: onRevoke,
+            icon: Icons.gpp_bad_outlined,
+            variant: AppButtonVariant.secondary,
+            isLoading: isUpdating,
           ),
+        ],
         if (current == null || !current.status || current.revokedAt != null)
           TextButton.icon(
             onPressed: isUpdating ? null : onUpload,

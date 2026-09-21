@@ -12,6 +12,7 @@ import '../models/assessment_response_dto.dart';
 import '../models/assessment_result_dto.dart';
 import '../models/assessment_template_dto.dart';
 import '../models/attempt_review_dto.dart';
+import '../models/manual_review_dto.dart';
 import '../models/repeat_attempt_response_dto.dart';
 import '../models/student_assessment_history_dto.dart';
 import '../models/student_attempt_list_dto.dart';
@@ -421,6 +422,25 @@ class AssessmentRemoteDataSourceImpl implements AssessmentRemoteDataSource {
         throw const FormatException('Invalid repeat attempt response.');
       }
       return RepeatAttemptResponseDto.fromJson(data);
+    } catch (error) {
+      throw ApiErrorMapper.map(error);
+    }
+  }
+
+  @override
+  Future<ManualReviewResponseDto> manualReviewExercise(
+    String exerciseAttemptId,
+    ManualReviewRequestDto request,
+  ) async {
+    try {
+      final response = await _apiClient.dio.patch<Map<String, dynamic>>(
+        '/api/v1/assessments/exercise-attempts/$exerciseAttemptId/manual-review',
+        data: request.toJson(),
+      );
+      if (response.data == null) {
+        throw const FormatException('Invalid manual review response.');
+      }
+      return ManualReviewResponseDto.fromJson(response.data!);
     } catch (error) {
       throw ApiErrorMapper.map(error);
     }

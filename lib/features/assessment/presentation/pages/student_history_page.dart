@@ -46,11 +46,13 @@ class _StudentHistoryPageState extends State<StudentHistoryPage> {
       final history = await widget.assessmentRepository.getStudentHistory(
         widget.studentId,
       );
+      if (!mounted) return;
       setState(() {
         _history = history;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'No se pudo cargar el historial del estudiante.';
         _isLoading = false;
@@ -125,7 +127,17 @@ class _StudentHistoryPageState extends State<StudentHistoryPage> {
             _ChartSection(points: history.chartPoints),
           if (history.chartPoints.isNotEmpty)
             const SizedBox(height: AppSpacing.xl),
-          _HistorySection(items: history.items),
+          _HistorySection(
+            items: history.items,
+            onOpen: (attemptId) async {
+              await Navigator.pushNamed(
+                context,
+                AppRoutes.attemptReview,
+                arguments: attemptId,
+              );
+              if (mounted) await _loadData();
+            },
+          ),
           const SizedBox(height: AppSpacing.xl),
           const InfoBanner(
             text:
@@ -404,9 +416,10 @@ class _ChartSection extends StatelessWidget {
 }
 
 class _HistorySection extends StatelessWidget {
-  const _HistorySection({required this.items});
+  const _HistorySection({required this.items, required this.onOpen});
 
   final List<StudentHistoryItem> items;
+  final ValueChanged<String> onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +450,12 @@ class _HistorySection extends StatelessWidget {
               ),
             )
           else
-            ...items.map((item) => _HistoryItemTile(item: item)),
+            ...items.map(
+              (item) => _HistoryItemTile(
+                item: item,
+                onOpen: () => onOpen(item.attemptId),
+              ),
+            ),
         ],
       ),
     );
@@ -445,9 +463,10 @@ class _HistorySection extends StatelessWidget {
 }
 
 class _HistoryItemTile extends StatelessWidget {
-  const _HistoryItemTile({required this.item});
+  const _HistoryItemTile({required this.item, required this.onOpen});
 
   final StudentHistoryItem item;
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -455,11 +474,7 @@ class _HistoryItemTile extends StatelessWidget {
         ? '${item.completedAt!.day}/${item.completedAt!.month}/${item.completedAt!.year}'
         : '—';
     return InkWell(
-      onTap: () => Navigator.pushNamed(
-        context,
-        AppRoutes.attemptReview,
-        arguments: item.attemptId,
-      ),
+      onTap: onOpen,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         child: Column(

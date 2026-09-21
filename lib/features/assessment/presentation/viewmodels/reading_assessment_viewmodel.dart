@@ -28,6 +28,7 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
   bool isRecording = false;
   bool isPaused = false;
   bool isUploading = false;
+  bool isEvidenceLocked = false;
   int elapsedSeconds = 0;
   String? audioPath;
   String? errorMessage;
@@ -54,6 +55,9 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
   }
 
   Future<void> load(AttemptExerciseArgs value) async {
+    if (args?.exerciseAttempt.id != value.exerciseAttempt.id) {
+      isEvidenceLocked = false;
+    }
     args = value;
     isLoading = true;
     errorMessage = null;
@@ -141,6 +145,7 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
   }
 
   Future<bool> upload() async {
+    if (isEvidenceLocked || isUploading) return false;
     final exerciseAttemptId = args?.exerciseAttempt.id;
     if (exerciseAttemptId == null) {
       return false;
@@ -171,6 +176,10 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
       );
       return true;
     } catch (error) {
+      if (error is ConflictException &&
+          error.code == 'ASSESSMENT_EVIDENCE_LOCKED') {
+        isEvidenceLocked = true;
+      }
       errorMessage = _messageFor(error);
       return false;
     } finally {

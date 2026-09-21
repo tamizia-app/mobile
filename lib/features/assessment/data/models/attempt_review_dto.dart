@@ -2,6 +2,8 @@ import '../../domain/models/attempt_review.dart';
 import 'assessment_result_dto.dart';
 import '../../domain/models/exercise_integrity.dart';
 import 'exercise_integrity_dto.dart';
+import '../../domain/models/manual_review.dart';
+import 'manual_review_dto.dart';
 
 class AttemptReviewDto {
   const AttemptReviewDto({
@@ -306,6 +308,7 @@ class ExerciseReviewDto {
     this.scoreEligible = false,
     this.qualityReasons = const [],
     this.scoringComponents = const ScoringComponentsDto(),
+    this.manualReview = const ManualReviewDetails(),
   });
 
   factory ExerciseReviewDto.fromJson(Map<String, dynamic> json) {
@@ -332,6 +335,7 @@ class ExerciseReviewDto {
       scoringComponents: ScoringComponentsDto.fromJson(
         _optionalMap(json, 'scoring_components'),
       ),
+      manualReview: ManualReviewDetailsDto(json).toDomain(),
     );
   }
 
@@ -355,6 +359,7 @@ class ExerciseReviewDto {
   final bool scoreEligible;
   final List<String> qualityReasons;
   final ScoringComponentsDto scoringComponents;
+  final ManualReviewDetails manualReview;
 
   ExerciseReview toDomain() {
     return ExerciseReview(
@@ -378,6 +383,7 @@ class ExerciseReviewDto {
       scoreEligible: scoreEligible,
       qualityReasons: qualityReasons,
       scoringComponents: scoringComponents.toDomain(),
+      manualReview: manualReview,
     );
   }
 }
