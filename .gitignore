@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+pubspec.lock
+pubspec.yaml
+android/app/build.gradle.kts
+lib/features/assessment/presentation/pages/assessment_config_page.dart
+lib/features/classrooms/presentation/pages/create_classroom_page.dart
+lib/features/students/presentation/pages/create_student_page.dart

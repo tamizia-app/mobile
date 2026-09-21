@@ -369,7 +369,7 @@ class _ConfigDropdown extends StatelessWidget {
         DropdownButtonFormField<String>(
           itemHeight: null,
           key: ValueKey('$label-${value ?? 'empty'}-${items.length}'),
-          initialValue: value,
+          value: value,
           hint: Text(hint),
           isExpanded: true,
           items: items,
