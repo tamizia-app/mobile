@@ -295,7 +295,7 @@ class _DropdownField extends StatelessWidget {
           isExpanded: true,
           itemHeight: null,
           key: ValueKey('$label-${value ?? 'empty'}'),
-          initialValue: value,
+          value: value,
           hint: Text(hint),
           items: items
               .map(
