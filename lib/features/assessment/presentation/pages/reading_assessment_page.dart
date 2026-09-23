@@ -8,7 +8,6 @@ import '../../../../core/theme/app_tokens.dart';
 
 import '../../../../core/widgets/assessment_timer.dart';
 import '../../../../core/widgets/primary_button.dart';
-import '../../../../core/widgets/student_action_button.dart';
 import '../../domain/models/attempt_exercise_args.dart';
 import '../../domain/repositories/assessment_repository.dart';
 import '../viewmodels/reading_assessment_viewmodel.dart';
@@ -165,25 +164,16 @@ class _ReadingAssessmentPageState extends State<ReadingAssessmentPage> {
                     ErrorMessage(text: _viewModel.errorMessage!),
                   ],
                   const SizedBox(height: AppSpacing.xl),
-                  if (_viewModel.isRecording) ...[
-                    StudentActionButton(
-                      text: _viewModel.isPaused ? 'Reanudar' : 'Pausar',
-                      icon: _viewModel.isPaused
-                          ? Icons.play_arrow_rounded
-                          : Icons.pause_rounded,
-                      onPressed: _viewModel.isUploading
-                          ? null
-                          : _viewModel.togglePause,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
                   PrimaryButton(
                     text: 'Guardar lectura',
                     icon: Icons.check_rounded,
                     student: true,
                     variant: AppButtonVariant.secondary,
                     isLoading: _viewModel.isUploading,
-                    onPressed: _viewModel.isEvidenceLocked ? null : _upload,
+                    onPressed:
+                        _viewModel.isEvidenceLocked || _viewModel.isRecording
+                        ? null
+                        : _upload,
                   ),
                 ],
               ),

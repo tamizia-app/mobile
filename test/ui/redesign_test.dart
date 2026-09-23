@@ -806,6 +806,7 @@ void main() {
   for (final size in [
     const Size(320, 640),
     const Size(390, 844),
+    const Size(768, 1024),
     const Size(1024, 1366),
   ]) {
     testWidgets('writing owns vertical strokes and dots at $size', (
@@ -818,15 +819,25 @@ void main() {
         size: size,
       );
       final canvas = find.byType(DrawingCanvasPlaceholder);
-      expect(tester.getSize(canvas).height, greaterThanOrEqualTo(480));
+      final canvasHeight = tester.getSize(canvas).height;
+      expect(canvasHeight, inInclusiveRange(210, 380));
+      final saveButton = find.text('Guardar escritura');
+      expect(tester.getBottomRight(saveButton).dy, lessThan(size.height));
+      if (size.shortestSide >= 600) {
+        expect(canvasHeight, greaterThanOrEqualTo(300));
+        expect(
+          tester.state<ScrollableState>(find.byType(Scrollable)).position.maxScrollExtent,
+          0,
+        );
+      }
       await tester.ensureVisible(canvas);
       await tester.pumpAndSettle();
       final scroll = tester.state<ScrollableState>(find.byType(Scrollable));
       final initialOffset = scroll.position.pixels;
-      final start = tester.getTopLeft(canvas) + const Offset(60, 160);
+      final start = tester.getTopLeft(canvas) + const Offset(60, 80);
       for (final delta in [
-        const Offset(0, -90),
-        const Offset(0, 90),
+        const Offset(0, -60),
+        const Offset(0, 60),
         const Offset(90, 0),
         const Offset(60, -60),
       ]) {

@@ -131,79 +131,89 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
           ? const AppLoadingState(message: 'Preparando la escritura…')
           : LayoutBuilder(
               builder: (context, constraints) {
-                final canvasHeight = (constraints.maxHeight * 0.75).clamp(
-                  480.0,
-                  800.0,
-                );
-                return SingleChildScrollView(
-                  padding: AppSpacing.page,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      StudentTaskHeading(
-                        progress: _viewModel.progressText,
-                        instruction: _viewModel.prompt,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondaryContainer,
-                          borderRadius: BorderRadius.circular(20),
-                          border: const Border(
-                            left: BorderSide(
-                              color: AppColors.brandOrange,
-                              width: 5,
+                final isTablet = MediaQuery.sizeOf(context).shortestSide >= 600;
+                final canvasHeight =
+                    (constraints.maxHeight * (isTablet ? 0.38 : 0.32)).clamp(
+                      isTablet ? 300.0 : 210.0,
+                      isTablet ? 380.0 : 300.0,
+                    );
+                return Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            StudentTaskHeading(
+                              progress: _viewModel.progressText,
+                              instruction: _viewModel.prompt,
                             ),
-                          ),
-                        ),
-                        child: Text(
-                          _viewModel.textToWrite,
-                          style: AppTextStyles.studentStimulus.copyWith(
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-                      const Row(
-                        children: [
-                          Icon(
-                            Icons.draw_rounded,
-                            color: AppColors.secondary,
-                            size: 22,
-                          ),
-                          SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text(
-                              'Escribe aquí',
-                              style: AppTextStyles.studentTitle,
+                            const SizedBox(height: AppSpacing.lg),
+                            Container(
+                              padding: const EdgeInsets.all(AppSpacing.lg),
+                              decoration: BoxDecoration(
+                                color: AppColors.secondaryContainer,
+                                borderRadius: BorderRadius.circular(20),
+                                border: const Border(
+                                  left: BorderSide(
+                                    color: AppColors.brandOrange,
+                                    width: 5,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                _viewModel.textToWrite,
+                                style: AppTextStyles.studentStimulus.copyWith(
+                                  color: AppColors.secondary,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      SizedBox(
-                        height: canvasHeight,
-                        child: Semantics(
-                          label: 'Área de escritura. Dibuja con el dedo.',
-                          child: RepaintBoundary(
-                            key: _canvasKey,
-                            child: DrawingCanvasPlaceholder(
-                              strokes: _viewModel.strokes,
-                              enabled: true,
-                              onPanStart: _viewModel.startStroke,
-                              onPanUpdate: _viewModel.appendStroke,
-                              onPanEnd: _viewModel.endStroke,
+                            const SizedBox(height: AppSpacing.xl),
+                            const Row(
+                              children: [
+                                Icon(
+                                  Icons.draw_rounded,
+                                  color: AppColors.secondary,
+                                  size: 22,
+                                ),
+                                SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: Text(
+                                    'Escribe aquí',
+                                    style: AppTextStyles.studentTitle,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            const SizedBox(height: AppSpacing.sm),
+                            SizedBox(
+                              height: canvasHeight,
+                              child: Semantics(
+                                label: 'Área de escritura. Dibuja con el dedo.',
+                                child: RepaintBoundary(
+                                  key: _canvasKey,
+                                  child: DrawingCanvasPlaceholder(
+                                    strokes: _viewModel.strokes,
+                                    enabled: true,
+                                    onPanStart: _viewModel.startStroke,
+                                    onPanUpdate: _viewModel.appendStroke,
+                                    onPanEnd: _viewModel.endStroke,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (_viewModel.errorMessage != null) ...[
+                              const SizedBox(height: AppSpacing.lg),
+                              ErrorMessage(text: _viewModel.errorMessage!),
+                            ],
+                          ],
                         ),
                       ),
-                      if (_viewModel.errorMessage != null) ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        ErrorMessage(text: _viewModel.errorMessage!),
-                      ],
-                      const SizedBox(height: AppSpacing.xl),
-                      AppActionGroup(
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                      child: AppActionGroup(
                         children: [
                           StudentActionButton(
                             text: 'Borrar',
@@ -221,8 +231,8 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
             ),

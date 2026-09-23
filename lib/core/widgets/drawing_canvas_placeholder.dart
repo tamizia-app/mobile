@@ -73,7 +73,6 @@ class _DrawingCanvasPlaceholderState extends State<DrawingCanvasPlaceholder> {
         onPointerUp: _endPointer,
         onPointerCancel: _endPointer,
         child: Container(
-          height: 480,
           width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.white,
@@ -85,21 +84,7 @@ class _DrawingCanvasPlaceholderState extends State<DrawingCanvasPlaceholder> {
             child: CustomPaint(
               key: _paintKey,
               painter: _DrawingPainter(widget.strokes),
-              child: !widget.strokes.any((stroke) => stroke.points.isNotEmpty)
-                  ? const Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          'Escribe aquí...',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: AppFontSizes.bodyLarge,
-                          ),
-                        ),
-                      ),
-                    )
-                  : const SizedBox.expand(),
+              child: const SizedBox.expand(),
             ),
           ),
         ),
@@ -115,6 +100,7 @@ class _DrawingPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    _paintGuides(canvas, size);
     final paint = Paint()
       ..color = AppColors.neutralDark
       ..strokeWidth = 4
@@ -134,6 +120,46 @@ class _DrawingPainter extends CustomPainter {
       for (var index = 0; index < points.length - 1; index++) {
         canvas.drawLine(points[index], points[index + 1], paint);
       }
+    }
+  }
+
+  void _paintGuides(Canvas canvas, Size size) {
+    final isTablet = size.width >= 500;
+    final rowHeight = isTablet ? 104.0 : 88.0;
+    final lineGap = isTablet ? 34.0 : 28.0;
+    final inset = isTablet ? 24.0 : 16.0;
+    final startY = isTablet ? 30.0 : 24.0;
+    final solid = Paint()
+      ..color = AppColors.secondary.withValues(alpha: 0.28)
+      ..strokeWidth = 1.5;
+    final middle = Paint()
+      ..color = AppColors.secondary.withValues(alpha: 0.23)
+      ..strokeWidth = 1.5;
+
+    for (
+      var top = startY;
+      top + lineGap * 2 < size.height - 8;
+      top += rowHeight
+    ) {
+      canvas.drawLine(
+        Offset(inset, top),
+        Offset(size.width - inset, top),
+        solid,
+      );
+      final middleY = top + lineGap;
+      for (var x = inset; x < size.width - inset; x += 12) {
+        canvas.drawLine(
+          Offset(x, middleY),
+          Offset((x + 6).clamp(inset, size.width - inset), middleY),
+          middle,
+        );
+      }
+      final bottom = top + lineGap * 2;
+      canvas.drawLine(
+        Offset(inset, bottom),
+        Offset(size.width - inset, bottom),
+        solid,
+      );
     }
   }
 

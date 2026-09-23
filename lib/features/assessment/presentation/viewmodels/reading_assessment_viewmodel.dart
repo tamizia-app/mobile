@@ -146,12 +146,14 @@ class ReadingAssessmentViewModel extends ChangeNotifier {
 
   Future<bool> upload() async {
     if (isEvidenceLocked || isUploading) return false;
+    if (isRecording) {
+      errorMessage = 'Detén la grabación antes de guardar la lectura.';
+      notifyListeners();
+      return false;
+    }
     final exerciseAttemptId = args?.exerciseAttempt.id;
     if (exerciseAttemptId == null) {
       return false;
-    }
-    if (isRecording) {
-      await stopRecording();
     }
     final path = audioPath;
     if (path == null || !File(path).existsSync()) {
