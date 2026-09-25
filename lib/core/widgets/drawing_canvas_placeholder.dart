@@ -125,41 +125,46 @@ class _DrawingPainter extends CustomPainter {
 
   void _paintGuides(Canvas canvas, Size size) {
     final isTablet = size.width >= 500;
-    final rowHeight = isTablet ? 104.0 : 88.0;
-    final lineGap = isTablet ? 34.0 : 28.0;
-    final inset = isTablet ? 24.0 : 16.0;
-    final startY = isTablet ? 30.0 : 24.0;
-    final solid = Paint()
-      ..color = AppColors.secondary.withValues(alpha: 0.28)
-      ..strokeWidth = 1.5;
-    final middle = Paint()
-      ..color = AppColors.secondary.withValues(alpha: 0.23)
-      ..strokeWidth = 1.5;
+    final inset = isTablet ? 24.0 : 18.0;
+    final gap = isTablet ? 18.0 : 16.0;
+    final targetHeight = isTablet ? 100.0 : 96.0;
+    final availableHeight = size.height - 32;
+    final possibleRows = ((availableHeight + gap) / (targetHeight + gap))
+        .floor();
+    final rowCount = possibleRows < 1 ? 1 : possibleRows;
+    final rowHeight = (availableHeight - (rowCount - 1) * gap) / rowCount;
+    final fill = Paint()..color = const Color(0xFFC4EDFB);
+    final white = Paint()..color = Colors.white;
+    final outline = Paint()
+      ..color = const Color(0xFF1FAAD3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    final startMarker = Paint()..color = AppColors.brandOrange;
 
-    for (
-      var top = startY;
-      top + lineGap * 2 < size.height - 8;
-      top += rowHeight
-    ) {
-      canvas.drawLine(
-        Offset(inset, top),
-        Offset(size.width - inset, top),
-        solid,
+    for (var index = 0; index < rowCount; index++) {
+      final top = 16.0 + index * (rowHeight + gap);
+      final rect = Rect.fromLTWH(inset, top, size.width - inset * 2, rowHeight);
+      final rounded = RRect.fromRectAndRadius(rect, const Radius.circular(22));
+      canvas.drawRRect(rounded, fill);
+      canvas.drawRect(
+        Rect.fromLTRB(
+          rect.left + 2,
+          rect.top + rowHeight * 0.28,
+          rect.right - 2,
+          rect.bottom - rowHeight * 0.28,
+        ),
+        white,
       );
-      final middleY = top + lineGap;
-      for (var x = inset; x < size.width - inset; x += 12) {
-        canvas.drawLine(
-          Offset(x, middleY),
-          Offset((x + 6).clamp(inset, size.width - inset), middleY),
-          middle,
-        );
+      canvas.drawRRect(rounded, outline);
+      if (index == 0) {
+        final middle = rect.center.dy;
+        final marker = Path()
+          ..moveTo(inset - 12, middle - 8)
+          ..lineTo(inset - 3, middle)
+          ..lineTo(inset - 12, middle + 8)
+          ..close();
+        canvas.drawPath(marker, startMarker);
       }
-      final bottom = top + lineGap * 2;
-      canvas.drawLine(
-        Offset(inset, bottom),
-        Offset(size.width - inset, bottom),
-        solid,
-      );
     }
   }
 

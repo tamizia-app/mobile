@@ -806,6 +806,7 @@ void main() {
   for (final size in [
     const Size(320, 640),
     const Size(390, 844),
+    const Size(570, 960),
     const Size(768, 1024),
     const Size(1024, 1366),
   ]) {
@@ -820,15 +821,22 @@ void main() {
       );
       final canvas = find.byType(DrawingCanvasPlaceholder);
       final canvasHeight = tester.getSize(canvas).height;
-      expect(canvasHeight, inInclusiveRange(210, 380));
+      final minimumHeight = size.shortestSide >= 600
+          ? 440
+          : size.shortestSide >= 500
+          ? 380
+          : 360;
+      expect(canvasHeight, greaterThanOrEqualTo(minimumHeight));
       final saveButton = find.text('Guardar escritura');
       expect(tester.getBottomRight(saveButton).dy, lessThan(size.height));
+      final scrollExtent = tester
+          .state<ScrollableState>(find.byType(Scrollable))
+          .position
+          .maxScrollExtent;
       if (size.shortestSide >= 600) {
-        expect(canvasHeight, greaterThanOrEqualTo(300));
-        expect(
-          tester.state<ScrollableState>(find.byType(Scrollable)).position.maxScrollExtent,
-          0,
-        );
+        expect(scrollExtent, 0);
+      } else if (size.shortestSide >= 500) {
+        expect(scrollExtent, lessThanOrEqualTo(60));
       }
       await tester.ensureVisible(canvas);
       await tester.pumpAndSettle();

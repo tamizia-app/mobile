@@ -41,7 +41,10 @@ class WritingAssessmentPage extends StatefulWidget {
 class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
   late final WritingAssessmentViewModel _viewModel;
   final _canvasKey = GlobalKey();
+  final _introKey = GlobalKey();
   bool _requestedLoad = false;
+  bool _introMeasureScheduled = false;
+  double _introHeight = 300;
 
   @override
   void initState() {
@@ -121,6 +124,19 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
     return _CanvasCapture(path: file.path, size: boundary.size);
   }
 
+  void _measureIntro() {
+    if (_introMeasureScheduled) return;
+    _introMeasureScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _introMeasureScheduled = false;
+      if (!mounted) return;
+      final height = _introKey.currentContext?.size?.height;
+      if (height != null && (height - _introHeight).abs() > 1) {
+        setState(() => _introHeight = height);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _viewModel,
@@ -131,84 +147,112 @@ class _WritingAssessmentPageState extends State<WritingAssessmentPage> {
           ? const AppLoadingState(message: 'Preparando la escritura…')
           : LayoutBuilder(
               builder: (context, constraints) {
-                final isTablet = MediaQuery.sizeOf(context).shortestSide >= 600;
-                final canvasHeight =
-                    (constraints.maxHeight * (isTablet ? 0.38 : 0.32)).clamp(
-                      isTablet ? 300.0 : 210.0,
-                      isTablet ? 380.0 : 300.0,
-                    );
+                final shortestSide = MediaQuery.sizeOf(context).shortestSide;
+                final minCanvasHeight = shortestSide >= 600
+                    ? 440.0
+                    : shortestSide >= 500
+                    ? 380.0
+                    : 360.0;
                 return Column(
                   children: [
                     Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            StudentTaskHeading(
-                              progress: _viewModel.progressText,
-                              instruction: _viewModel.prompt,
-                            ),
-                            const SizedBox(height: AppSpacing.lg),
-                            Container(
-                              padding: const EdgeInsets.all(AppSpacing.lg),
-                              decoration: BoxDecoration(
-                                color: AppColors.secondaryContainer,
-                                borderRadius: BorderRadius.circular(20),
-                                border: const Border(
-                                  left: BorderSide(
-                                    color: AppColors.brandOrange,
-                                    width: 5,
-                                  ),
-                                ),
-                              ),
-                              child: Text(
-                                _viewModel.textToWrite,
-                                style: AppTextStyles.studentStimulus.copyWith(
-                                  color: AppColors.secondary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xl),
-                            const Row(
+                      child: LayoutBuilder(
+                        builder: (context, scrollConstraints) {
+                          _measureIntro();
+                          final availableHeight =
+                              scrollConstraints.maxHeight - 32 - _introHeight;
+                          final canvasHeight = availableHeight < minCanvasHeight
+                              ? minCanvasHeight
+                              : availableHeight;
+                          return SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Icon(
-                                  Icons.draw_rounded,
-                                  color: AppColors.secondary,
-                                  size: 22,
+                                Column(
+                                  key: _introKey,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    StudentTaskHeading(
+                                      progress: _viewModel.progressText,
+                                      instruction: _viewModel.prompt,
+                                    ),
+                                    const SizedBox(height: AppSpacing.lg),
+                                    Container(
+                                      padding: const EdgeInsets.all(
+                                        AppSpacing.lg,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.secondaryContainer,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: const Border(
+                                          left: BorderSide(
+                                            color: AppColors.brandOrange,
+                                            width: 5,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _viewModel.textToWrite,
+                                        style: AppTextStyles.studentStimulus
+                                            .copyWith(
+                                              color: AppColors.secondary,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xl),
+                                    const Row(
+                                      children: [
+                                        Icon(
+                                          Icons.draw_rounded,
+                                          color: AppColors.secondary,
+                                          size: 22,
+                                        ),
+                                        SizedBox(width: AppSpacing.sm),
+                                        Expanded(
+                                          child: Text(
+                                            'Escribe aquí',
+                                            style: AppTextStyles.studentTitle,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: AppSpacing.sm),
+                                    Text(
+                                      'Empieza en el primer renglón y sigue hacia abajo ↓',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: AppColors.secondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.sm),
+                                  ],
                                 ),
-                                SizedBox(width: AppSpacing.sm),
-                                Expanded(
-                                  child: Text(
-                                    'Escribe aquí',
-                                    style: AppTextStyles.studentTitle,
+                                SizedBox(
+                                  height: canvasHeight,
+                                  child: Semantics(
+                                    label:
+                                        'Cuaderno de escritura. Empieza en el primer renglón.',
+                                    child: RepaintBoundary(
+                                      key: _canvasKey,
+                                      child: DrawingCanvasPlaceholder(
+                                        strokes: _viewModel.strokes,
+                                        enabled: true,
+                                        onPanStart: _viewModel.startStroke,
+                                        onPanUpdate: _viewModel.appendStroke,
+                                        onPanEnd: _viewModel.endStroke,
+                                      ),
+                                    ),
                                   ),
                                 ),
+                                if (_viewModel.errorMessage != null) ...[
+                                  const SizedBox(height: AppSpacing.lg),
+                                  ErrorMessage(text: _viewModel.errorMessage!),
+                                ],
                               ],
                             ),
-                            const SizedBox(height: AppSpacing.sm),
-                            SizedBox(
-                              height: canvasHeight,
-                              child: Semantics(
-                                label: 'Área de escritura. Dibuja con el dedo.',
-                                child: RepaintBoundary(
-                                  key: _canvasKey,
-                                  child: DrawingCanvasPlaceholder(
-                                    strokes: _viewModel.strokes,
-                                    enabled: true,
-                                    onPanStart: _viewModel.startStroke,
-                                    onPanUpdate: _viewModel.appendStroke,
-                                    onPanEnd: _viewModel.endStroke,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (_viewModel.errorMessage != null) ...[
-                              const SizedBox(height: AppSpacing.lg),
-                              ErrorMessage(text: _viewModel.errorMessage!),
-                            ],
-                          ],
-                        ),
+                          );
+                        },
                       ),
                     ),
                     Padding(
